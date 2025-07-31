@@ -1,0 +1,17 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies
+RUN pip install --no-cache-dir requests flask
+
+# Copy robot files
+COPY robot_personality.py .
+COPY multi_robot_chat.py .
+COPY simple_api.py .
+
+# Expose port
+EXPOSE 8000
+
+# Run the API
+CMD ["python", "simple_api.py"]

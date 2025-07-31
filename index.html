@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robot Brain Chat</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #e0e0e0;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #4a9eff;
+        }
+        
+        .robot-selector {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .robot-btn {
+            padding: 10px 20px;
+            border: 2px solid #4a9eff;
+            background: transparent;
+            color: #4a9eff;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 16px;
+        }
+        
+        .robot-btn:hover {
+            background: #4a9eff;
+            color: white;
+        }
+        
+        .robot-btn.active {
+            background: #4a9eff;
+            color: white;
+        }
+        
+        .chat-container {
+            background: #2a2a2a;
+            border-radius: 10px;
+            padding: 20px;
+            height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            border: 1px solid #444;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        
+        .user-message {
+            background: #3a3a3a;
+            text-align: right;
+        }
+        
+        .robot-message {
+            background: #2a4a6a;
+        }
+        
+        .input-container {
+            display: flex;
+            gap: 10px;
+        }
+        
+        #messageInput {
+            flex: 1;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #444;
+            background: #2a2a2a;
+            color: #e0e0e0;
+            font-size: 16px;
+        }
+        
+        #sendBtn {
+            padding: 10px 30px;
+            background: #4a9eff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        #sendBtn:hover {
+            background: #3a8eef;
+        }
+        
+        .multi-chat-btn {
+            width: 100%;
+            margin-top: 20px;
+            padding: 15px;
+            background: #6a4aff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .multi-chat-btn:hover {
+            background: #5a3aef;
+        }
+    </style>
+</head>
+<body>
+    <h1>🤖 Robot Brain Chat 🤖</h1>
+    
+    <div class="robot-selector">
+        <button class="robot-btn active" data-personality="friend">😊 Friend</button>
+        <button class="robot-btn" data-personality="nerd">🤓 Nerd</button>
+        <button class="robot-btn" data-personality="zen">🧘 Zen</button>
+        <button class="robot-btn" data-personality="pirate">🏴‍☠️ Pirate</button>
+        <button class="robot-btn" data-personality="drama">🎭 Drama</button>
+    </div>
+    
+    <div class="chat-container" id="chatContainer"></div>
+    
+    <div class="input-container">
+        <input type="text" id="messageInput" placeholder="Type your message..." autofocus>
+        <button id="sendBtn">Send</button>
+    </div>
+    
+    <button class="multi-chat-btn" onclick="startMultiChat()">
+        🎭 Watch Robots Discuss a Topic
+    </button>
+
+    <script>
+        // Configuration
+        const API_URL = 'http://localhost:8000'; // Local API
+        // const API_URL = 'https://robot-brain.tkipper.workers.dev'; // Cloudflare Worker
+        
+        let currentPersonality = 'friend';
+        
+        // Robot selector
+        document.querySelectorAll('.robot-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.robot-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentPersonality = btn.dataset.personality;
+            });
+        });
+        
+        // Send message
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message to chat
+            addMessage(message, 'user');
+            input.value = '';
+            
+            try {
+                const response = await fetch(`${API_URL}/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        personality: currentPersonality,
+                        message: message
+                    })
+                });
+                
+                const data = await response.json();
+                addMessage(data.response, 'robot');
+            } catch (error) {
+                addMessage('Error: Could not connect to robot brain!', 'robot');
+            }
+        }
+        
+        // Add message to chat
+        function addMessage(text, sender) {
+            const chatContainer = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            messageDiv.textContent = text;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        // Multi-robot chat
+        async function startMultiChat() {
+            const topic = prompt('What topic should the robots discuss?');
+            if (!topic) return;
+            
+            addMessage(`📢 Topic: "${topic}"`, 'robot');
+            
+            try {
+                const response = await fetch(`${API_URL}/multi-chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        topic: topic,
+                        interaction_type: 'discussion'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // Display each robot's response
+                for (const resp of data.responses) {
+                    setTimeout(() => {
+                        addMessage(resp.response, 'robot');
+                    }, Math.random() * 2000);
+                }
+            } catch (error) {
+                addMessage('Error: Could not start multi-robot chat!', 'robot');
+            }
+        }
+        
+        // Event listeners
+        document.getElementById('sendBtn').addEventListener('click', sendMessage);
+        document.getElementById('messageInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+        
+        // Welcome message
+        addMessage('🤖 Welcome! Choose a robot personality and start chatting!', 'robot');
+    </script>
+</body>
+</html>
