@@ -113,7 +113,16 @@ my-robot-project/
 ├── cloudflare/            # Cloudflare Worker files
 │   ├── worker.js          # Edge worker code
 │   └── wrangler.toml      # Deployment config
-└── crypto-research-agent/  # Crypto analysis bot
+├── crypto-research-agent/  # Crypto analysis bot
+├── robot-brain-ui/        # React frontend with shadcn UI
+│   ├── src/components/    # React components for multi-robot chat
+│   └── package.json       # Frontend dependencies
+└── examples/              # Multi-agent framework examples
+    ├── crewai/           # CrewAI framework and examples
+    ├── gemini-fullstack-langgraph-quickstart/  # Google Gemini + LangGraph
+    ├── langgraph-supervisor-py/  # LangGraph supervisor pattern
+    ├── langgraph-swarm-py/      # LangGraph swarm pattern
+    └── langgraph-agent-template/  # Basic LangGraph template
 ```
 
 ## Environment Variables
@@ -127,12 +136,36 @@ my-robot-project/
 2. **Docker issues**: Check logs with `docker-compose logs`
 3. **Cloudflare deployment**: Ensure you're logged in with `wrangler login`
 
+## Multi-Agent Framework Research
+
+The `examples/` directory contains comprehensive research into multi-agent AI frameworks:
+
+### Frameworks Analyzed
+- **CrewAI**: Role-based agent teams with built-in collaboration
+- **LangGraph Supervisor**: Hierarchical agent coordination (SELECTED)
+- **LangGraph Swarm**: Peer-to-peer agent handoffs
+- **Google Gemini**: Fullstack research agent with web search
+
+### Framework Selection
+We selected **LangGraph Supervisor** for implementing multi-robot conversations because:
+- **Educational Value**: Kids understand "supervisor assigns tasks to specialists"
+- **Reliability**: Well-tested hierarchical pattern with clear control flow
+- **Production Ready**: Built on LangGraph with enterprise features
+- **Timeout Handling**: Better suited for complex multi-agent conversations than Cloudflare Workers
+
+### Implementation Plan
+1. Create Python FastAPI backend using LangGraph Supervisor
+2. Convert each robot personality into a specialized agent
+3. Build supervisor agent to coordinate multi-robot discussions
+4. Integrate with existing React UI components
+
 ## Next Steps
 
-- Add more robot personalities
-- Implement voice synthesis
-- Create robot memory/learning
-- Build mobile app
-- Add more interactive features
+- **HIGH PRIORITY**: Implement LangGraph Supervisor backend
+- Add conversation memory and context management  
+- Implement voice synthesis for robot personalities
+- Create robot memory/learning capabilities
+- Build mobile app version
+- Add more interactive educational features
 
 Enjoy chatting with your robot friends! 🤖✨

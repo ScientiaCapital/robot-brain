@@ -11,8 +11,9 @@ import { RobotCard } from "@/components/RobotCard";
 import { RobotCardSkeleton } from "@/components/RobotCardSkeleton";
 import { ChatBubble } from "@/components/ChatBubble";
 import { EmptyState } from "@/components/EmptyState";
+import { MultiRobotChat } from "@/components/MultiRobotChat";
 import { ROBOT_PERSONALITIES, ROBOT_TOOLS, type RobotId } from "@/lib/robot-config";
-import { Send, Menu, Moon, Sun, Settings, Sparkles } from "lucide-react";
+import { Send, Menu, Moon, Sun, Settings, Sparkles, Users } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface Message {
@@ -30,6 +31,7 @@ export default function RobotBrainApp() {
   const [showSettings, setShowSettings] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [robotsLoading, setRobotsLoading] = useState(true);
+  const [currentView, setCurrentView] = useState<"selection" | "chat" | "multiRobot">("selection");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -58,6 +60,7 @@ export default function RobotBrainApp() {
   const selectRobot = (robotId: RobotId) => {
     setSelectedRobot(robotId);
     setMessages([]);
+    setCurrentView("chat");
     const robot = ROBOT_PERSONALITIES[robotId];
     
     // Add welcome message with delay
@@ -75,6 +78,16 @@ export default function RobotBrainApp() {
         inputRef.current?.focus();
       }
     }, 400);
+  };
+
+  const goBackToSelection = () => {
+    setCurrentView("selection");
+    setSelectedRobot(null);
+    setMessages([]);
+  };
+
+  const openMultiRobotChat = () => {
+    setCurrentView("multiRobot");
   };
 
   const sendMessage = async () => {
@@ -123,6 +136,11 @@ export default function RobotBrainApp() {
   };
 
   const currentRobot = selectedRobot ? ROBOT_PERSONALITIES[selectedRobot] : null;
+
+  // Show multi-robot chat view
+  if (currentView === "multiRobot") {
+    return <MultiRobotChat onBack={goBackToSelection} />;
+  }
 
   return (
     <div className="flex h-screen flex-col bg-background">
@@ -177,7 +195,7 @@ export default function RobotBrainApp() {
       </header>
 
       {/* Main Content */}
-      {!selectedRobot ? (
+      {currentView === "selection" ? (
         // Robot Selection Screen
         <main className="flex-1 overflow-y-auto p-4 sm:p-6">
           <motion.div
@@ -185,13 +203,41 @@ export default function RobotBrainApp() {
             animate={{ opacity: 1, y: 0 }}
             className="mb-6"
           >
-            <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
-              Choose Your Robot Friend
-              <Sparkles className="h-5 w-5 text-primary" />
-            </h2>
-            <p className="text-muted-foreground">
-              Each robot has unique skills and personality traits
-            </p>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
+                  Choose Your Robot Friend
+                  <Sparkles className="h-5 w-5 text-primary" />
+                </h2>
+                <p className="text-muted-foreground">
+                  Each robot has unique skills and personality traits
+                </p>
+              </div>
+              
+              <motion.div whileTap={{ scale: 0.95 }}>
+                <Button 
+                  onClick={openMultiRobotChat}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  <Users className="h-4 w-4" />
+                  Multi-Robot Chat
+                </Button>
+              </motion.div>
+            </div>
+            
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800 mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Users className="h-5 w-5 text-blue-600" />
+                <span className="font-semibold text-blue-900 dark:text-blue-100">
+                  NEW: Watch Robots Talk Together!
+                </span>
+              </div>
+              <p className="text-sm text-blue-700 dark:text-blue-300">
+                See how different AI personalities discuss topics and learn from each other. 
+                Perfect for understanding how AI collaboration works!
+              </p>
+            </div>
           </motion.div>
           
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -227,7 +273,7 @@ export default function RobotBrainApp() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setSelectedRobot(null)}
+                  onClick={goBackToSelection}
                   className="sm:hidden -ml-2"
                 >
                   ← Back
@@ -280,7 +326,7 @@ export default function RobotBrainApp() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setSelectedRobot(null)}
+                  onClick={goBackToSelection}
                   className="hidden sm:flex"
                 >
                   Change Robot

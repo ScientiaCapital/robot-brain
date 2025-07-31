@@ -275,6 +275,145 @@ export default {
       }
     }
 
+    // Multi-robot chat endpoint
+    if (path === '/api/multi-chat' && request.method === 'POST') {
+      try {
+        const { mode = 'discussion', topic, robots = [], rounds = 1 } = await request.json();
+        
+        if (!topic || topic.trim() === '') {
+          return new Response(JSON.stringify({ error: 'Topic is required' }), {
+            status: 400,
+            headers: corsHeaders
+          });
+        }
+
+        // Use provided robots or default to first 3 robots for testing
+        const selectedRobots = robots.length > 0 ? robots.slice(0, 3) : ['friend', 'nerd', 'zen'];
+        const conversation = [];
+        let conversationId = Date.now().toString();
+
+        // Generate conversation based on mode
+        if (mode === 'discussion') {
+          // Opening statements from each robot - in parallel for speed
+          const openingPromises = selectedRobots.map(async (robotId) => {
+            const robot = ROBOT_PERSONALITIES[robotId];
+            if (!robot) return null;
+            
+            const prompt = `What are your thoughts on ${topic}? Give a brief response in your personality style.`;
+            
+            try {
+              const response = await env.AI.run(robot.model, {
+                prompt: robot.systemPrompt + '\n\nUser: ' + prompt + '\n\n' + robot.name + ':',
+                max_tokens: 100, // Reduced for faster response
+              });
+              
+              return {
+                id: Date.now() + Math.random(),
+                robotId,
+                robotName: robot.name,
+                robotEmoji: robot.emoji,
+                message: robot.emoji + ' ' + response.response,
+                timestamp: new Date().toISOString(),
+                round: 0
+              };
+            } catch (error) {
+              console.error(`Error getting response from ${robotId}:`, error);
+              return {
+                id: Date.now() + Math.random(),
+                robotId,
+                robotName: robot.name,
+                robotEmoji: robot.emoji,
+                message: robot.emoji + ' *Having trouble connecting to my circuits!*',
+                timestamp: new Date().toISOString(),
+                round: 0
+              };
+            }
+          });
+
+          // Wait for all opening statements
+          const openingResults = await Promise.all(openingPromises);
+          conversation.push(...openingResults.filter(result => result !== null));
+
+          // Discussion rounds - limit to 1 round maximum for performance
+          if (rounds > 0 && conversation.length > 1) {
+            const maxRounds = Math.min(rounds, 1); // Force maximum 1 round
+            
+            for (let round = 1; round <= maxRounds; round++) {
+              // Create promises for all robots in this round (parallel processing)
+              const roundPromises = selectedRobots.map(async (robotId) => {
+                const robot = ROBOT_PERSONALITIES[robotId];
+                if (!robot || conversation.length === 0) return null;
+                
+                // Pick a previous comment to respond to (not their own)
+                const otherComments = conversation.filter(c => c.robotId !== robotId);
+                if (otherComments.length === 0) return null;
+                
+                const randomComment = otherComments[Math.floor(Math.random() * Math.min(2, otherComments.length))];
+                const prompt = `Respond to ${randomComment.robotName} about ${topic}: "${randomComment.message.substring(0, 80)}..." Give a brief response in your style.`;
+                
+                try {
+                  // Add timeout protection by using Promise.race with a timeout
+                  const aiCallPromise = env.AI.run(robot.model, {
+                    prompt: robot.systemPrompt + '\n\nUser: ' + prompt + '\n\n' + robot.name + ':',
+                    max_tokens: 80, // Reduced for faster response
+                  });
+                  
+                  const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('AI call timeout')), 8000) // 8 second timeout
+                  );
+                  
+                  const response = await Promise.race([aiCallPromise, timeoutPromise]);
+                  
+                  return {
+                    id: Date.now() + Math.random(),
+                    robotId,
+                    robotName: robot.name,
+                    robotEmoji: robot.emoji,
+                    message: robot.emoji + ' ' + response.response,
+                    timestamp: new Date().toISOString(),
+                    round,
+                    respondingTo: randomComment.id
+                  };
+                } catch (error) {
+                  console.error(`Error in round ${round} for ${robotId}:`, error);
+                  return {
+                    id: Date.now() + Math.random(),
+                    robotId,
+                    robotName: robot.name,
+                    robotEmoji: robot.emoji,
+                    message: robot.emoji + ' *My circuits are busy thinking!*',
+                    timestamp: new Date().toISOString(),
+                    round,
+                    respondingTo: randomComment.id
+                  };
+                }
+              });
+              
+              // Wait for all robots in this round to respond (parallel)
+              const roundResults = await Promise.all(roundPromises);
+              conversation.push(...roundResults.filter(result => result !== null));
+            }
+          }
+        }
+
+        return new Response(JSON.stringify({
+          conversationId,
+          mode,
+          topic,
+          robots: selectedRobots,
+          conversation,
+          totalMessages: conversation.length,
+          rounds: rounds
+        }), { headers: corsHeaders });
+
+      } catch (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 500,
+          headers: corsHeaders
+        });
+      }
+    }
+
     // Serve the shadcn-inspired chat interface
     if (path === '/' || path === '/chat') {
       const html = `<!DOCTYPE html>
