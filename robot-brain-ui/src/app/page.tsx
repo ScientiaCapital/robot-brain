@@ -16,6 +16,12 @@ import { ROBOT_PERSONALITIES, ROBOT_TOOLS, type RobotId } from "@/lib/robot-conf
 import { Send, Menu, Moon, Sun, Settings, Sparkles, Users } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
+// Helper function for safe tool checks
+const robotHasTool = (robot: typeof ROBOT_PERSONALITIES[keyof typeof ROBOT_PERSONALITIES] | null, tool: string): boolean => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return robot?.tools.includes(tool as any) ?? false;
+};
+
 interface Message {
   id: string;
   text: string;
@@ -248,7 +254,7 @@ export default function RobotBrainApp() {
               ))
             ) : (
               // Actual robot cards
-              Object.entries(ROBOT_PERSONALITIES).map(([id, robot], index) => (
+              Object.entries(ROBOT_PERSONALITIES).map(([id], index) => (
                 <RobotCard
                   key={id}
                   robotId={id as RobotId}
@@ -286,11 +292,11 @@ export default function RobotBrainApp() {
                   }}
                   transition={{ duration: 0.5 }}
                 >
-                  {currentRobot.emoji}
+                  {currentRobot?.emoji}
                 </motion.div>
                 <div className="flex-1">
                   <h2 className="font-semibold flex items-center gap-2">
-                    {currentRobot.name}
+                    {currentRobot?.name}
                     {messages.length > 0 && (
                       <motion.span
                         initial={{ opacity: 0, scale: 0 }}
@@ -303,7 +309,7 @@ export default function RobotBrainApp() {
                     )}
                   </h2>
                   <div className="flex flex-wrap gap-1 mt-1">
-                    {currentRobot.tools.slice(0, 3).map((toolId, i) => {
+                    {currentRobot?.tools.slice(0, 3).map((toolId, i) => {
                       const tool = ROBOT_TOOLS[toolId];
                       return (
                         <motion.div
@@ -340,8 +346,8 @@ export default function RobotBrainApp() {
             <AnimatePresence mode="popLayout">
               {messages.length === 0 ? (
                 <EmptyState 
-                  robotName={currentRobot.name} 
-                  robotEmoji={currentRobot.emoji} 
+                  robotName={currentRobot?.name || ""} 
+                  robotEmoji={currentRobot?.emoji || ""} 
                 />
               ) : (
                 <div className="space-y-4">
@@ -350,16 +356,16 @@ export default function RobotBrainApp() {
                       key={message.id}
                       message={message.text}
                       sender={message.sender}
-                      robotEmoji={message.sender === "robot" ? currentRobot.emoji : undefined}
-                      robotName={message.sender === "robot" ? currentRobot.name : undefined}
+                      robotEmoji={message.sender === "robot" ? currentRobot?.emoji : undefined}
+                      robotName={message.sender === "robot" ? currentRobot?.name : undefined}
                     />
                   ))}
                   {isLoading && (
                     <ChatBubble
                       message=""
                       sender="robot"
-                      robotEmoji={currentRobot.emoji}
-                      robotName={currentRobot.name}
+                      robotEmoji={currentRobot?.emoji}
+                      robotName={currentRobot?.name}
                       isTyping={true}
                     />
                   )}
@@ -415,7 +421,7 @@ export default function RobotBrainApp() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
-              {currentRobot.tools.includes("jokes") && (
+              {robotHasTool(currentRobot, "jokes") && (
                 <motion.div whileTap={{ scale: 0.95 }}>
                   <Button
                     variant="outline"
@@ -430,7 +436,7 @@ export default function RobotBrainApp() {
                   </Button>
                 </motion.div>
               )}
-              {currentRobot.tools.includes("games") && (
+              {robotHasTool(currentRobot, "games") && (
                 <motion.div whileTap={{ scale: 0.95 }}>
                   <Button
                     variant="outline"
@@ -445,7 +451,7 @@ export default function RobotBrainApp() {
                   </Button>
                 </motion.div>
               )}
-              {currentRobot.tools.includes("wisdom") && (
+              {robotHasTool(currentRobot, "wisdom") && (
                 <motion.div whileTap={{ scale: 0.95 }}>
                   <Button
                     variant="outline"

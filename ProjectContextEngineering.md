@@ -30,6 +30,7 @@ Robot Brain System
     ├── REST API endpoints
     ├── WebSocket support
     ├── Web UI (HTML/JS)
+    ├── React UI (Next.js/TypeScript)
     └── CLI tools
 ```
 
@@ -132,6 +133,18 @@ GET  /health           # Health check
   model: string,
   tools: string[]
 }
+```
+
+**TypeScript Types** (robot-brain-ui):
+```typescript
+export type RobotId = keyof typeof ROBOT_PERSONALITIES;
+export type ToolId = keyof typeof ROBOT_TOOLS;
+
+// Type-safe robot personality access
+const robot = ROBOT_PERSONALITIES[robotId];
+
+// Type-safe tool checking
+const robotHasTool = (robot, toolId) => robot?.tools.includes(toolId)
 ```
 
 ### 5. Deployment Architecture
@@ -264,14 +277,18 @@ ERROR: Connection failures, model errors
 
 ### Local Development
 ```bash
-# Install dependencies
+# Python Backend
 pip install -r requirements.txt
-
-# Run tests
 pytest tests/
-
-# Start services
 docker-compose up
+
+# React Frontend
+cd robot-brain-ui
+npm install
+npm run dev
+npm test
+npx tsc --noEmit  # TypeScript check
+npm run lint      # ESLint check
 ```
 
 ### Production Deployment
@@ -282,9 +299,19 @@ docker build -t robot-brain .
 # Deploy to Cloudflare
 wrangler publish
 
+# Build React app
+cd robot-brain-ui
+npm run build
+
 # Health check
 curl https://robot-brain.tkipper.workers.dev/health
 ```
+
+### Code Quality Gates
+- **TypeScript**: 0 errors policy
+- **ESLint**: 0 warnings/errors policy  
+- **Tests**: All tests must compile
+- **TDD**: Follow Red-Green-Refactor cycle
 
 ## 🔮 Future Architecture Considerations
 

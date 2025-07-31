@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { RobotCircle } from "@/components/RobotCircle";
 import { ConversationFlow } from "@/components/ConversationFlow";
 import { ROBOT_PERSONALITIES, type RobotId } from "@/lib/robot-config";
@@ -18,7 +17,7 @@ import {
   ArrowLeft,
   Loader2
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 interface ConversationMessage {
   id: number;

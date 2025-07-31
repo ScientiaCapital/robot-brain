@@ -8,16 +8,14 @@ const customJestConfig = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   testEnvironment: 'jsdom',
   testMatch: [
-    '<rootDir>/__tests__/**/*.test.{js,jsx,ts,tsx}',
-    '!<rootDir>/__tests__/api-integration.test.ts',
-    '!<rootDir>/__tests__/app.test.tsx'
+    '<rootDir>/__tests__/**/*.test.{js,jsx,ts,tsx}'
   ],
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',
     '!src/**/*.d.ts',
     '!src/**/index.ts'
   ],
-  moduleNameMapping: {
+  moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1'
   }
 }

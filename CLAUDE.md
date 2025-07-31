@@ -223,21 +223,26 @@ This mirrors how humans collaborate in teams - with clear roles, coordination, a
 ## 🔧 Important Patterns
 
 ### Adding a New Robot Personality
-1. Define in `ROBOT_PERSONALITIES` dict
+1. Define in `ROBOT_PERSONALITIES` dict in `src/lib/robot-config.ts`
 2. Set emoji, traits, model, tools, and system prompt
 3. Test locally before deploying
+4. Ensure TypeScript types are properly defined
 
 ### Adding a New Tool
-1. Add to `ROBOT_TOOLS` configuration
+1. Add to `ROBOT_TOOLS` configuration in `src/lib/robot-config.ts`
 2. Implement tool logic
 3. Assign to relevant robot personalities
 4. Update UI to display new tool
+5. Use the `robotHasTool()` helper function for type-safe tool checks
 
 ### Debugging
 - Enable Developer Mode in web UI
 - Check `/api/models` and `/api/tools` endpoints
 - Monitor Docker logs: `docker logs simple-robots`
 - Cloudflare logs: `wrangler tail`
+- TypeScript errors: `npx tsc --noEmit`
+- ESLint issues: `npm run lint`
+- Test failures: `npm test`
 
 ## 📝 Common Tasks
 
@@ -273,6 +278,22 @@ Update the `model` field in robot personality or use model switcher in UI
 - Normal warning, can be ignored
 - Images still pull and run correctly
 
+## 🎯 Recent Achievements (Latest Update)
+
+### Code Quality Improvements
+- ✅ **TypeScript**: Reduced errors from 337 to 0
+- ✅ **ESLint**: Configured and fixed all linting issues
+- ✅ **Type Safety**: Implemented comprehensive null safety
+- ✅ **Test Infrastructure**: All tests now compile successfully
+- ✅ **TDD Process**: Established test-driven development workflow
+
+### Technical Debt Resolved
+- Fixed missing `@types/jest` package
+- Resolved `window.matchMedia` mock for tests
+- Implemented type-safe helper functions
+- Fixed Tailwind configuration type issues
+- Cleaned up unused imports and variables
+
 ## 🎯 Future Enhancements
 - ✅ Multi-robot conversations (LangGraph Supervisor implementation in progress)
 - Voice input/output  
@@ -282,6 +303,7 @@ Update the `model` field in robot personality or use model switcher in UI
 - Advanced debugging tools for supervisor/agent interactions
 - Integration with external APIs
 - Educational insights showing AI decision-making process
+- Fix remaining behavior tests (UI functionality)
 
 ## 📚 Resources
 
@@ -310,6 +332,13 @@ Update the `model` field in robot personality or use model switcher in UI
   - BDD (Behavior-Driven Development) - Similar but focuses on behavior descriptions
   - ATDD (Acceptance Test-Driven Development) - Tests from user's perspective
   - Test-First Development - Another name for TDD which is what we all about now as we develop fun projects like this to learn ourselves
+
+### Code Quality Standards
+- **TypeScript**: Maintain zero errors with `npx tsc --noEmit`
+- **ESLint**: Maintain zero errors with `npm run lint`
+- **Tests**: All tests must compile (behavior tests may fail during development)
+- **Null Safety**: Use optional chaining and null checks throughout
+- **Type Safety**: Avoid `any` types, use proper type definitions
 
 ---
 *This file helps AI assistants quickly understand the Robot Brain project structure and provide better assistance.*

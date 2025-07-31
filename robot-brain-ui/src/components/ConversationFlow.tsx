@@ -217,7 +217,7 @@ export function ConversationFlow({
                                   <span>Responding to {respondingToMessage.robotName}</span>
                                 </div>
                                 <p className="text-xs truncate">
-                                  "{respondingToMessage.message.substring(0, 100)}..."
+                                  &ldquo;{respondingToMessage.message.substring(0, 100)}...&rdquo;
                                 </p>
                               </motion.div>
                             )}

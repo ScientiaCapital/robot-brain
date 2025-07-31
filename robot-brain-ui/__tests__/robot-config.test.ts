@@ -113,7 +113,7 @@ describe('Robot Configuration', () => {
     })
 
     test('should have expected core tools', () => {
-      const expectedTools = ['chat', 'jokes', 'calculate', 'wisdom', 'treasure_hunt', 'perform']
+      const expectedTools = ['chat', 'jokes', 'calculate', 'wisdom', 'treasure_hunt', 'perform'] as const
       expectedTools.forEach(toolId => {
         expect(ROBOT_TOOLS[toolId]).toBeDefined()
       })

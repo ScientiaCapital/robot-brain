@@ -42,7 +42,7 @@ export function EmptyState({ robotName, robotEmoji }: EmptyStateProps) {
         className="mt-8 flex flex-wrap gap-2 justify-center"
       >
         <div className="text-xs text-muted-foreground">
-          Try saying: "Hello!" • "Tell me about yourself" • "What can you do?"
+          Try saying: &ldquo;Hello!&rdquo; • &ldquo;Tell me about yourself&rdquo; • &ldquo;What can you do?&rdquo;
         </div>
       </motion.div>
     </div>

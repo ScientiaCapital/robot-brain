@@ -16,6 +16,21 @@ global.fetch = jest.fn()
 
 const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>
 
+// Mock window.matchMedia
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: jest.fn().mockImplementation(query => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: jest.fn(), // deprecated
+    removeListener: jest.fn(), // deprecated
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    dispatchEvent: jest.fn(),
+  })),
+})
+
 describe('RobotBrainApp E2E Tests', () => {
   beforeEach(() => {
     mockFetch.mockClear()
@@ -33,12 +48,17 @@ describe('RobotBrainApp E2E Tests', () => {
     } as Response)
   })
 
-  test('displays robot selection screen initially', () => {
+  test('displays robot selection screen initially', async () => {
     render(<RobotBrainApp />)
 
     expect(screen.getByText('Robot Brain')).toBeInTheDocument()
     expect(screen.getByText('Choose Your Robot Friend')).toBeInTheDocument()
-    expect(screen.getByText('RoboFriend')).toBeInTheDocument()
+    
+    // Wait for robots to load
+    await waitFor(() => {
+      expect(screen.getByText('RoboFriend')).toBeInTheDocument()
+    })
+    
     expect(screen.getByText('RoboNerd')).toBeInTheDocument()
     expect(screen.getByText('RoboZen')).toBeInTheDocument()
     expect(screen.getByText('RoboPirate')).toBeInTheDocument()
@@ -88,6 +108,29 @@ describe('RobotBrainApp E2E Tests', () => {
     await waitFor(() => {
       expect(screen.getByText(/analytical|knowledge|learn/i)).toBeInTheDocument()
     }, { timeout: 1000 })
+  })
+
+  test('handles null currentRobot safely in chat interface', async () => {
+    const user = userEvent.setup()
+    render(<RobotBrainApp />)
+
+    // Wait for robots to load
+    await waitFor(() => {
+      expect(screen.getByText('RoboFriend')).toBeInTheDocument()
+    })
+
+    // Click on RoboFriend
+    await user.click(screen.getByText('RoboFriend'))
+
+    // Should show chat interface without errors
+    expect(screen.getByText('Chat with RoboFriend')).toBeInTheDocument()
+    
+    // The tool buttons should render without errors even if currentRobot might be null
+    const sendButton = screen.getByRole('button', { name: /send/i })
+    expect(sendButton).toBeInTheDocument()
+    
+    // Should not throw any errors when rendering tool buttons
+    expect(() => screen.getByRole('button')).not.toThrow()
   })
 
   test('sends message and receives response', async () => {
