@@ -6,3 +6,24 @@ redis==5.0.1
 python-multipart==0.0.6
 websockets==12.0
 pydantic==2.5.0
+
+# Testing dependencies
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-mock==3.12.0
+pytest-cov==4.1.0
+
+# LangGraph and LangChain dependencies
+langchain==0.1.0
+langchain-core==0.1.0
+langgraph==0.0.20
+langchain-community==0.0.10
+
+# Professional tools dependencies
+twilio==8.10.0  # For SMS
+beautifulsoup4==4.12.2  # For web scraping
+pandas==2.1.4  # For data analysis
+openpyxl==3.1.2  # For Excel processing
+pypdf==3.17.0  # For PDF processing
+sqlalchemy==2.0.23  # For database operations
+pyyaml==6.0.1  # For YAML configuration
