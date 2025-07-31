@@ -79,13 +79,24 @@
 - [ ] Test multi-robot conversations without timeouts
 - [ ] Set up monitoring and alerts
 
-## 📋 Planned Features
+## 📋 Planned Features (All Using TDD)
 
-### High Priority
+### Immediate Next Steps
+1. **Deploy to Cloudflare** 🚀
+   - Template literal issue is FIXED
+   - Ready for immediate deployment
+   - Run `wrangler deploy` in cloudflare directory
+
+2. **Implement LangGraph Supervisor**
+   - Write integration tests FIRST
+   - Mock supervisor behavior
+   - Then implement actual integration
+
+### High Priority (TDD Required)
 - [ ] **Conversation Memory**
-  - Implement Redis/KV storage for chat history
-  - Add context window management
-  - Create user session handling
+   - Write memory interface tests FIRST
+   - Mock Redis behavior in tests
+   - Then implement actual storage
 
 - [ ] **Voice Capabilities**
   - Add speech-to-text input

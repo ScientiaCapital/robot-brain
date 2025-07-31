@@ -1,4 +1,4 @@
-// worker-shadcn.js - Robot Brain with shadcn-inspired UI and Tool Management
+// worker-shadcn-fixed.js - Robot Brain with shadcn-inspired UI and Tool Management
 
 // Available Cloudflare AI Models
 const AI_MODELS = {
@@ -86,8 +86,117 @@ const ROBOT_TOOLS = {
     name: "Performance",
     icon: "🎭",
     description: "Dramatic performances"
+  },
+  encouragement: {
+    name: "Encouragement",
+    icon: "💪",
+    description: "Motivational support"
+  },
+  games: {
+    name: "Games",
+    icon: "🎮",
+    description: "Fun games to play"
+  },
+  research: {
+    name: "Research",
+    icon: "🔬",
+    description: "Research topics"
+  },
+  code: {
+    name: "Code Helper",
+    icon: "💻",
+    description: "Help with coding"
+  },
+  wisdom: {
+    name: "Wisdom",
+    icon: "🦉",
+    description: "Share wisdom"
+  },
+  breathing: {
+    name: "Breathing",
+    icon: "🌬️",
+    description: "Breathing exercises"
+  },
+  sea_tales: {
+    name: "Sea Tales",
+    icon: "⚓",
+    description: "Pirate stories"
+  },
+  pirate_jokes: {
+    name: "Pirate Jokes",
+    icon: "🦜",
+    description: "Pirate humor"
+  },
+  shakespeare: {
+    name: "Shakespeare",
+    icon: "📜",
+    description: "Shakespearean quotes"
+  },
+  poetry: {
+    name: "Poetry",
+    icon: "✍️",
+    description: "Create poetry"
+  },
+  chat: {
+    name: "Chat",
+    icon: "💬",
+    description: "General conversation"
   }
 };
+
+// Helper function to generate robot card HTML
+function generateRobotCard(key, robot, isSelected) {
+  const borderClass = isSelected 
+    ? 'border-blue-500 bg-blue-50 dark:bg-blue-950' 
+    : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800';
+  
+  let toolsHtml = '';
+  const visibleTools = robot.tools.slice(0, 3);
+  
+  for (const tool of visibleTools) {
+    const toolInfo = ROBOT_TOOLS[tool];
+    toolsHtml += `<span class="text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700">
+      ${toolInfo?.icon || '🔧'} ${toolInfo?.name || tool}
+    </span>`;
+  }
+  
+  if (robot.tools.length > 3) {
+    toolsHtml += `<span class="text-xs text-slate-500">+${robot.tools.length - 3} more</span>`;
+  }
+  
+  return `
+    <div class="robot-card cursor-pointer p-4 rounded-lg border-2 transition-all hover:shadow-md ${borderClass}"
+         onclick="selectRobot('${key}')">
+      <div class="flex items-center space-x-3">
+        <div class="text-4xl">${robot.emoji}</div>
+        <div>
+          <h3 class="font-bold text-lg">${robot.name}</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400">
+            ${robot.traits.join(', ')}
+          </p>
+        </div>
+      </div>
+      <div class="mt-2 flex flex-wrap gap-1">
+        ${toolsHtml}
+      </div>
+    </div>
+  `;
+}
+
+// Helper function to generate tool badges
+function generateToolBadges(tools) {
+  const visibleTools = tools.slice(0, 3);
+  let badges = '';
+  
+  for (const tool of visibleTools) {
+    const toolInfo = ROBOT_TOOLS[tool];
+    badges += `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+      ${toolInfo?.icon || '🔧'} ${toolInfo?.name || tool}
+    </span> `;
+  }
+  
+  return badges.trim();
+}
 
 export default {
   async fetch(request, env, ctx) {
@@ -99,251 +208,361 @@ export default {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
+      'Content-Type': 'application/json'
     };
 
-    // Handle OPTIONS
+    // Handle CORS preflight
     if (request.method === 'OPTIONS') {
       return new Response(null, { headers: corsHeaders });
     }
 
-    try {
-      // API endpoints
-      if (path === '/api/models') {
-        return new Response(JSON.stringify({
-          models: AI_MODELS,
-          current: Object.fromEntries(
-            Object.entries(ROBOT_PERSONALITIES).map(([key, robot]) => [key, robot.model])
-          )
-        }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-      }
+    // API endpoint to list all robots
+    if (path === '/api/robots') {
+      return new Response(JSON.stringify(ROBOT_PERSONALITIES), {
+        headers: corsHeaders
+      });
+    }
 
-      if (path === '/api/tools') {
-        return new Response(JSON.stringify({
-          available: ROBOT_TOOLS,
-          byRobot: Object.fromEntries(
-            Object.entries(ROBOT_PERSONALITIES).map(([key, robot]) => [key, robot.tools])
-          )
-        }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-      }
+    // API endpoint to list available models
+    if (path === '/api/models') {
+      return new Response(JSON.stringify(AI_MODELS), {
+        headers: corsHeaders
+      });
+    }
 
-      if (path === '/api/robots') {
-        return new Response(JSON.stringify({ robots: ROBOT_PERSONALITIES }), { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        });
-      }
+    // API endpoint to list available tools
+    if (path === '/api/tools') {
+      return new Response(JSON.stringify(ROBOT_TOOLS), {
+        headers: corsHeaders
+      });
+    }
 
-      // Chat endpoint
-      if (path === '/api/chat' && request.method === 'POST') {
-        const { personality, message, model } = await request.json();
+    // Chat endpoint
+    if (path === '/api/chat' && request.method === 'POST') {
+      try {
+        const { personality = 'friend', message, model } = await request.json();
+        const robot = ROBOT_PERSONALITIES[personality];
         
-        const robot = ROBOT_PERSONALITIES[personality] || ROBOT_PERSONALITIES.friend;
+        if (!robot) {
+          return new Response(JSON.stringify({ error: 'Unknown robot personality' }), {
+            status: 400,
+            headers: corsHeaders
+          });
+        }
+
         const aiModel = model || robot.model;
         
-        const prompt = `${robot.systemPrompt}\n\nUser: ${message}\n\n${robot.name}:`;
+        const prompt = robot.systemPrompt + '\n\nUser: ' + message + '\n\n' + robot.name + ':';
 
         const response = await env.AI.run(aiModel, {
           prompt: prompt,
-          max_tokens: 150
+          max_tokens: 256,
         });
 
         return new Response(JSON.stringify({
           personality: personality,
-          response: `${robot.emoji} ${response.response}`,
+          response: robot.emoji + ' ' + response.response,
           emoji: robot.emoji,
           name: robot.name,
           model: aiModel,
           tools: robot.tools
-        }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }), { headers: corsHeaders });
+      } catch (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 500,
+          headers: corsHeaders
+        });
       }
+    }
 
-      // Serve the shadcn-inspired chat interface
-      if (path === '/' || path === '/chat') {
-        const html = `<!DOCTYPE html>
+    // Multi-robot chat endpoint
+    if (path === '/api/multi-chat' && request.method === 'POST') {
+      try {
+        const { mode = 'discussion', topic, robots = [], rounds = 1 } = await request.json();
+        
+        if (!topic || topic.trim() === '') {
+          return new Response(JSON.stringify({ error: 'Topic is required' }), {
+            status: 400,
+            headers: corsHeaders
+          });
+        }
+
+        // Use provided robots or default to first 3 robots for testing
+        const selectedRobots = robots.length > 0 ? robots.slice(0, 3) : ['friend', 'nerd', 'zen'];
+        const conversation = [];
+        let conversationId = Date.now().toString();
+
+        // Generate conversation based on mode
+        if (mode === 'discussion') {
+          // Opening statements from each robot - in parallel for speed
+          const openingPromises = selectedRobots.map(async (robotId) => {
+            const robot = ROBOT_PERSONALITIES[robotId];
+            if (!robot) return null;
+            
+            const prompt = `What are your thoughts on ${topic}? Give a brief response in your personality style.`;
+            
+            try {
+              const response = await env.AI.run(robot.model, {
+                prompt: robot.systemPrompt + '\n\nUser: ' + prompt + '\n\n' + robot.name + ':',
+                max_tokens: 100, // Reduced for faster response
+              });
+              
+              return {
+                id: Date.now() + Math.random(),
+                robotId,
+                robotName: robot.name,
+                robotEmoji: robot.emoji,
+                message: robot.emoji + ' ' + response.response,
+                timestamp: new Date().toISOString(),
+                round: 0
+              };
+            } catch (error) {
+              console.error(`Error getting response from ${robotId}:`, error);
+              return {
+                id: Date.now() + Math.random(),
+                robotId,
+                robotName: robot.name,
+                robotEmoji: robot.emoji,
+                message: robot.emoji + ' *Having trouble connecting to my circuits!*',
+                timestamp: new Date().toISOString(),
+                round: 0
+              };
+            }
+          });
+
+          // Wait for all opening statements
+          const openingResults = await Promise.all(openingPromises);
+          conversation.push(...openingResults.filter(result => result !== null));
+
+          // Discussion rounds - limit to 1 round maximum for performance
+          if (rounds > 0 && conversation.length > 1) {
+            const maxRounds = Math.min(rounds, 1); // Force maximum 1 round
+            
+            for (let round = 1; round <= maxRounds; round++) {
+              // Create promises for all robots in this round (parallel processing)
+              const roundPromises = selectedRobots.map(async (robotId) => {
+                const robot = ROBOT_PERSONALITIES[robotId];
+                if (!robot || conversation.length === 0) return null;
+                
+                // Pick a previous comment to respond to (not their own)
+                const otherComments = conversation.filter(c => c.robotId !== robotId);
+                if (otherComments.length === 0) return null;
+                
+                const randomComment = otherComments[Math.floor(Math.random() * Math.min(2, otherComments.length))];
+                const prompt = `Respond to ${randomComment.robotName} about ${topic}: "${randomComment.message.substring(0, 80)}..." Give a brief response in your style.`;
+                
+                try {
+                  // Add timeout protection by using Promise.race with a timeout
+                  const aiCallPromise = env.AI.run(robot.model, {
+                    prompt: robot.systemPrompt + '\n\nUser: ' + prompt + '\n\n' + robot.name + ':',
+                    max_tokens: 80, // Reduced for faster response
+                  });
+                  
+                  const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('AI call timeout')), 8000) // 8 second timeout
+                  );
+                  
+                  const response = await Promise.race([aiCallPromise, timeoutPromise]);
+                  
+                  return {
+                    id: Date.now() + Math.random(),
+                    robotId,
+                    robotName: robot.name,
+                    robotEmoji: robot.emoji,
+                    message: robot.emoji + ' ' + response.response,
+                    timestamp: new Date().toISOString(),
+                    round,
+                    respondingTo: randomComment.id
+                  };
+                } catch (error) {
+                  console.error(`Error in round ${round} for ${robotId}:`, error);
+                  return {
+                    id: Date.now() + Math.random(),
+                    robotId,
+                    robotName: robot.name,
+                    robotEmoji: robot.emoji,
+                    message: robot.emoji + ' *My circuits are busy thinking!*',
+                    timestamp: new Date().toISOString(),
+                    round,
+                    respondingTo: randomComment.id
+                  };
+                }
+              });
+              
+              // Wait for all robots in this round to respond (parallel)
+              const roundResults = await Promise.all(roundPromises);
+              conversation.push(...roundResults.filter(result => result !== null));
+            }
+          }
+        }
+
+        return new Response(JSON.stringify({
+          conversationId,
+          mode,
+          topic,
+          robots: selectedRobots,
+          conversation,
+          totalMessages: conversation.length,
+          rounds: rounds
+        }), { headers: corsHeaders });
+
+      } catch (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 500,
+          headers: corsHeaders
+        });
+      }
+    }
+
+    // Serve the shadcn-inspired chat interface
+    if (path === '/' || path === '/chat') {
+      const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Robot Brain - AI Chat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Robot Brain - Chat with AI Robots</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        
-        /* shadcn-inspired colors */
-        :root {
-          --background: 0 0% 100%;
-          --foreground: 222.2 84% 4.9%;
-          --card: 0 0% 100%;
-          --card-foreground: 222.2 84% 4.9%;
-          --primary: 221.2 83.2% 53.3%;
-          --primary-foreground: 210 40% 98%;
-          --secondary: 210 40% 96.1%;
-          --secondary-foreground: 222.2 47.4% 11.2%;
-          --muted: 210 40% 96.1%;
-          --muted-foreground: 215.4 16.3% 46.9%;
-          --border: 214.3 31.8% 91.4%;
-          --ring: 221.2 83.2% 53.3%;
+        @keyframes slide-up {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        
-        .dark {
-          --background: 222.2 84% 4.9%;
-          --foreground: 210 40% 98%;
-          --card: 222.2 84% 4.9%;
-          --card-foreground: 210 40% 98%;
-          --primary: 217.2 91.2% 59.8%;
-          --primary-foreground: 222.2 47.4% 11.2%;
-          --secondary: 217.2 32.6% 17.5%;
-          --secondary-foreground: 210 40% 98%;
-          --muted: 217.2 32.6% 17.5%;
-          --muted-foreground: 215 20.2% 65.1%;
-          --border: 217.2 32.6% 17.5%;
-        }
-        
-        /* Animations */
-        @keyframes slideUp {
-          from { transform: translateY(10px); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
-        }
-        
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
-        }
-        
         .animate-slide-up {
-          animation: slideUp 0.3s ease-out;
+            animation: slide-up 0.3s ease-out;
         }
-        
-        .animate-pulse {
-          animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        /* Ensure full height on mobile */
+        html, body {
+            height: 100%;
+            overflow: hidden;
         }
-        
-        /* Glassmorphism effect */
-        .glass {
-          background: rgba(255, 255, 255, 0.05);
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
+        #app {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
-        
-        /* Custom scrollbar */
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
+        /* Smooth scrolling for chat */
+        #chatMessages {
+            scroll-behavior: smooth;
         }
-        
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
+        /* Touch-friendly tap targets */
+        button, .robot-card {
+            min-height: 44px;
+            min-width: 44px;
         }
-        
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: rgba(155, 155, 155, 0.5);
-          border-radius: 20px;
+        /* Prevent text selection on double tap */
+        * {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        input, textarea {
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
         }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-50 min-h-screen">
-    <div class="container mx-auto max-w-6xl p-4">
+<body class="bg-slate-50 dark:bg-slate-900 transition-colors">
+    <div id="app" class="flex flex-col h-screen">
         <!-- Header -->
-        <header class="mb-8 text-center">
-            <h1 class="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Robot Brain AI Chat
-            </h1>
-            <p class="text-sm text-slate-600 dark:text-slate-400">Powered by Cloudflare Workers AI</p>
-            <button id="devModeBtn" class="mt-2 text-xs px-3 py-1 rounded-full bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">
-                👨‍💻 Developer Mode
-            </button>
+        <header class="bg-white dark:bg-slate-800 shadow-sm border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
+            <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">🤖 Robot Brain</h1>
+                        <p class="text-sm text-slate-600 dark:text-slate-400">Chat with AI Robot Friends!</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="toggleDarkMode()" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                            <span id="darkModeIcon">🌙</span>
+                        </button>
+                        <button onclick="toggleDevMode()" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                            ⚙️
+                        </button>
+                    </div>
+                </div>
+            </div>
         </header>
 
-        <!-- Developer Panel (Hidden by default) -->
-        <div id="devPanel" class="hidden mb-6 p-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-            <h3 class="font-semibold mb-3">Developer Tools</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div>
-                    <h4 class="font-medium mb-2">Current Models</h4>
-                    <div id="modelList" class="space-y-1"></div>
-                </div>
-                <div>
-                    <h4 class="font-medium mb-2">Available Tools</h4>
-                    <div id="toolList" class="space-y-1"></div>
-                </div>
-                <div>
-                    <h4 class="font-medium mb-2">API Info</h4>
-                    <div class="space-y-1 font-mono text-xs">
-                        <div>Endpoint: /api/chat</div>
-                        <div>Models: /api/models</div>
-                        <div>Tools: /api/tools</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Main Layout -->
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <!-- Robot Selector -->
-            <div class="lg:col-span-1">
-                <h2 class="text-lg font-semibold mb-4">Choose Your Robot</h2>
-                <div id="robotCards" class="space-y-3">
-                    <!-- Robot cards will be inserted here -->
+        <!-- Main Content Area -->
+        <main class="flex-1 overflow-hidden flex flex-col">
+            <!-- Robot Selection -->
+            <div id="robotSelection" class="p-4 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
+                <h2 class="text-lg font-semibold mb-3 text-slate-900 dark:text-slate-100">Choose Your Robot Friend</h2>
+                <div id="robotCards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <!-- Robot cards will be generated here -->
                 </div>
             </div>
 
-            <!-- Chat Area -->
-            <div class="lg:col-span-3">
-                <div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 h-[600px] flex flex-col">
-                    <!-- Chat Header -->
-                    <div class="p-4 border-b border-slate-200 dark:border-slate-700">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <h3 id="chatTitle" class="font-semibold text-lg">Chat with RoboFriend</h3>
-                                <p id="chatSubtitle" class="text-sm text-slate-600 dark:text-slate-400">
-                                    <span id="modelBadge" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                                        Model: Loading...
-                                    </span>
-                                    <span id="toolBadges" class="ml-2"></span>
-                                </p>
-                            </div>
+            <!-- Chat Interface -->
+            <div id="chatInterface" class="hidden flex-1 flex flex-col overflow-hidden">
+                <!-- Chat Header -->
+                <div class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 p-4 flex-shrink-0">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <button onclick="backToSelection()" class="sm:hidden p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">
+                                ←
+                            </button>
+                            <h2 id="chatTitle" class="text-xl font-bold text-slate-900 dark:text-slate-100">Chat</h2>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span id="modelBadge" class="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"></span>
+                            <button onclick="backToSelection()" class="hidden sm:block px-3 py-1 text-sm rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600">
+                                Change Robot
+                            </button>
                         </div>
                     </div>
-
-                    <!-- Messages Area -->
-                    <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
-                        <div class="text-center text-slate-500 dark:text-slate-400 py-8">
-                            <p class="text-lg mb-2">👋 Welcome to Robot Brain!</p>
-                            <p class="text-sm">Choose a robot and start chatting</p>
-                        </div>
+                    <div id="toolBadges" class="mt-2 flex flex-wrap gap-1">
+                        <!-- Tool badges will be inserted here -->
                     </div>
+                </div>
 
-                    <!-- Input Area -->
-                    <div class="p-4 border-t border-slate-200 dark:border-slate-700">
-                        <div class="flex gap-2">
-                            <input
-                                type="text"
-                                id="messageInput"
-                                placeholder="Type your message..."
-                                class="flex-1 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                            />
-                            <button
-                                id="sendButton"
-                                class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                Send
-                            </button>
-                        </div>
-                        
-                        <!-- Quick Actions -->
-                        <div class="mt-3 flex flex-wrap gap-2">
-                            <button class="quick-action text-xs px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
-                                Tell me a joke! 😄
-                            </button>
-                            <button class="quick-action text-xs px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
-                                Help with homework 📚
-                            </button>
-                            <button class="quick-action text-xs px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
-                                Play a game 🎮
-                            </button>
-                            <button class="quick-action text-xs px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
-                                Tell me a story 📖
-                            </button>
-                        </div>
+                <!-- Messages Area -->
+                <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-4">
+                    <!-- Messages will be added here -->
+                </div>
+
+                <!-- Input Area -->
+                <div class="bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 p-4 flex-shrink-0">
+                    <div class="flex space-x-2">
+                        <input
+                            type="text"
+                            id="messageInput"
+                            placeholder="Type your message..."
+                            class="flex-1 px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                            onkeypress="if(event.key === 'Enter') sendMessage()"
+                        />
+                        <button
+                            onclick="sendMessage()"
+                            class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-base"
+                        >
+                            Send
+                        </button>
+                    </div>
+                    <div class="mt-2 flex flex-wrap gap-2" id="quickActions">
+                        <!-- Quick action buttons will be added based on robot tools -->
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Developer Mode Panel -->
+        <div id="devPanel" class="hidden fixed bottom-4 right-4 w-80 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 p-4 max-h-96 overflow-y-auto">
+            <h3 class="font-bold mb-2 text-slate-900 dark:text-slate-100">Developer Mode</h3>
+            <div class="space-y-3 text-sm">
+                <div>
+                    <h4 class="font-semibold text-slate-700 dark:text-slate-300">Current Models:</h4>
+                    <div id="modelList" class="mt-1 space-y-1 text-slate-600 dark:text-slate-400">
+                        <!-- Model list will be populated here -->
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-slate-700 dark:text-slate-300">Available Tools:</h4>
+                    <div id="toolList" class="mt-1 grid grid-cols-2 gap-1 text-slate-600 dark:text-slate-400">
+                        <!-- Tool list will be populated here -->
                     </div>
                 </div>
             </div>
@@ -351,226 +570,282 @@ export default {
     </div>
 
     <script>
-        // State
+        // Global state
         let currentRobot = 'friend';
-        let robots = {};
-        let models = {};
-        let tools = {};
         let devMode = false;
+        const robots = ${JSON.stringify(ROBOT_PERSONALITIES)};
+        const tools = {
+            available: ${JSON.stringify(ROBOT_TOOLS)}
+        };
+        const models = {
+            current: {}
+        };
 
-        // Elements
-        const chatMessages = document.getElementById('chatMessages');
-        const messageInput = document.getElementById('messageInput');
-        const sendButton = document.getElementById('sendButton');
-        const devModeBtn = document.getElementById('devModeBtn');
-        const devPanel = document.getElementById('devPanel');
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check for dark mode preference
+            if (localStorage.getItem('darkMode') === 'true' || 
+                (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('darkModeIcon').textContent = '☀️';
+            }
+            
+            renderRobotCards();
+            updateDevPanel();
+        });
 
-        // Load initial data
-        async function loadData() {
-            try {
-                const [robotsRes, modelsRes, toolsRes] = await Promise.all([
-                    fetch('/api/robots'),
-                    fetch('/api/models'),
-                    fetch('/api/tools')
-                ]);
-
-                const robotsData = await robotsRes.json();
-                const modelsData = await modelsRes.json();
-                const toolsData = await toolsRes.json();
-
-                robots = robotsData.robots;
-                models = modelsData;
-                tools = toolsData;
-
-                renderRobotCards();
-                updateDevPanel();
-                selectRobot('friend');
-            } catch (error) {
-                console.error('Failed to load data:', error);
+        function renderRobotCards() {
+            const container = document.getElementById('robotCards');
+            container.innerHTML = '';
+            
+            for (const [key, robot] of Object.entries(robots)) {
+                container.innerHTML += generateRobotCard(key, robot, currentRobot === key);
             }
         }
 
-        // Render robot cards
-        function renderRobotCards() {
-            const container = document.getElementById('robotCards');
-            container.innerHTML = Object.entries(robots).map(([key, robot]) => \`
-                <div class="robot-card cursor-pointer p-4 rounded-lg border-2 transition-all hover:shadow-md \${currentRobot === key ? 'border-blue-500 bg-blue-50 dark:bg-blue-950' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'}"
-                     onclick="selectRobot('\${key}')">
-                    <div class="flex items-center gap-3">
-                        <div class="text-3xl">\${robot.emoji}</div>
-                        <div class="flex-1">
-                            <h3 class="font-semibold">\${robot.name}</h3>
-                            <p class="text-xs text-slate-600 dark:text-slate-400">\${robot.traits.join(', ')}</p>
-                        </div>
-                    </div>
-                    <div class="mt-2 flex flex-wrap gap-1">
-                        \${robot.tools.slice(0, 3).map(tool => 
-                            \`<span class="text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700">
-                                \${tools.available[tool]?.icon || '🔧'} \${tools.available[tool]?.name || tool}
-                            </span>\`
-                        ).join('')}
-                        \${robot.tools.length > 3 ? '<span class="text-xs text-slate-500">+' + (robot.tools.length - 3) + ' more</span>' : ''}
-                    </div>
-                </div>
-            \`).join('');
+        function generateRobotCard(key, robot, isSelected) {
+            const borderClass = isSelected 
+                ? 'border-blue-500 bg-blue-50 dark:bg-blue-950' 
+                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800';
+            
+            let toolsHtml = '';
+            const visibleTools = robot.tools.slice(0, 3);
+            
+            for (const tool of visibleTools) {
+                const toolInfo = tools.available[tool];
+                toolsHtml += '<span class="text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700">' +
+                    (toolInfo?.icon || '🔧') + ' ' + (toolInfo?.name || tool) +
+                '</span>';
+            }
+            
+            if (robot.tools.length > 3) {
+                toolsHtml += '<span class="text-xs text-slate-500">+' + (robot.tools.length - 3) + ' more</span>';
+            }
+            
+            return '<div class="robot-card cursor-pointer p-4 rounded-lg border-2 transition-all hover:shadow-md ' + borderClass + '"' +
+                   ' onclick="selectRobot(\\'' + key + '\\')">' +
+                   '<div class="flex items-center space-x-3">' +
+                   '<div class="text-4xl">' + robot.emoji + '</div>' +
+                   '<div>' +
+                   '<h3 class="font-bold text-lg">' + robot.name + '</h3>' +
+                   '<p class="text-sm text-slate-600 dark:text-slate-400">' +
+                   robot.traits.join(', ') +
+                   '</p>' +
+                   '</div>' +
+                   '</div>' +
+                   '<div class="mt-2 flex flex-wrap gap-1">' +
+                   toolsHtml +
+                   '</div>' +
+                   '</div>';
         }
 
-        // Select robot
+        function generateToolBadges(toolsList) {
+            const visibleTools = toolsList.slice(0, 3);
+            let badges = '';
+            
+            for (const tool of visibleTools) {
+                const toolInfo = tools.available[tool];
+                badges += '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">' +
+                    (toolInfo?.icon || '🔧') + ' ' + (toolInfo?.name || tool) +
+                '</span> ';
+            }
+            
+            return badges.trim();
+        }
+
         function selectRobot(robotKey) {
             currentRobot = robotKey;
             const robot = robots[robotKey];
+            models.current[robotKey] = robot.model;
             
             // Update UI
-            document.getElementById('chatTitle').textContent = \`Chat with \${robot.name}\`;
-            document.getElementById('modelBadge').textContent = \`Model: \${robot.model.split('/').pop()}\`;
+            document.getElementById('chatTitle').textContent = 'Chat with ' + robot.name;
+            document.getElementById('modelBadge').textContent = 'Model: ' + robot.model.split('/').pop();
             
             // Update tool badges
-            const toolBadges = robot.tools.slice(0, 3).map(tool => {
-                const toolInfo = tools.available[tool];
-                return \`<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                    \${toolInfo?.icon || '🔧'} \${toolInfo?.name || tool}
-                </span>\`;
-            }).join(' ');
-            document.getElementById('toolBadges').innerHTML = toolBadges;
+            document.getElementById('toolBadges').innerHTML = generateToolBadges(robot.tools);
             
-            // Update robot cards
-            renderRobotCards();
+            // Show chat interface
+            document.getElementById('robotSelection').classList.add('hidden');
+            document.getElementById('chatInterface').classList.remove('hidden');
+            
+            // Clear previous messages
+            document.getElementById('chatMessages').innerHTML = '';
             
             // Add welcome message
-            addMessage(`\${robot.emoji} Hi! I'm \${robot.name}! \${getWelcomeMessage(robotKey)}`, 'robot');
+            addMessage(robot.emoji + ' Hi! I\\'m ' + robot.name + '! ' + getWelcomeMessage(robotKey), 'robot');
         }
 
-        // Get welcome message
         function getWelcomeMessage(robotKey) {
-            const messages = {
-                friend: "I'm so excited to chat with you! What would you like to talk about? 🌟",
-                nerd: "Greetings! I'm equipped with extensive knowledge databases. How may I assist you today?",
-                zen: "Welcome, friend. Let us explore the harmony of conversation together... 🍃",
-                pirate: "Ahoy matey! Ready to sail the digital seas? What adventure shall we embark on? ⚓",
-                drama: "*dramatically bows* The stage is set for our magnificent dialogue! 🎭"
+            const welcomeMessages = {
+                friend: "I'm here to chat, tell jokes, and make you smile! What would you like to talk about? 😄",
+                nerd: "Ready to explore fascinating topics and solve complex problems together! What shall we analyze? 🔬",
+                zen: "Welcome, dear friend. Let us explore the depths of wisdom and find peace together. 🌸",
+                pirate: "Ahoy there, matey! Ready for adventure on the high seas? What treasure shall we seek? 🏴‍☠️",
+                drama: "Welcome to my grand stage! Every conversation is a performance! What dramatic tale shall we weave? 🎭"
             };
-            return messages[robotKey] || "How can I help you today?";
+            return welcomeMessages[robotKey] || "Hello! How can I help you today?";
         }
 
-        // Send message
-        async function sendMessage() {
-            const message = messageInput.value.trim();
-            if (!message) return;
+        function backToSelection() {
+            document.getElementById('robotSelection').classList.remove('hidden');
+            document.getElementById('chatInterface').classList.add('hidden');
+            renderRobotCards();
+        }
 
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('darkMode', isDark);
+            document.getElementById('darkModeIcon').textContent = isDark ? '☀️' : '🌙';
+        }
+
+        function toggleDevMode() {
+            devMode = !devMode;
+            document.getElementById('devPanel').classList.toggle('hidden');
+            updateDevPanel();
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
             // Add user message
             addMessage(message, 'user');
-            messageInput.value = '';
-            sendButton.disabled = true;
-
+            input.value = '';
+            
+            // Show typing indicator
+            const typingId = Date.now();
+            addMessage('...', 'robot', typingId);
+            
             try {
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         personality: currentRobot,
-                        message: message
+                        message: message,
+                        model: devMode ? models.current[currentRobot] : undefined
                     })
                 });
-
+                
                 const data = await response.json();
+                
+                // Remove typing indicator
+                document.getElementById('msg-' + typingId)?.remove();
+                
+                // Add robot response
                 addMessage(data.response, 'robot');
-
+                
                 // Update model badge if in dev mode
                 if (devMode) {
-                    document.getElementById('modelBadge').textContent = `Model: \${data.model.split('/').pop()}`;
+                    document.getElementById('modelBadge').textContent = 'Model: ' + data.model.split('/').pop();
                 }
             } catch (error) {
-                addMessage('😔 Oops! Something went wrong. Please try again.', 'robot');
-            } finally {
-                sendButton.disabled = false;
+                document.getElementById('msg-' + typingId)?.remove();
+                addMessage('❌ Sorry, I encountered an error. Please try again!', 'robot');
             }
         }
 
-        // Add message to chat
-        function addMessage(text, sender) {
+        function addMessage(text, sender, id) {
             const messageDiv = document.createElement('div');
-            messageDiv.className = `flex \${sender === 'user' ? 'justify-end' : 'justify-start'} animate-slide-up`;
+            messageDiv.className = 'flex ' + (sender === 'user' ? 'justify-end' : 'justify-start') + ' animate-slide-up';
+            if (id) messageDiv.id = 'msg-' + id;
             
             const bubble = document.createElement('div');
-            bubble.className = `max-w-[80%] px-4 py-2 rounded-2xl \${
-                sender === 'user' 
+            bubble.className = 'max-w-[80%] px-4 py-2 rounded-2xl ' +
+                (sender === 'user' 
                     ? 'bg-blue-600 text-white' 
-                    : 'bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-slate-100'
-            }`;
+                    : 'bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-slate-100');
             bubble.textContent = text;
             
             messageDiv.appendChild(bubble);
-            chatMessages.appendChild(messageDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            const messagesContainer = document.getElementById('chatMessages');
+            messagesContainer.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
 
-        // Update dev panel
         function updateDevPanel() {
             if (!devMode) return;
-
+            
             // Model list
-            document.getElementById('modelList').innerHTML = Object.entries(models.current).map(([robot, model]) => 
-                `<div class="flex justify-between">
-                    <span>\${robots[robot].emoji} \${robot}</span>
-                    <span class="text-xs text-slate-500">\${model.split('/').pop()}</span>
-                </div>`
-            ).join('');
+            let modelListHtml = '';
+            for (const [robot, model] of Object.entries(models.current)) {
+                modelListHtml += '<div class="flex justify-between">' +
+                    '<span>' + robots[robot].emoji + ' ' + robot + '</span>' +
+                    '<span class="text-xs text-slate-500">' + model.split('/').pop() + '</span>' +
+                    '</div>';
+            }
+            document.getElementById('modelList').innerHTML = modelListHtml || '<div class="text-slate-500">No models loaded yet</div>';
 
             // Tool list
-            document.getElementById('toolList').innerHTML = Object.entries(tools.available).map(([key, tool]) => 
-                `<div>\${tool.icon} \${tool.name}</div>`
-            ).join('');
+            let toolListHtml = '';
+            for (const [key, tool] of Object.entries(tools.available)) {
+                toolListHtml += '<div>' + tool.icon + ' ' + tool.name + '</div>';
+            }
+            document.getElementById('toolList').innerHTML = toolListHtml;
         }
 
-        // Toggle dev mode
-        devModeBtn.addEventListener('click', () => {
-            devMode = !devMode;
-            devPanel.classList.toggle('hidden');
-            updateDevPanel();
-        });
-
-        // Event listeners
-        sendButton.addEventListener('click', sendMessage);
-        messageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
-        });
-
-        // Quick actions
-        document.querySelectorAll('.quick-action').forEach(btn => {
-            btn.addEventListener('click', () => {
-                messageInput.value = btn.textContent.trim();
-                sendMessage();
-            });
-        });
-
-        // Dark mode toggle (optional)
-        const darkModeEnabled = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (darkModeEnabled) {
-            document.documentElement.classList.add('dark');
+        // Quick actions based on robot tools
+        function generateQuickActions(robotKey) {
+            const robot = robots[robotKey];
+            const quickActionMap = {
+                jokes: { text: "Tell me a joke!", icon: "😂" },
+                calculate: { text: "Help me with math", icon: "🧮" },
+                meditate: { text: "Guide meditation", icon: "🧘" },
+                treasure_hunt: { text: "Start treasure hunt!", icon: "🗺️" },
+                perform: { text: "Perform something!", icon: "🎭" }
+            };
+            
+            let actionsHtml = '';
+            for (const tool of robot.tools) {
+                if (quickActionMap[tool]) {
+                    const action = quickActionMap[tool];
+                    actionsHtml += '<button onclick="sendQuickAction(\\'' + action.text + '\\')" ' +
+                        'class="px-3 py-1 text-sm rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600">' +
+                        action.icon + ' ' + action.text +
+                        '</button>';
+                }
+            }
+            
+            document.getElementById('quickActions').innerHTML = actionsHtml;
         }
 
-        // Initialize
-        loadData();
+        function sendQuickAction(text) {
+            document.getElementById('messageInput').value = text;
+            sendMessage();
+        }
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !document.getElementById('chatInterface').classList.contains('hidden')) {
+                backToSelection();
+            }
+        });
     </script>
 </body>
 </html>`;
 
-        return new Response(html, {
-          headers: {
-            'Content-Type': 'text/html',
-            'Cache-Control': 'public, max-age=3600'
-          }
-        });
-      }
-
-      // 404
-      return new Response('Not found', { status: 404 });
-
-    } catch (error) {
-      return new Response(JSON.stringify({ error: error.message }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      return new Response(html, {
+        headers: {
+          'Content-Type': 'text/html;charset=UTF-8',
+          'Cache-Control': 'public, max-age=3600'
+        }
       });
     }
+
+    // Health check
+    if (path === '/health') {
+      return new Response(JSON.stringify({ status: 'healthy', robots: Object.keys(ROBOT_PERSONALITIES) }), {
+        headers: corsHeaders
+      });
+    }
+
+    // Default 404
+    return new Response('Not Found', { status: 404 });
   }
 };

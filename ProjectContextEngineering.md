@@ -234,12 +234,18 @@ const robotHasTool = (robot, toolId) => robot?.tools.includes(toolId)
    - Native binding in Workers
    - Multiple model support
    - Automatic scaling
+   - Template literal escaping (✅ Fixed)
 
-3. **Future Integrations**
-   - OpenAI API
-   - Anthropic Claude API
-   - Google Vertex AI
-   - Custom model endpoints
+3. **LangGraph Supervisor** (Next Implementation)
+   - Multi-agent orchestration
+   - Timeout handling
+   - Parallel execution
+
+4. **Future Integrations** (Using TDD)
+   - OpenAI API (Mock first, implement second)
+   - Anthropic Claude API (Test interface before integration)
+   - Google Vertex AI (TDD from the start)
+   - Custom model endpoints (Test-driven approach)
 
 ### Extension Mechanisms
 1. **Plugin System** (planned)
