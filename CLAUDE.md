@@ -187,5 +187,19 @@ Update the `model` field in robot personality or use model switcher in UI
 - [Docker Documentation](https://docs.docker.com/)
 - [FastAPI Documentation](https://fastapi.tiangolo.com/)
 
+## 📐 Development Methodologies
+
+### Test-Driven Development (TDD)
+- TDD - Test-Driven Development.
+- The TDD cycle follows three simple steps, often called "Red-Green-Refactor":
+  - Red - Write a failing test first (it fails because the code doesn't exist yet)
+  - Green - Write just enough code to make the test pass
+  - Refactor - Clean up the code while keeping tests passing
+- The mantra is: "Write the test first, then write code to make it pass"
+- Related terms:
+  - BDD (Behavior-Driven Development) - Similar but focuses on behavior descriptions
+  - ATDD (Acceptance Test-Driven Development) - Tests from user's perspective
+  - Test-First Development - Another name for TDD which is what we all about now as we develop fun projects like this to learn ourselves
+
 ---
 *This file helps AI assistants quickly understand the Robot Brain project structure and provide better assistance.*

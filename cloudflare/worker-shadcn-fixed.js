@@ -252,7 +252,7 @@ export default {
 
         const aiModel = model || robot.model;
         
-        const prompt = robot.systemPrompt + '\\n\\nUser: ' + message + '\\n\\n' + robot.name + ':';
+        const prompt = robot.systemPrompt + '\n\nUser: ' + message + '\n\n' + robot.name + ':';
 
         const response = await env.AI.run(aiModel, {
           prompt: prompt,
