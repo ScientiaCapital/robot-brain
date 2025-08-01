@@ -11,6 +11,9 @@ import os
 from robot_personality import create_robot, RobotPersonality
 from multi_robot_chat import RobotChatRoom
 
+# Import tool routes
+from src.api.tool_routes import router as tool_router
+
 # Initialize FastAPI
 app = FastAPI(title="Robot Brain API", version="1.0.0")
 
@@ -22,6 +25,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include tool routes
+app.include_router(tool_router)
 
 # Global robot instances
 robots: Dict[str, RobotPersonality] = {}
@@ -65,7 +71,11 @@ async def root():
             "/robots": "List all available robots",
             "/chat": "Chat with a specific robot",
             "/multi-chat": "Have robots chat with each other",
-            "/ws": "WebSocket for real-time chat"
+            "/ws": "WebSocket for real-time chat",
+            "/api/tools": "List available tools",
+            "/api/tools/email": "Send emails",
+            "/api/tools/scrape": "Scrape websites",
+            "/api/tools/database": "Database operations"
         }
     }
 

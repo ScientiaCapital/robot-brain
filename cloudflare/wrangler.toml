@@ -1,5 +1,5 @@
 name = "robot-brain"
-main = "worker-shadcn-fixed.js"
+main = "worker-shadcn.js"
 compatibility_date = "2024-01-01"
 
 [ai]
