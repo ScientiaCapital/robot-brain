@@ -98,7 +98,7 @@ def _add_production_endpoints(app: FastAPI) -> None:
             "timestamp": datetime.now(timezone.utc).isoformat()
         }
 
-    @app.get("/metrics")
+    @app.get("/metrics", response_class=PlainTextResponse)
     async def metrics() -> str:
         """Prometheus-style metrics endpoint for monitoring."""
         metrics_data = [
@@ -262,7 +262,7 @@ async def health_check() -> Dict[str, Any]:
 
 
 # Production metrics endpoint
-@app.get("/metrics")
+@app.get("/metrics", response_class=PlainTextResponse)
 async def metrics() -> str:
     """Prometheus-style metrics endpoint for monitoring."""
     metrics_data = [
