@@ -89,7 +89,7 @@ class RobotSupervisor:
                 logger.warning("SessionManager not available, memory features disabled")
                 self.memory_enabled = False
         
-    def validate_config(self, config: Dict[str, Any]):
+    def validate_config(self, config: Dict[str, Any]) -> None:
         """Validate supervisor configuration."""
         if "name" not in config:
             raise ValueError("Supervisor configuration must include 'name'")
@@ -476,8 +476,10 @@ class RobotSupervisor:
             return query
             
         try:
-            history = await self.session_manager.get_conversation_history()
-            return self._build_context_enhanced_query(query, history)
+            if self.session_manager is not None:
+                history = await self.session_manager.get_conversation_history()
+                return self._build_context_enhanced_query(query, history)
+            return query
             
         except Exception as e:
             logger.warning(f"Memory enhancement failed: {e}")
@@ -517,7 +519,7 @@ class RobotSupervisor:
             
         return query
     
-    async def _store_conversation_turn(self, query: str, result: SupervisorResult):
+    async def _store_conversation_turn(self, query: str, result: SupervisorResult) -> None:
         """
         🔧 REFACTOR: Optimized conversation storage with better error handling.
         Store conversation turn in memory with comprehensive metadata.
@@ -536,19 +538,20 @@ class RobotSupervisor:
         except Exception as e:
             logger.warning(f"Conversation storage failed: {e}")
     
-    async def _store_user_query(self, query: str, result: SupervisorResult):
+    async def _store_user_query(self, query: str, result: SupervisorResult) -> None:
         """🔧 REFACTOR: Extract user query storage logic."""
-        await self.session_manager.store_interaction(
-            role="user",
-            content=query,
-            metadata={
-                "agents_involved": result.agents_involved,
-                "delegation_strategy": self.delegation_strategy.value,
-                "timestamp": datetime.now().isoformat()
-            }
-        )
+        if self.session_manager is not None:
+            await self.session_manager.store_interaction(
+                role="user",
+                content=query,
+                metadata={
+                    "agents_involved": result.agents_involved,
+                    "delegation_strategy": self.delegation_strategy.value,
+                    "timestamp": datetime.now().isoformat()
+                }
+            )
     
-    async def _store_agent_responses(self, result: SupervisorResult):
+    async def _store_agent_responses(self, result: SupervisorResult) -> None:
         """🔧 REFACTOR: Extract agent response storage with rich metadata."""
         combined_response = " ".join(result.responses)
         
@@ -566,11 +569,12 @@ class RobotSupervisor:
         if result.workflow:
             metadata["workflow"] = result.workflow
         
-        await self.session_manager.store_interaction(
-            role="assistant", 
-            content=combined_response,
-            metadata=metadata
-        )
+        if self.session_manager is not None:
+            await self.session_manager.store_interaction(
+                role="assistant", 
+                content=combined_response,
+                metadata=metadata
+            )
 
 
 class VerticalSupervisor(RobotSupervisor):
@@ -587,9 +591,14 @@ class VerticalSupervisor(RobotSupervisor):
         self.vertical = vertical
         self.workflow_type = config.get("workflow_type", "default")
     
-    async def execute(self, query: str, **kwargs) -> Dict[str, Any]:
+    async def execute(
+        self, 
+        query: str, 
+        parallel: bool = False,
+        specific_agents: Optional[List[str]] = None
+    ) -> Union[str, Dict[str, Any]]:
         """Execute vertical-specific workflow."""
-        result = await super().execute(query, **kwargs)
+        result = await super().execute(query, parallel=parallel, specific_agents=specific_agents)
         
         # Add vertical-specific analysis
         if isinstance(result, dict):

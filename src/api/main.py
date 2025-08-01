@@ -82,11 +82,11 @@ def create_production_app() -> FastAPI:
     return app
 
 
-def _add_production_endpoints(app: FastAPI):
+def _add_production_endpoints(app: FastAPI) -> None:
     """Add production-specific endpoints to the app."""
     
     @app.get("/health")
-    async def health_check():
+    async def health_check() -> Dict[str, str]:
         """Health check endpoint."""
         return {
             "status": "healthy",
@@ -96,7 +96,7 @@ def _add_production_endpoints(app: FastAPI):
         }
 
     @app.get("/metrics")
-    async def metrics():
+    async def metrics() -> str:
         """Prometheus-style metrics endpoint for monitoring."""
         metrics_data = [
             "# HELP http_requests_total Total HTTP requests",
@@ -223,7 +223,7 @@ class DatabaseToolRequest(BaseModel):
 
 # Startup event
 @app.on_event("startup")
-async def startup_event():
+async def startup_event() -> None:
     """Initialize connection pool on startup."""
     await connection_manager.create_pool()
     app.state.pool = connection_manager.get_pool()
@@ -233,13 +233,13 @@ async def startup_event():
 
 # Shutdown event
 @app.on_event("shutdown")
-async def shutdown_event():
+async def shutdown_event() -> None:
     """Close connection pool on shutdown."""
     await connection_manager.close_pool()
 
 # Health check
 @app.get("/health")
-async def health_check():
+async def health_check() -> Dict[str, str]:
     """Health check endpoint."""
     # Test database connection for production health checks
     database_connected = True
@@ -260,7 +260,7 @@ async def health_check():
 
 # Production metrics endpoint
 @app.get("/metrics")
-async def metrics():
+async def metrics() -> str:
     """Prometheus-style metrics endpoint for monitoring."""
     metrics_data = [
         "# HELP http_requests_total Total HTTP requests",
@@ -277,17 +277,17 @@ async def metrics():
 
 # API endpoints
 @app.get("/api/robots")
-async def get_robots():
+async def get_robots() -> Dict[str, Any]:
     """Get all available robot personalities."""
     return ROBOT_PERSONALITIES
 
 @app.get("/api/models")
-async def get_models():
+async def get_models() -> Dict[str, Any]:
     """Get available AI models."""
     return AI_MODELS
 
 @app.get("/api/tools")
-async def get_tools():
+async def get_tools() -> Dict[str, Any]:
     """Get available tools."""
     # Return only serializable data
     tools_info = {}
@@ -299,7 +299,7 @@ async def get_tools():
     return tools_info
 
 @app.post("/api/chat")
-async def chat(request: ChatRequest):
+async def chat(request: ChatRequest) -> Dict[str, Any]:
     """Chat with a robot personality."""
     # Validate personality
     if request.personality not in ROBOT_PERSONALITIES:
@@ -332,7 +332,7 @@ async def chat(request: ChatRequest):
     }
 
 @app.post("/api/multi-chat")
-async def multi_chat(request: MultiChatRequest):
+async def multi_chat(request: MultiChatRequest) -> Dict[str, Any]:
     """Multi-robot chat discussion."""
     responses = []
     
@@ -366,7 +366,7 @@ async def multi_chat(request: MultiChatRequest):
 
 # Tool endpoints
 @app.post("/api/tools/email")
-async def tool_email(request: EmailToolRequest):
+async def tool_email(request: EmailToolRequest) -> Dict[str, Any]:
     """Send an email using the email tool."""
     # For testing, return success
     return {
@@ -375,7 +375,7 @@ async def tool_email(request: EmailToolRequest):
     }
 
 @app.post("/api/tools/calculator")
-async def tool_calculator(request: CalculatorRequest):
+async def tool_calculator(request: CalculatorRequest) -> Dict[str, Any]:
     """Simple calculator tool."""
     try:
         # Safely evaluate simple math expressions
@@ -389,7 +389,7 @@ async def tool_calculator(request: CalculatorRequest):
         raise HTTPException(status_code=400, detail=f"Invalid expression: {str(e)}")
 
 @app.post("/api/tools/database")
-async def tool_database(request: DatabaseToolRequest):
+async def tool_database(request: DatabaseToolRequest) -> Dict[str, Any]:
     """Database operations."""
     # For testing, return success
     return {
@@ -398,7 +398,7 @@ async def tool_database(request: DatabaseToolRequest):
 
 # Static file serving (home page)
 @app.get("/")
-async def home():
+async def home() -> str:
     """Serve the home page."""
     html_content = """
     <!DOCTYPE html>
@@ -416,7 +416,7 @@ async def home():
 
 # Production error handler
 @app.exception_handler(Exception)
-async def general_exception_handler(request: Request, exc: Exception):
+async def general_exception_handler(request: Request, exc: Exception) -> Dict[str, str]:
     """Handle general exceptions (production-safe)."""
     # In production, don't leak stack traces or sensitive information
     environment = os.getenv("ENVIRONMENT", "development")

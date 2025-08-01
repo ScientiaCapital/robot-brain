@@ -8,13 +8,13 @@ import uuid
 from datetime import datetime, timezone
 from typing import Dict, List, Any, Optional
 import asyncpg
-from asyncpg import Pool
+import asyncpg.pool
 
 
 class NeonClient:
     """Client for interacting with Neon PostgreSQL database."""
     
-    def __init__(self, pool: Pool):
+    def __init__(self, pool: Any):
         """Initialize with a connection pool."""
         self.pool = pool
     

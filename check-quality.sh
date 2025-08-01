@@ -42,17 +42,18 @@ log_section() {
 run_python_checks() {
     log_section "Python Backend Quality Checks"
     
-    # For now, skip Python tests in git hooks (they can be run manually)
-    log_warning "Skipping Python tests in git hooks (run manually with 'python -m pytest')"
-    PYTHON_TESTS_PASSED=true
-    PYTHON_LINTING_PASSED=true
-    PYTHON_TYPING_PASSED=true
-    return
+    # Re-enabled Python quality checks for TDD-driven type safety restoration
     
     # Run Python linting (flake8)
     log_info "Running flake8 linting..."
     if command -v flake8 &> /dev/null; then
-        if timeout 15s flake8 src/ tests/ --count --select=E9,F63,F7,F82 --show-source --statistics; then
+        # Use gtimeout on macOS, timeout on Linux
+        TIMEOUT_CMD="timeout"
+        if command -v gtimeout &> /dev/null; then
+            TIMEOUT_CMD="gtimeout"
+        fi
+        
+        if $TIMEOUT_CMD 15s flake8 src/ tests/ --count --select=E9,F63,F7,F82 --show-source --statistics; then
             log_info "✅ Python linting: PASSED"
             PYTHON_LINTING_PASSED=true
         else
@@ -67,7 +68,7 @@ run_python_checks() {
     # Run Python type checking (mypy)
     log_info "Running mypy type checking..."
     if command -v mypy &> /dev/null; then
-        if timeout 20s mypy src/ --ignore-missing-imports --no-strict-optional; then
+        if $TIMEOUT_CMD 60s mypy src/ --ignore-missing-imports --no-strict-optional; then
             log_info "✅ Python typing: PASSED" 
             PYTHON_TYPING_PASSED=true
         else

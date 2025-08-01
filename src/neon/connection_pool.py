@@ -6,18 +6,18 @@ Connection pool management for Neon PostgreSQL.
 import os
 import asyncio
 import asyncpg
-from asyncpg import Pool
+import asyncpg.pool
 from typing import Optional, Dict, Any
 
 
 class ConnectionManager:
     """Manage PostgreSQL connection pool."""
     
-    def __init__(self):
-        self.pool: Optional[Pool] = None
+    def __init__(self) -> None:
+        self.pool: Optional[Any] = None
         self.connection_string = os.getenv("NEON_DATABASE_URL")
     
-    async def create_pool(self, min_size: int = 1, max_size: int = 10) -> Pool:
+    async def create_pool(self, min_size: int = 1, max_size: int = 10) -> Any:
         """Create connection pool."""
         if not self.connection_string:
             raise ValueError("NEON_DATABASE_URL not set in environment")
@@ -31,13 +31,13 @@ class ConnectionManager:
         
         return self.pool
     
-    async def close_pool(self):
+    async def close_pool(self) -> None:
         """Close connection pool."""
         if self.pool:
             await self.pool.close()
             self.pool = None
     
-    def get_pool(self) -> Pool:
+    def get_pool(self) -> Any:
         """Get existing pool."""
         if not self.pool:
             raise RuntimeError("Connection pool not initialized")
@@ -66,7 +66,7 @@ def get_production_pool_config() -> Dict[str, Any]:
     }
 
 
-async def create_resilient_connection(connection_string: str, max_retries: int = 3) -> Pool:
+async def create_resilient_connection(connection_string: str, max_retries: int = 3) -> Any:
     """
     Create resilient connection with retry logic for scale-to-zero scenarios.
     Context7 best practice: Handle Neon compute scale-to-zero gracefully.
@@ -112,7 +112,7 @@ def validate_ssl_config(ssl_config: Dict[str, str]) -> bool:
     return True
 
 
-async def get_production_pool() -> Pool:
+async def get_production_pool() -> Any:
     """
     Get production database connection pool.
     """
@@ -123,13 +123,13 @@ async def get_production_pool() -> Pool:
     return await create_resilient_connection(database_url)
 
 
-async def test_connection_health(pool: Pool) -> bool:
+async def test_connection_health(pool: Any) -> bool:
     """
     Test database connection health for monitoring.
     """
     try:
         async with pool.acquire() as conn:
             result = await conn.fetchval("SELECT 1")
-            return result == 1
+            return bool(result == 1)
     except Exception:
         return False

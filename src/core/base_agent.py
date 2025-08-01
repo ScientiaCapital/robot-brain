@@ -108,7 +108,7 @@ class BaseAgent(ABC):
 _agent_registry: Dict[str, Type[BaseAgent]] = {}
 
 
-def register_agent_type(name: str, agent_class: Type[BaseAgent]):
+def register_agent_type(name: str, agent_class: Type[BaseAgent]) -> None:
     """Register an agent type for dynamic creation."""
     _agent_registry[name] = agent_class
 

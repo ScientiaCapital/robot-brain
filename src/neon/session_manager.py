@@ -7,13 +7,13 @@ import json
 from datetime import datetime, timedelta, timezone
 from typing import Dict, Any, Optional, List
 import asyncpg
-from asyncpg import Pool
+import asyncpg.pool
 
 
 class SessionManager:
     """Manage sessions using PostgreSQL JSONB storage."""
     
-    def __init__(self, pool: Pool):
+    def __init__(self, pool: Any):
         """Initialize with a connection pool."""
         self.pool = pool
     
@@ -54,7 +54,7 @@ class SessionManager:
                 )
                 
                 if row:
-                    return row["value"]
+                    return dict(row["value"]) if row["value"] else None
                 return None
         except Exception:
             return None
@@ -132,7 +132,7 @@ class SessionManager:
                 )
                 
                 # Build result dict
-                result = {key: None for key in keys}
+                result: Dict[str, Optional[Dict[str, Any]]] = {key: None for key in keys}
                 for row in rows:
                     result[row["key"]] = row["value"]
                 

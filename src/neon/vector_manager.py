@@ -9,13 +9,13 @@ import hashlib
 from datetime import datetime, timezone
 from typing import Dict, List, Any, Optional
 import asyncpg
-from asyncpg import Pool
+import asyncpg.pool
 
 
 class VectorManager:
     """Manage vector embeddings using pgvector."""
     
-    def __init__(self, pool: Pool):
+    def __init__(self, pool: Any):
         """Initialize with a connection pool."""
         self.pool = pool
         self.embedding_dim = 768  # Standard dimension for embeddings
