@@ -102,4 +102,57 @@ We've followed strict TDD principles:
 - **Pre-commit**: Automated hooks prevent bad commits
 - **CI/CD**: Every push verified automatically
 
+## 🚀 Production-Ready Neon Configuration
+
+### Connection Pooling Best Practices
+Based on Neon's production guidelines and Context7 patterns:
+
+```python
+# Connection Pool Configuration
+import asyncpg
+import os
+
+async def create_neon_pool():
+    """Create optimized connection pool for production"""
+    return await asyncpg.create_pool(
+        os.getenv('DATABASE_URL'),
+        min_size=1,           # Minimum connections
+        max_size=10,          # Maximum connections  
+        command_timeout=60,   # Query timeout
+        server_settings={
+            'application_name': 'robot-brain',
+        }
+    )
+
+# Usage with proper resource management
+async with pool.acquire() as conn:
+    result = await conn.fetchval('SELECT NOW();')
+```
+
+### Environment Configuration
+```bash
+# Production .env setup
+DATABASE_URL="postgresql://user:pass@ep-example-pooler.region.aws.neon.tech/dbname?sslmode=require&channel_binding=require&connect_timeout=10"
+NEON_API_KEY="napi_your_api_key_here"
+NEON_PROJECT_ID="your-project-id"
+```
+
+### Error Handling Patterns
+```python
+# Robust error handling for Neon connections
+async def safe_db_operation(pool, query, *args):
+    """Execute database operations with proper error handling"""
+    try:
+        async with pool.acquire() as conn:
+            return await conn.fetchval(query, *args)
+    except asyncpg.exceptions.ConnectionDoesNotExistError:
+        # Handle compute scale-to-zero
+        await asyncio.sleep(2)  # Wait for compute to wake
+        async with pool.acquire() as conn:
+            return await conn.fetchval(query, *args)
+    except asyncpg.exceptions.InterfaceError as e:
+        logger.error(f"Database interface error: {e}")
+        raise
+```
+
 [... rest of the existing content remains the same ...]

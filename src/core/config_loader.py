@@ -1,10 +1,13 @@
 """
 Configuration loader for dynamic vertical and tool loading.
 Supports YAML and JSON configurations.
+🟢 TDD GREEN Phase: Enhanced with production configuration support.
 """
 
 import yaml
 import json
+import os
+from pathlib import Path
 from typing import Dict, Any, List, Optional, Type
 from dataclasses import dataclass, field
 import importlib
@@ -163,3 +166,114 @@ def export_vertical_config(vertical: VerticalConfig) -> Dict[str, Any]:
             for workflow in vertical.workflows.values()
         ]
     }
+
+
+# 🟢 TDD GREEN Phase: Production configuration functions
+
+def load_production_config() -> Dict[str, Any]:
+    """
+    Load production configuration based on environment variables.
+    Context7 best practices: Secure, environment-specific settings.
+    """
+    environment = os.getenv("ENVIRONMENT", "development")
+    
+    config = {
+        "debug": False if environment == "production" else True,
+        "log_level": os.getenv("LOG_LEVEL", "INFO"),
+        "environment": environment,
+        "secret_key": os.getenv("SECRET_KEY", "dev-secret-key"),
+    }
+    
+    # CORS configuration based on environment
+    if environment == "production":
+        cors_origins_str = os.getenv("CORS_ORIGINS", "[]")
+        # Parse the string as a list (simple implementation)
+        import ast
+        try:
+            config["cors_origins"] = ast.literal_eval(cors_origins_str)
+        except (ValueError, SyntaxError):
+            config["cors_origins"] = ["https://robot-brain.example.com"]
+    else:
+        config["cors_origins"] = ["http://localhost:3000", "http://127.0.0.1:3000"]
+    
+    # Trusted hosts for production
+    if environment == "production":
+        trusted_hosts_str = os.getenv("TRUSTED_HOSTS", '["robot-brain.example.com"]')
+        try:
+            config["trusted_hosts"] = ast.literal_eval(trusted_hosts_str)
+        except (ValueError, SyntaxError):
+            config["trusted_hosts"] = ["robot-brain.example.com"]
+    else:
+        config["trusted_hosts"] = ["localhost", "127.0.0.1"]
+    
+    return config
+
+
+def load_environment_file(env_file: str = None) -> None:
+    """
+    Load environment variables from .env file.
+    """
+    if env_file is None:
+        environment = os.getenv("ENVIRONMENT", "development")
+        env_file = f".env.{environment}"
+    
+    env_path = Path(env_file)
+    if not env_path.exists():
+        return
+    
+    with open(env_path, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                key, value = line.split('=', 1)
+                # Remove quotes if present
+                value = value.strip('"\'')
+                os.environ[key] = value
+
+
+def get_database_config() -> Dict[str, Any]:
+    """
+    Get database configuration with Context7 best practices.
+    """
+    database_url = os.getenv("DATABASE_URL")
+    
+    if not database_url:
+        raise ValueError("DATABASE_URL environment variable is required")
+    
+    config = {
+        "database_url": database_url,
+        "uses_pooler": "-pooler" in database_url,
+        "ssl_enabled": "sslmode=require" in database_url,
+        "channel_binding": "channel_binding=require" in database_url,
+    }
+    
+    return config
+
+
+def validate_production_config() -> Dict[str, bool]:
+    """
+    Validate that production configuration is secure and complete.
+    """
+    validation_results = {}
+    
+    # Check required environment variables
+    required_vars = ["DATABASE_URL", "NEON_API_KEY", "NEON_PROJECT_ID", "ENVIRONMENT"]
+    for var in required_vars:
+        validation_results[f"has_{var.lower()}"] = os.getenv(var) is not None
+    
+    # Check database configuration
+    try:
+        db_config = get_database_config()
+        validation_results["uses_pooler_endpoint"] = db_config["uses_pooler"]
+        validation_results["ssl_enabled"] = db_config["ssl_enabled"]
+        validation_results["channel_binding_enabled"] = db_config["channel_binding"]
+    except Exception:
+        validation_results["database_config_valid"] = False
+    
+    # Check production-specific settings
+    environment = os.getenv("ENVIRONMENT", "development")
+    if environment == "production":
+        validation_results["debug_disabled"] = os.getenv("DEBUG", "true").lower() == "false"
+        validation_results["has_secret_key"] = len(os.getenv("SECRET_KEY", "")) > 20
+    
+    return validation_results

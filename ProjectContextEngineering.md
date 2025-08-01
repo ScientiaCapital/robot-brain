@@ -233,6 +233,53 @@ const robotHasTool = (robot, toolId) => robot?.tools.includes(toolId)
 └─────────────────┘
 ```
 
+### 6. Production Configuration Patterns
+
+**Connection Pool Management**:
+```python
+# Production-ready connection configuration
+from src.neon.connection_pool import ConnectionManager
+
+class NeonConnectionManager:
+    def __init__(self):
+        self.pool_config = {
+            'min_size': 1,
+            'max_size': 10,
+            'command_timeout': 60,
+            'server_settings': {
+                'application_name': 'robot-brain-prod'
+            }
+        }
+    
+    async def create_optimized_pool(self):
+        # Pooled connection string for high concurrency
+        connection_string = os.getenv('DATABASE_URL')  # Contains -pooler
+        return await asyncpg.create_pool(connection_string, **self.pool_config)
+```
+
+**Environment-Specific Deployment**:
+```bash
+# Development
+DATABASE_URL="postgresql://user:pass@endpoint.region.aws.neon.tech/db"
+
+# Production (with pooler for high concurrency)
+DATABASE_URL="postgresql://user:pass@endpoint-pooler.region.aws.neon.tech/db?sslmode=require&connect_timeout=10"
+```
+
+**Scale-to-Zero Handling**:
+```python
+async def handle_compute_wakeup(func):
+    """Decorator to handle Neon compute scale-to-zero scenarios"""
+    async def wrapper(*args, **kwargs):
+        try:
+            return await func(*args, **kwargs)
+        except (ConnectionDoesNotExistError, InterfaceError):
+            # Wait for compute to wake up, then retry
+            await asyncio.sleep(2)
+            return await func(*args, **kwargs)
+    return wrapper
+```
+
 ## 🔐 Security Considerations
 
 ### Input Validation

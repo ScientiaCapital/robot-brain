@@ -1,0 +1,10 @@
+{
+  "timestamp": 1754064997.3090088,
+  "library": "neon",
+  "topic": "connection-pooling",
+  "data": {
+    "patterns": [
+      "use -pooler endpoints"
+    ]
+  }
+}

@@ -1,7 +1,7 @@
 # Robot Brain Project Makefile
 # TDD-driven development commands
 
-.PHONY: help install test lint type-check format quality clean docker-build docker-run deploy
+.PHONY: help install test lint type-check format quality clean deploy
 
 # Default target
 help:
@@ -29,12 +29,9 @@ help:
 	@echo "  make ts-lint         - Run ESLint only"
 	@echo "  make ts-type         - Run TypeScript checker"
 	@echo ""
-	@echo "Docker:"
-	@echo "  make docker-build    - Build Docker image"
-	@echo "  make docker-run      - Run Docker container"
-	@echo ""
-	@echo "Deployment:"
-	@echo "  make deploy          - Deploy to Cloudflare Workers"
+	@echo "Production:"
+	@echo "  make deploy          - Deploy to production"
+	@echo "  make test-production - Run production-specific tests"
 
 # Installation targets
 install:
@@ -68,19 +65,19 @@ quality: lint type-check test
 # Python-specific targets
 py-test:
 	@echo "Running Python tests..."
-	pytest cloudflare/tests/ -v --tb=short
+	pytest tests/ -v --tb=short
 
 py-lint:
 	@echo "Running flake8..."
-	flake8 cloudflare/ --count --statistics
+	flake8 src/ tests/ --count --statistics
 
 py-type:
 	@echo "Running mypy..."
-	mypy cloudflare/
+	mypy src/
 
 py-format:
 	@echo "Running black formatter..."
-	black cloudflare/
+	black src/ tests/
 
 # TypeScript-specific targets
 ts-test:
@@ -95,19 +92,10 @@ ts-type:
 	@echo "Running TypeScript type checker..."
 	npx tsc --noEmit
 
-# Docker targets
-docker-build:
-	@echo "Building Docker image..."
-	docker build -t robot-brain:latest .
-
-docker-run:
-	@echo "Running Docker container..."
-	docker-compose up
-
-# Deployment
+# Production Deployment
 deploy:
-	@echo "Deploying to Cloudflare Workers..."
-	npm run deploy
+	@echo "Deploying to production..."
+	@echo "Production deployment configuration needed"
 
 # Cleanup
 clean:
@@ -124,7 +112,7 @@ clean:
 tdd-red:
 	@echo "📝 TDD RED Phase: Write failing tests first!"
 	@echo "Create your test files in:"
-	@echo "  - Python: cloudflare/tests/test_*.py"
+	@echo "  - Python: tests/test_*.py"
 	@echo "  - TypeScript: src/__tests__/*.test.tsx"
 
 tdd-green:
@@ -134,3 +122,44 @@ tdd-green:
 tdd-refactor:
 	@echo "🔧 TDD REFACTOR Phase: Improve code quality!"
 	@echo "Run 'make quality' to ensure standards"
+
+# Context7 Integration Targets
+context7-check: context7-neon context7-langgraph context7-fastapi
+	@echo "✅ All Context7 compliance checks passed!"
+
+context7-neon:
+	@echo "🔍 Checking Neon PostgreSQL best practices..."
+	python scripts/context7_neon_check.py
+
+context7-langgraph:
+	@echo "🔍 Checking LangGraph supervisor patterns..."
+	python scripts/context7_langgraph_check.py
+
+context7-fastapi:
+	@echo "🔍 Checking FastAPI production patterns..."
+	python scripts/context7_fastapi_check.py
+
+context7-cache-info:
+	@echo "📊 Context7 cache information:"
+	python scripts/context7_cache.py info
+
+context7-cache-clear:
+	@echo "🧹 Clearing Context7 cache..."
+	python scripts/context7_cache.py clear
+
+# TDD Production Workflow
+tdd-production: context7-check quality test
+	@echo "🚀 TDD Production validation complete!"
+
+test-production:
+	@echo "🧪 Running production-specific tests..."
+	pytest tests/test_context7_hooks.py tests/test_production_config.py -v
+
+deploy-tdd: tdd-production
+	@echo "🚀 TDD-compliant deployment process..."
+	@echo "All checks passed - ready for deployment!"
+
+# Enhanced TDD compliance
+tdd-compliance:
+	@echo "🔍 Verifying TDD workflow compliance..."
+	python scripts/verify_tdd_compliance.py

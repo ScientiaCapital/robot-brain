@@ -60,3 +60,34 @@ repos:
     hooks:
       - id: markdownlint
         args: [--fix]
+
+  # Context7 Integration Hooks - TDD Best Practices
+  - repo: local
+    hooks:
+      - id: context7_neon_check
+        name: Context7 Neon Best Practices
+        entry: python scripts/context7_neon_check.py
+        language: system
+        files: \.py$
+        pass_filenames: false
+        
+      - id: context7_langgraph_check
+        name: Context7 LangGraph Patterns
+        entry: python scripts/context7_langgraph_check.py
+        language: system  
+        files: \.py$
+        pass_filenames: false
+        
+      - id: context7_fastapi_check
+        name: Context7 FastAPI Production
+        entry: python scripts/context7_fastapi_check.py
+        language: system
+        files: \.py$
+        pass_filenames: false
+        
+      - id: tdd_compliance_check
+        name: TDD Workflow Compliance
+        entry: python scripts/verify_tdd_compliance.py
+        language: system
+        files: \.py$
+        pass_filenames: false

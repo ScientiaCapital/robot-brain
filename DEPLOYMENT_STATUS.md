@@ -46,27 +46,26 @@ curl -X POST https://robot-brain.tkipper.workers.dev/api/chat \
 make up         # Start all services
 make restart    # Quick restart API (2-3 seconds)
 make test       # Run all tests
-make deploy-cf  # Deploy to Cloudflare
+make deploy     # Deploy to production
 ```
 
-### Docker Services
-- **Ollama**: Local LLM models (port 11434)
-- **Redis**: Caching and state (port 6379)
-- **MailHog**: Email testing (SMTP: 1025, Web UI: 8025)
-- **API**: Robot Brain API (port 8000)
+### Production Services
+- **Neon PostgreSQL**: Production database with connection pooling
+- **FastAPI**: Robot Brain API with production middleware
+- **Ollama**: Local LLM models for development
 
 ## 📊 Project Stats
 - **Tests**: 27/27 passing (100% coverage)
 - **TypeScript Errors**: 0 (down from 337)
 - **ESLint Warnings**: 0
-- **Deployment Time**: < 15 seconds to Cloudflare
+- **Database**: Neon PostgreSQL with production optimizations
 
 ## 🎯 Next Steps
-1. Complete local Docker setup for development
-2. Connect React UI to local API
+1. Complete production deployment with Neon PostgreSQL
+2. Connect React UI to production API
 3. Implement remaining tool integrations
-4. Add Cloudflare D1, KV, and Vectorize for persistence
+4. Add Context7 monitoring and alerting
 5. Implement LangGraph Supervisor in production
 
 ---
-*Kids can start playing with robots RIGHT NOW at https://robot-brain.tkipper.workers.dev!*
+*Production deployment will be available after completing Neon PostgreSQL setup.*

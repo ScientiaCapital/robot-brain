@@ -28,3 +28,9 @@ openpyxl==3.1.2  # For Excel processing
 pypdf==3.17.0  # For PDF processing
 sqlalchemy==2.0.23  # For database operations
 pyyaml==6.0.1  # For YAML configuration
+
+# Neon/PostgreSQL dependencies
+asyncpg==0.30.0  # Async PostgreSQL driver
+psycopg[binary]==3.2.9  # PostgreSQL adapter with binary support
+pgvector==0.4.1  # Vector similarity search for PostgreSQL
+numpy==2.3.2  # Required by pgvector

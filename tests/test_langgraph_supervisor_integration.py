@@ -31,11 +31,10 @@ class TestRealLLMIntegration:
         }
     
     @pytest.fixture
-    def real_cloudflare_config(self):
-        """Configuration for real Cloudflare Workers AI."""
+    def real_ai_config(self):
+        """Configuration for real AI models."""
         return {
-            "account_id": os.getenv("CLOUDFLARE_ACCOUNT_ID"),
-            "api_token": os.getenv("CLOUDFLARE_API_TOKEN"),
+            "api_key": os.getenv("OPENAI_API_KEY"),
             "models": {
                 "default": "@cf/meta/llama-2-7b-chat-int8",
                 "smart": "@cf/mistral/mistral-7b-instruct-v0.1",

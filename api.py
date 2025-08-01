@@ -17,10 +17,10 @@ from src.api.tool_routes import router as tool_router
 # Initialize FastAPI
 app = FastAPI(title="Robot Brain API", version="1.0.0")
 
-# Add CORS middleware for Cloudflare Worker access
+# Add CORS middleware for legacy system Worker access
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify your Cloudflare domain
+    allow_origins=["*"],  # In production, specify your legacy system domain
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
