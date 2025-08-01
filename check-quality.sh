@@ -136,16 +136,9 @@ run_typescript_checks() {
     cd ..
 }
 
-# Run checks in parallel
-run_python_checks &
-PYTHON_PID=$!
-
-run_typescript_checks &
-TYPESCRIPT_PID=$!
-
-# Wait for both to complete
-wait $PYTHON_PID
-wait $TYPESCRIPT_PID
+# Run checks sequentially to preserve variables
+run_python_checks
+run_typescript_checks
 
 # Summary report
 log_section "Quality Check Summary"
