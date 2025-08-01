@@ -21,7 +21,10 @@ class TradingSupervisor(VerticalSupervisor):
         result = await self.execute(query)
         
         # Extract and format analysis
-        analysis = result.get("analysis", {})
+        if isinstance(result, dict):
+            analysis = result.get("analysis", {})
+        else:
+            analysis = {}
         
         return {
             "symbol": symbol,

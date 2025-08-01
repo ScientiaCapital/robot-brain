@@ -84,13 +84,14 @@ async def load_vertical_config(config_data: str) -> VerticalConfig:
 
 async def load_tools_config(config: Dict[str, Any]) -> Dict[str, BaseTool]:
     """Load tools from configuration."""
-    loaded_tools = {}
+    loaded_tools: Dict[str, BaseTool] = {}
     
     for tool_name, tool_config in config.items():
         # Get tool class
         class_name = tool_config["class"]
         
         # For testing, create simple tool implementations
+        tool: BaseTool
         if class_name == "EmailTool":
             class EmailTool(BaseTool):
                 def __init__(self, config: Dict[str, Any]):
@@ -105,7 +106,7 @@ async def load_tools_config(config: Dict[str, Any]) -> Dict[str, BaseTool]:
                     )
                     self.config = config
                     
-                async def _execute_impl(self, **kwargs) -> Dict[str, Any]:
+                async def _execute_impl(self, **kwargs: Any) -> Dict[str, Any]:
                     return {"sent": True, "to": kwargs.get("to")}
             
             tool = EmailTool(tool_config["config"])
@@ -123,7 +124,7 @@ async def load_tools_config(config: Dict[str, Any]) -> Dict[str, BaseTool]:
                     )
                     self.config = config
                     
-                async def _execute_impl(self, **kwargs) -> Dict[str, Any]:
+                async def _execute_impl(self, **kwargs: Any) -> Dict[str, Any]:
                     return {"sent": True, "channel": kwargs.get("channel")}
             
             tool = SlackTool(tool_config["config"])
@@ -177,7 +178,7 @@ def load_production_config() -> Dict[str, Any]:
     """
     environment = os.getenv("ENVIRONMENT", "development")
     
-    config = {
+    config: Dict[str, Any] = {
         "debug": False if environment == "production" else True,
         "log_level": os.getenv("LOG_LEVEL", "INFO"),
         "environment": environment,
@@ -209,7 +210,7 @@ def load_production_config() -> Dict[str, Any]:
     return config
 
 
-def load_environment_file(env_file: str = None) -> None:
+def load_environment_file(env_file: Optional[str] = None) -> None:
     """
     Load environment variables from .env file.
     """

@@ -42,7 +42,7 @@ class DatabaseTool(BaseTool):
         self.redis_port = redis_port
         self._client = None
     
-    def _get_client(self):
+    def _get_client(self) -> Any:
         """Get or create Redis client."""
         if not self._client:
             self._client = redis.Redis(
@@ -52,7 +52,7 @@ class DatabaseTool(BaseTool):
             )
         return self._client
     
-    async def _execute_impl(self, **kwargs) -> Dict[str, Any]:
+    async def _execute_impl(self, **kwargs: Any) -> Dict[str, Any]:
         """Execute database operation."""
         operation = kwargs.get("operation")
         key = kwargs.get("key")

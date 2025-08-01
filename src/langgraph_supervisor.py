@@ -293,9 +293,9 @@ class RobotSupervisor:
             )
             
             # Convert exceptions to error responses
-            results = []
+            results: List[AgentResponse] = []
             for i, response in enumerate(responses):
-                if isinstance(response, Exception):
+                if isinstance(response, BaseException):
                     results.append(AgentResponse(
                         agent_name=agents[i],
                         response="",
@@ -303,7 +303,7 @@ class RobotSupervisor:
                         success=False,
                         error=str(response)
                     ))
-                else:
+                elif isinstance(response, AgentResponse):
                     results.append(response)
             
             return results
@@ -637,13 +637,24 @@ class TradingSupervisor(VerticalSupervisor):
         result = await self.execute(query)
         
         # Format response for trading
-        return {
-            "symbol": symbol,
-            "market_sentiment": result["analysis"]["market_sentiment"],
-            "technical_analysis": result["analysis"]["technical_analysis"],
-            "risk_assessment": result["analysis"]["risk_assessment"],
-            "recommendation": "BUY" if "bullish" in str(result["analysis"]) else "HOLD"
-        }
+        if isinstance(result, dict) and "analysis" in result:
+            return {
+                "symbol": symbol,
+                "market_sentiment": result["analysis"].get("market_sentiment", "unknown"),
+                "technical_analysis": result["analysis"].get("technical_analysis", "unknown"),
+                "risk_assessment": result["analysis"].get("risk_assessment", "unknown"),
+                "recommendation": "BUY" if "bullish" in str(result["analysis"]) else "HOLD"
+            }
+        else:
+            # If result is a string or doesn't have analysis key
+            return {
+                "symbol": symbol,
+                "market_sentiment": "unknown",
+                "technical_analysis": "unknown",
+                "risk_assessment": "unknown",
+                "recommendation": "HOLD",
+                "raw_response": str(result)
+            }
 
 
 class PayrollSupervisor(VerticalSupervisor):

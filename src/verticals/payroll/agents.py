@@ -9,7 +9,7 @@ from src.core.base_agent import BaseAgent
 class PayrollProcessor(BaseAgent):
     """Processes payroll calculations and distributions."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             name="PayrollProcessor",
             description="Payroll processing and calculation",
@@ -43,7 +43,7 @@ class PayrollProcessor(BaseAgent):
 class TaxCalculator(BaseAgent):
     """Calculates taxes and deductions."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             name="TaxCalculator",
             description="Tax calculation and withholding",
@@ -66,7 +66,7 @@ class TaxCalculator(BaseAgent):
 class ComplianceAgent(BaseAgent):
     """Ensures payroll compliance with regulations."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             name="ComplianceAgent",
             description="Payroll compliance and audit",
@@ -88,7 +88,7 @@ class ComplianceAgent(BaseAgent):
 class ReportingAgent(BaseAgent):
     """Generates payroll reports and analytics."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             name="ReportingAgent",
             description="Payroll reporting and analytics",

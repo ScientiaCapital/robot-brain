@@ -41,7 +41,7 @@ class BaseTool(ABC):
         # Keep as dict for backward compatibility
         return params
     
-    def validate_parameters(self, **kwargs) -> None:
+    def validate_parameters(self, **kwargs: Any) -> None:
         """Validate provided parameters against tool definition."""
         # Check required parameters
         for param_name, param_def in self.parameters.items():
@@ -53,7 +53,7 @@ class BaseTool(ABC):
             if required and param_name not in kwargs:
                 raise ValueError(f"Missing required parameter: {param_name}")
     
-    async def execute(self, **kwargs) -> Dict[str, Any]:
+    async def execute(self, **kwargs: Any) -> Dict[str, Any]:
         """Execute the tool with given parameters.
         
         Args:
@@ -66,11 +66,11 @@ class BaseTool(ABC):
         return await self._execute_impl(**kwargs)
     
     @abstractmethod
-    async def _execute_impl(self, **kwargs) -> Dict[str, Any]:
+    async def _execute_impl(self, **kwargs: Any) -> Dict[str, Any]:
         """Implementation of tool execution - to be overridden by subclasses."""
         pass
     
-    async def __call__(self, **kwargs) -> Dict[str, Any]:
+    async def __call__(self, **kwargs: Any) -> Dict[str, Any]:
         """Allow tool to be called directly."""
         self.validate_parameters(**kwargs)
         return await self.execute(**kwargs)
@@ -105,10 +105,10 @@ class CompositeTool(BaseTool):
         )
         self.tools = {tool.name: tool for tool in tools}
         
-    async def _execute_impl(self, **kwargs) -> Dict[str, Any]:
+    async def _execute_impl(self, **kwargs: Any) -> Dict[str, Any]:
         """Execute composite tool by running tools in sequence."""
         steps = kwargs.get("steps", [])
-        results = {}
+        results: Dict[str, Any] = {}
         
         for step in steps:
             tool_name = step["tool"]

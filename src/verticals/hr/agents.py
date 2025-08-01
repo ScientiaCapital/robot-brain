@@ -9,7 +9,7 @@ from src.core.base_agent import BaseAgent
 class Recruiter(BaseAgent):
     """Handles recruitment and candidate sourcing."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             name="Recruiter",
             description="Candidate sourcing and recruitment",
@@ -48,7 +48,7 @@ class Recruiter(BaseAgent):
 class HRGeneralist(BaseAgent):
     """Handles general HR operations and employee relations."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             name="HRGeneralist",
             description="General HR operations and employee support",
@@ -69,7 +69,7 @@ class HRGeneralist(BaseAgent):
 class OnboardingAgent(BaseAgent):
     """Manages new employee onboarding process."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             name="OnboardingAgent",
             description="New employee onboarding and orientation",

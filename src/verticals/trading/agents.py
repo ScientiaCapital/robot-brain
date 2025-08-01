@@ -9,7 +9,7 @@ from src.core.base_agent import BaseAgent
 class MarketAnalyst(BaseAgent):
     """Analyzes market sentiment and news for trading decisions."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             name="MarketAnalyst",
             description="Analyzes market sentiment, news, and trends",
@@ -37,7 +37,7 @@ class MarketAnalyst(BaseAgent):
 class QuantResearcher(BaseAgent):
     """Performs quantitative analysis and backtesting."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             name="QuantResearcher",
             description="Quantitative analysis and strategy research",
@@ -61,7 +61,7 @@ class QuantResearcher(BaseAgent):
 class RiskManager(BaseAgent):
     """Manages trading risk and position sizing."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             name="RiskManager",
             description="Risk assessment and position management",
@@ -83,7 +83,7 @@ class RiskManager(BaseAgent):
 class ExecutionTrader(BaseAgent):
     """Handles trade execution and order management."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             name="ExecutionTrader",
             description="Trade execution and order management",

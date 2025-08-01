@@ -69,7 +69,7 @@ class BaseAgent(ABC):
                 return False
         return True
     
-    async def use_tool(self, tool_name: str, **kwargs) -> Dict[str, Any]:
+    async def use_tool(self, tool_name: str, **kwargs: Any) -> Dict[str, Any]:
         """Execute a tool by name with given parameters."""
         from .base_tool import ToolRegistry
         
@@ -127,7 +127,7 @@ async def create_agent_from_config(config: Dict[str, Any]) -> BaseAgent:
     if not agent_class:
         # For testing, create a simple implementation
         class ConfiguredAgent(BaseAgent):
-            async def execute(self, query: str, context: Optional[Dict] = None) -> Dict[str, Any]:
+            async def execute(self, query: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
                 return {"response": f"Configured agent response to: {query}"}
         
         agent_class = ConfiguredAgent

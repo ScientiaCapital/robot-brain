@@ -62,7 +62,7 @@ class EmailTool(BaseTool):
         self.from_address = from_address
         self.use_tls = use_tls
     
-    async def execute(self, **kwargs) -> Dict[str, Any]:
+    async def execute(self, **kwargs: Any) -> Dict[str, Any]:
         """Execute the tool with given parameters."""
         # Custom validation with specific error message
         for field in ["to", "subject", "body"]:
@@ -73,7 +73,7 @@ class EmailTool(BaseTool):
         self.validate_parameters(**kwargs)
         return await self._execute_impl(**kwargs)
     
-    async def _execute_impl(self, **kwargs) -> Dict[str, Any]:
+    async def _execute_impl(self, **kwargs: Any) -> Dict[str, Any]:
         """Execute email sending."""
         
         # Normalize recipients to list

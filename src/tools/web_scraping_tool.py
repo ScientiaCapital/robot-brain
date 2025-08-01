@@ -14,7 +14,7 @@ from src.core.base_tool import BaseTool, ToolParameter
 class WebScrapingTool(BaseTool):
     """Tool for scraping web content."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize WebScrapingTool."""
         super().__init__(
             name="web_scraping",
@@ -33,7 +33,7 @@ class WebScrapingTool(BaseTool):
             }
         )
     
-    async def _execute_impl(self, **kwargs) -> Dict[str, Any]:
+    async def _execute_impl(self, **kwargs: Any) -> Dict[str, Any]:
         """Execute web scraping."""
         url = kwargs.get("url")
         if not url:

@@ -59,7 +59,7 @@ class ToolResponse(BaseModel):
 
 # Email endpoint
 @router.post("/email", response_model=ToolResponse)
-async def send_email(request: EmailRequest) -> Dict[str, Any]:
+async def send_email(request: EmailRequest) -> ToolResponse:
     """Send an email using the EmailTool."""
     try:
         result = await email_tool.execute(
@@ -81,7 +81,7 @@ async def send_email(request: EmailRequest) -> Dict[str, Any]:
 
 # Web scraping endpoint
 @router.post("/scrape", response_model=ToolResponse)
-async def scrape_website(request: WebScrapingRequest) -> Dict[str, Any]:
+async def scrape_website(request: WebScrapingRequest) -> ToolResponse:
     """Scrape a website using the WebScrapingTool."""
     try:
         result = await web_scraping_tool.execute(
@@ -100,7 +100,7 @@ async def scrape_website(request: WebScrapingRequest) -> Dict[str, Any]:
 
 # Database endpoints
 @router.post("/database", response_model=ToolResponse)
-async def database_operation(request: DatabaseRequest) -> Dict[str, Any]:
+async def database_operation(request: DatabaseRequest) -> ToolResponse:
     """Perform a database operation using the DatabaseTool."""
     try:
         # Validate operation
@@ -139,7 +139,7 @@ async def database_operation(request: DatabaseRequest) -> Dict[str, Any]:
 
 # List available tools
 @router.get("/", response_model=Dict[str, Any])
-async def list_tools() -> Dict[str, List[Dict[str, str]]]:
+async def list_tools() -> Dict[str, Any]:
     """List all available tools and their capabilities."""
     return {
         "tools": {
@@ -182,7 +182,7 @@ async def list_tools() -> Dict[str, List[Dict[str, str]]]:
 @router.get("/health")
 async def tools_health() -> Dict[str, Any]:
     """Check health status of all tools."""
-    health_status = {
+    health_status: Dict[str, Any] = {
         "email": {
             "available": True,
             "config": {

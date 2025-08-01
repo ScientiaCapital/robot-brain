@@ -105,4 +105,4 @@ Desktop.ini
 *.key
 *.cert
 secrets/
-credentials/
+credentials/neon/

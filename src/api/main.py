@@ -34,7 +34,10 @@ def get_cors_origins() -> List[str]:
     """
     from src.core.config_loader import load_production_config
     config = load_production_config()
-    return config["cors_origins"]
+    cors_origins = config["cors_origins"]
+    if isinstance(cors_origins, list):
+        return cors_origins
+    return []
 
 
 def create_production_app() -> FastAPI:
@@ -86,7 +89,7 @@ def _add_production_endpoints(app: FastAPI) -> None:
     """Add production-specific endpoints to the app."""
     
     @app.get("/health")
-    async def health_check() -> Dict[str, str]:
+    async def health_check() -> Dict[str, Any]:
         """Health check endpoint."""
         return {
             "status": "healthy",
@@ -109,7 +112,7 @@ def _add_production_endpoints(app: FastAPI) -> None:
             "app_info{version=\"1.0.0\",service=\"robot-brain\"} 1"
         ]
         
-        return PlainTextResponse("\n".join(metrics_data), media_type="text/plain")
+        return "\n".join(metrics_data)
 
 
 # Create FastAPI app (development default)
@@ -239,7 +242,7 @@ async def shutdown_event() -> None:
 
 # Health check
 @app.get("/health")
-async def health_check() -> Dict[str, str]:
+async def health_check() -> Dict[str, Any]:
     """Health check endpoint."""
     # Test database connection for production health checks
     database_connected = True
@@ -273,7 +276,7 @@ async def metrics() -> str:
         "app_info{version=\"1.0.0\",service=\"robot-brain\"} 1"
     ]
     
-    return PlainTextResponse("\n".join(metrics_data), media_type="text/plain")
+    return "\n".join(metrics_data)
 
 # API endpoints
 @app.get("/api/robots")
@@ -292,10 +295,11 @@ async def get_tools() -> Dict[str, Any]:
     # Return only serializable data
     tools_info = {}
     for key, tool in ROBOT_TOOLS.items():
-        tools_info[key] = {
-            "name": tool["name"],
-            "description": tool["description"]
-        }
+        if isinstance(tool, dict):
+            tools_info[key] = {
+                "name": tool["name"],
+                "description": tool["description"]
+            }
     return tools_info
 
 @app.post("/api/chat")
@@ -398,7 +402,7 @@ async def tool_database(request: DatabaseToolRequest) -> Dict[str, Any]:
 
 # Static file serving (home page)
 @app.get("/")
-async def home() -> str:
+async def home() -> HTMLResponse:
     """Serve the home page."""
     html_content = """
     <!DOCTYPE html>
@@ -416,7 +420,7 @@ async def home() -> str:
 
 # Production error handler
 @app.exception_handler(Exception)
-async def general_exception_handler(request: Request, exc: Exception) -> Dict[str, str]:
+async def general_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     """Handle general exceptions (production-safe)."""
     # In production, don't leak stack traces or sensitive information
     environment = os.getenv("ENVIRONMENT", "development")
