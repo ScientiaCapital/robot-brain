@@ -1,0 +1,31 @@
+[flake8]
+# Strict flake8 configuration for TDD RED phase
+max-line-length = 88
+exclude = 
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    .pytest_cache,
+    node_modules,
+    examples,
+    build,
+    dist,
+    *.egg-info
+ignore = 
+    # We'll be strict - no ignores initially
+    # This ensures we see ALL issues (RED phase)
+per-file-ignores =
+    # Allow imports at bottom of __init__.py
+    __init__.py:E402
+max-complexity = 10
+# Enable additional strictness
+extend-ignore = 
+# Require docstrings
+docstring-convention = google
+# Enable all default warnings
+select = E,W,F,C,N
+# Additional plugins could be added:
+# - flake8-docstrings
+# - flake8-annotations
+# - flake8-black

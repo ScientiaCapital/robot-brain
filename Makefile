@@ -1,204 +1,136 @@
-# Robot Brain Makefile for Rapid Development
-# ==========================================
+# Robot Brain Project Makefile
+# TDD-driven development commands
 
-# Variables
-DOCKER = /Applications/Docker.app/Contents/Resources/bin/docker
-DOCKER_COMPOSE = $(DOCKER) compose
-PYTHON = python3
-NPM = npm
-PYTEST = pytest
-
-# Colors for output
-GREEN = \033[0;32m
-RED = \033[0;31m
-YELLOW = \033[0;33m
-NC = \033[0m # No Color
+.PHONY: help install test lint type-check format quality clean docker-build docker-run deploy
 
 # Default target
-.DEFAULT_GOAL := help
-
-# Help command
-.PHONY: help
 help:
-	@echo "$(GREEN)Robot Brain Development Commands$(NC)"
-	@echo "================================="
-	@echo "$(YELLOW)Docker Commands:$(NC)"
-	@echo "  make up              - Start all services (Docker)"
-	@echo "  make down            - Stop all services"
-	@echo "  make restart         - Quick restart API only (2-3 seconds)"
-	@echo "  make logs            - Show logs for all services"
-	@echo "  make logs-api        - Show API logs only"
+	@echo "Robot Brain Development Commands:"
 	@echo ""
-	@echo "$(YELLOW)Testing Commands:$(NC)"
-	@echo "  make test            - Run all tests locally"
-	@echo "  make test-api        - Run API tests only"
-	@echo "  make test-watch      - Run tests in watch mode"
-	@echo "  make red             - Run failing tests (TDD Red phase)"
-	@echo "  make green           - Implement to pass tests (TDD Green phase)"
-	@echo "  make refactor        - Clean up code (TDD Refactor phase)"
+	@echo "Setup:"
+	@echo "  make install          - Install all dependencies"
+	@echo "  make install-hooks    - Install pre-commit hooks"
 	@echo ""
-	@echo "$(YELLOW)Development Commands:$(NC)"
-	@echo "  make dev             - Start development environment"
-	@echo "  make build           - Build Docker images"
-	@echo "  make clean           - Clean up containers and volumes"
-	@echo "  make fresh           - Clean and rebuild everything"
+	@echo "Code Quality (TDD):"
+	@echo "  make test            - Run all tests (Python + TypeScript)"
+	@echo "  make lint            - Run linters (flake8 + eslint)"
+	@echo "  make type-check      - Run type checkers (mypy + tsc)"
+	@echo "  make format          - Auto-format code (black + prettier)"
+	@echo "  make quality         - Run all quality checks"
 	@echo ""
-	@echo "$(YELLOW)Deployment Commands:$(NC)"
-	@echo "  make deploy-local    - Deploy to local Docker"
-	@echo "  make deploy-cf       - Deploy to Cloudflare Workers"
-	@echo "  make status          - Check service status"
+	@echo "Python Specific:"
+	@echo "  make py-test         - Run Python tests only"
+	@echo "  make py-lint         - Run flake8 only"
+	@echo "  make py-type         - Run mypy only"
+	@echo "  make py-format       - Run black formatter"
 	@echo ""
-	@echo "$(YELLOW)UI Commands:$(NC)"
-	@echo "  make ui              - Start React UI development server"
-	@echo "  make ui-build        - Build React UI for production"
-	@echo "  make ui-test         - Run React UI tests"
+	@echo "TypeScript Specific:"
+	@echo "  make ts-test         - Run Jest tests only"
+	@echo "  make ts-lint         - Run ESLint only"
+	@echo "  make ts-type         - Run TypeScript checker"
+	@echo ""
+	@echo "Docker:"
+	@echo "  make docker-build    - Build Docker image"
+	@echo "  make docker-run      - Run Docker container"
+	@echo ""
+	@echo "Deployment:"
+	@echo "  make deploy          - Deploy to Cloudflare Workers"
 
-# Docker Commands
-# ===============
+# Installation targets
+install:
+	@echo "Installing Python dependencies..."
+	pip install -r requirements.txt
+	pip install flake8 mypy black pytest pytest-asyncio types-requests beautifulsoup4 types-beautifulsoup4
+	@echo "Installing Node dependencies..."
+	npm install
+	@echo "✅ All dependencies installed!"
 
-.PHONY: up
-up:
-	@echo "$(GREEN)Starting Robot Brain services...$(NC)"
-	$(DOCKER_COMPOSE) up -d
-	@echo "$(GREEN)Services started! Access:$(NC)"
-	@echo "  - API: http://localhost:8000"
-	@echo "  - MailHog: http://localhost:8025"
-	@echo "  - Redis: localhost:6379"
+install-hooks:
+	@echo "Installing pre-commit hooks..."
+	pip install pre-commit
+	pre-commit install
+	@echo "✅ Pre-commit hooks installed!"
 
-.PHONY: down
-down:
-	@echo "$(RED)Stopping Robot Brain services...$(NC)"
-	$(DOCKER_COMPOSE) down
+# Combined quality checks
+test: py-test ts-test
 
-.PHONY: restart
-restart:
-	@echo "$(YELLOW)Quick restarting API service (2-3 seconds)...$(NC)"
-	$(DOCKER_COMPOSE) restart robot-api
-	@echo "$(GREEN)API restarted!$(NC)"
+lint: py-lint ts-lint
 
-.PHONY: logs
-logs:
-	$(DOCKER_COMPOSE) logs -f
+type-check: py-type ts-type
 
-.PHONY: logs-api
-logs-api:
-	$(DOCKER_COMPOSE) logs -f robot-api
+format: py-format
+	@echo "Running Prettier on TypeScript/JavaScript files..."
+	npx prettier --write "**/*.{js,jsx,ts,tsx,json,css,md}"
 
-# Testing Commands (TDD Workflow)
-# ===============================
+quality: lint type-check test
+	@echo "✅ All quality checks passed!"
 
-.PHONY: test
-test:
-	@echo "$(GREEN)Running all tests...$(NC)"
-	$(DOCKER_COMPOSE) exec robot-api pytest tests/ -v
+# Python-specific targets
+py-test:
+	@echo "Running Python tests..."
+	pytest cloudflare/tests/ -v --tb=short
 
-.PHONY: test-api
-test-api:
-	@echo "$(GREEN)Running API tests...$(NC)"
-	$(DOCKER_COMPOSE) exec robot-api pytest tests/test_api.py -v
+py-lint:
+	@echo "Running flake8..."
+	flake8 cloudflare/ --count --statistics
 
-.PHONY: test-watch
-test-watch:
-	@echo "$(GREEN)Running tests in watch mode...$(NC)"
-	$(DOCKER_COMPOSE) exec robot-api pytest-watch tests/
+py-type:
+	@echo "Running mypy..."
+	mypy cloudflare/
 
-# TDD Shortcuts
-.PHONY: red
-red:
-	@echo "$(RED)TDD RED: Running tests (expecting failures)...$(NC)"
-	-$(DOCKER_COMPOSE) exec robot-api pytest tests/ -v --tb=short
+py-format:
+	@echo "Running black formatter..."
+	black cloudflare/
 
-.PHONY: green
-green:
-	@echo "$(GREEN)TDD GREEN: Running tests (implementing to pass)...$(NC)"
-	$(DOCKER_COMPOSE) exec robot-api pytest tests/ -v
+# TypeScript-specific targets
+ts-test:
+	@echo "Running Jest tests..."
+	npm test
 
-.PHONY: refactor
-refactor:
-	@echo "$(YELLOW)TDD REFACTOR: Running tests and linting...$(NC)"
-	$(DOCKER_COMPOSE) exec robot-api pytest tests/ -v
-	$(DOCKER_COMPOSE) exec robot-api pylint src/
+ts-lint:
+	@echo "Running ESLint..."
+	npm run lint
 
-# Development Commands
-# ====================
+ts-type:
+	@echo "Running TypeScript type checker..."
+	npx tsc --noEmit
 
-.PHONY: dev
-dev:
-	@echo "$(GREEN)Starting development environment...$(NC)"
-	$(MAKE) up
-	@echo "$(GREEN)Starting React UI...$(NC)"
-	cd robot-brain-ui && $(NPM) run dev
+# Docker targets
+docker-build:
+	@echo "Building Docker image..."
+	docker build -t robot-brain:latest .
 
-.PHONY: build
-build:
-	@echo "$(YELLOW)Building Docker images...$(NC)"
-	$(DOCKER_COMPOSE) build
+docker-run:
+	@echo "Running Docker container..."
+	docker-compose up
 
-.PHONY: clean
+# Deployment
+deploy:
+	@echo "Deploying to Cloudflare Workers..."
+	npm run deploy
+
+# Cleanup
 clean:
-	@echo "$(RED)Cleaning up containers and volumes...$(NC)"
-	$(DOCKER_COMPOSE) down -v
+	@echo "Cleaning up..."
+	find . -type d -name "__pycache__" -exec rm -rf {} +
+	find . -type f -name "*.pyc" -delete
+	find . -type d -name ".pytest_cache" -exec rm -rf {} +
+	find . -type d -name ".mypy_cache" -exec rm -rf {} +
+	rm -rf node_modules/.cache
+	rm -rf .next
+	@echo "✅ Cleanup complete!"
 
-.PHONY: fresh
-fresh:
-	@echo "$(YELLOW)Fresh rebuild of everything...$(NC)"
-	$(MAKE) clean
-	$(MAKE) build
-	$(MAKE) up
+# TDD workflow helpers
+tdd-red:
+	@echo "📝 TDD RED Phase: Write failing tests first!"
+	@echo "Create your test files in:"
+	@echo "  - Python: cloudflare/tests/test_*.py"
+	@echo "  - TypeScript: src/__tests__/*.test.tsx"
 
-# Deployment Commands
-# ===================
+tdd-green:
+	@echo "✅ TDD GREEN Phase: Make tests pass!"
+	@echo "Run 'make test' to check progress"
 
-.PHONY: deploy-local
-deploy-local:
-	@echo "$(GREEN)Deploying to local Docker...$(NC)"
-	$(DOCKER_COMPOSE) up -d --build
-	@echo "$(GREEN)Local deployment complete!$(NC)"
-
-.PHONY: deploy-cf
-deploy-cf:
-	@echo "$(YELLOW)Deploying to Cloudflare Workers...$(NC)"
-	cd cloudflare && wrangler deploy
-	@echo "$(GREEN)Cloudflare deployment complete!$(NC)"
-	@echo "Visit: https://robot-brain.tkipper.workers.dev"
-
-.PHONY: status
-status:
-	@echo "$(GREEN)Service Status:$(NC)"
-	$(DOCKER_COMPOSE) ps
-	@echo ""
-	@echo "$(GREEN)Port Status:$(NC)"
-	@netstat -an | grep -E "8000|8025|6379|11434" | grep LISTEN || echo "No services listening"
-
-# UI Commands
-# ===========
-
-.PHONY: ui
-ui:
-	@echo "$(GREEN)Starting React UI development server...$(NC)"
-	cd robot-brain-ui && $(NPM) run dev
-
-.PHONY: ui-build
-ui-build:
-	@echo "$(YELLOW)Building React UI for production...$(NC)"
-	cd robot-brain-ui && $(NPM) run build
-
-.PHONY: ui-test
-ui-test:
-	@echo "$(GREEN)Running React UI tests...$(NC)"
-	cd robot-brain-ui && $(NPM) test
-
-# Quick access commands for rapid iteration
-# =========================================
-
-.PHONY: r
-r: restart
-
-.PHONY: l
-l: logs-api
-
-.PHONY: t
-t: test
-
-.PHONY: d
-d: deploy-local
+tdd-refactor:
+	@echo "🔧 TDD REFACTOR Phase: Improve code quality!"
+	@echo "Run 'make quality' to ensure standards"

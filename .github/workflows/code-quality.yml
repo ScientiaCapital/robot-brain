@@ -1,0 +1,116 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  python-quality:
+    name: Python Code Quality
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12', '3.13']
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Cache pip packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install flake8 mypy black pytest pytest-asyncio types-requests beautifulsoup4 types-beautifulsoup4
+    
+    - name: Run Black formatter check
+      run: |
+        echo "::group::Black Formatter Check"
+        black --check cloudflare/
+        echo "::endgroup::"
+    
+    - name: Run Flake8 linting
+      run: |
+        echo "::group::Flake8 Linting"
+        flake8 cloudflare/ --count --statistics
+        echo "::endgroup::"
+    
+    - name: Run MyPy type checking
+      run: |
+        echo "::group::MyPy Type Checking"
+        mypy cloudflare/
+        echo "::endgroup::"
+    
+    - name: Run Python tests
+      run: |
+        echo "::group::Python Tests"
+        pytest cloudflare/tests/ -v --tb=short
+        echo "::endgroup::"
+  
+  typescript-quality:
+    name: TypeScript Code Quality
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run TypeScript type checking
+      run: |
+        echo "::group::TypeScript Type Check"
+        npx tsc --noEmit
+        echo "::endgroup::"
+    
+    - name: Run ESLint
+      run: |
+        echo "::group::ESLint Check"
+        npm run lint
+        echo "::endgroup::"
+    
+    - name: Run Jest tests
+      run: |
+        echo "::group::Jest Tests"
+        npm test -- --ci --coverage --maxWorkers=2
+        echo "::endgroup::"
+  
+  code-quality-report:
+    name: Code Quality Report
+    needs: [python-quality, typescript-quality]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: Report status
+      run: |
+        echo "## Code Quality Check Summary"
+        echo ""
+        echo "### Python Quality: ${{ needs.python-quality.result }}"
+        echo "### TypeScript Quality: ${{ needs.typescript-quality.result }}"
+        echo ""
+        if [ "${{ needs.python-quality.result }}" = "success" ] && [ "${{ needs.typescript-quality.result }}" = "success" ]; then
+          echo "✅ All code quality checks passed!"
+        else
+          echo "❌ Code quality checks failed. Please review the logs above."
+          exit 1
+        fi
