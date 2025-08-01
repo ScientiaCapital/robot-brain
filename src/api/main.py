@@ -25,6 +25,9 @@ from src.neon.vector_manager import VectorManager
 from src.tools.email_tool import EmailTool
 from src.tools.database_tool import DatabaseTool
 
+# Import routers
+from src.api.routers import voice
+
 # 🟢 TDD GREEN Phase: Production configuration functions
 
 def get_cors_origins() -> List[str]:
@@ -79,6 +82,9 @@ def create_production_app() -> FastAPI:
         allow_headers=["*"],
     )
     
+    # Include routers
+    app.include_router(voice.router)
+    
     # Add production endpoints
     _add_production_endpoints(app)
     
@@ -130,6 +136,9 @@ app.add_middleware(
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
+
+# Include routers
+app.include_router(voice.router)
 
 # Robot personality configurations
 ROBOT_PERSONALITIES = {

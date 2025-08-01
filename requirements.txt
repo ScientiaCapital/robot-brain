@@ -30,6 +30,9 @@ pypdf==3.17.0  # For PDF processing
 sqlalchemy==2.0.23  # For database operations
 pyyaml==6.0.1  # For YAML configuration
 
+# Voice/TTS dependencies
+elevenlabs==2.8.1  # Official ElevenLabs Python SDK
+
 # Neon/PostgreSQL dependencies
 asyncpg==0.30.0  # Async PostgreSQL driver
 psycopg[binary]==3.2.9  # PostgreSQL adapter with binary support

@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function RobotCardSkeleton() {
   return (
-    <Card>
+    <Card data-testid="robot-skeleton">
       <CardContent className="p-4 sm:p-6">
         <div className="flex items-center space-x-3 mb-3">
           <Skeleton className="h-10 w-10 rounded-full" />

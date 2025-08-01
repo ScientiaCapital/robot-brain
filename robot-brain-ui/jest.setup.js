@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom'
 import 'whatwg-fetch'
+import { setupDomMocks } from './__tests__/test-utils'
 
 // Mock localStorage
 class LocalStorageMock {
@@ -34,3 +35,34 @@ class LocalStorageMock {
 }
 
 global.localStorage = new LocalStorageMock()
+
+// Setup all DOM mocks
+setupDomMocks()
+
+// Mock console methods to reduce noise in tests
+const originalError = console.error
+const originalWarn = console.warn
+
+beforeAll(() => {
+  console.error = (...args) => {
+    // Ignore React DOM warnings about unknown props
+    if (
+      typeof args[0] === 'string' && 
+      (args[0].includes('React does not recognize') || 
+       args[0].includes('Warning: Unknown prop'))
+    ) {
+      return
+    }
+    originalError.call(console, ...args)
+  }
+  
+  console.warn = (...args) => {
+    // Ignore specific warnings if needed
+    originalWarn.call(console, ...args)
+  }
+})
+
+afterAll(() => {
+  console.error = originalError
+  console.warn = originalWarn
+})

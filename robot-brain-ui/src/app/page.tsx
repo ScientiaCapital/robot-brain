@@ -408,6 +408,7 @@ export default function RobotBrainApp() {
                   disabled={isLoading || !inputValue.trim()}
                   size="icon"
                   className="shrink-0"
+                  aria-label="Send message"
                 >
                   <Send className="h-4 w-4" />
                 </Button>
