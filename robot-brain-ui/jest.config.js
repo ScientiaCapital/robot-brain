@@ -17,6 +17,17 @@ const customJestConfig = {
   ],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1'
+  },
+  // Extended timeout for integration tests
+  testTimeout: 10000,
+  // Maximum workers for parallel tests
+  maxWorkers: 2,
+  // Test environment variables
+  globals: {
+    'process.env': {
+      NODE_ENV: 'test',
+      API_BASE_URL: 'http://localhost:8000'
+    }
   }
 }
 

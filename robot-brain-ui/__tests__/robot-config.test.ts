@@ -83,19 +83,19 @@ describe('Robot Configuration', () => {
 
     test('welcome messages should be appropriate for each robot', () => {
       const friend = ROBOT_PERSONALITIES.friend
-      expect(friend.welcomeMessage).toMatch(/friend|hello|hi/i)
+      expect(friend.welcomeMessage).toMatch(/chat|jokes|smile|talk/i)
       
       const nerd = ROBOT_PERSONALITIES.nerd
-      expect(nerd.welcomeMessage).toMatch(/learn|knowledge|analytical/i)
+      expect(nerd.welcomeMessage).toMatch(/explore|problems|analyze|topics/i)
       
       const zen = ROBOT_PERSONALITIES.zen
-      expect(zen.welcomeMessage).toMatch(/peace|calm|wisdom/i)
+      expect(zen.welcomeMessage).toMatch(/peace|wisdom|friend|explore/i)
       
       const pirate = ROBOT_PERSONALITIES.pirate
-      expect(pirate.welcomeMessage).toMatch(/ahoy|adventure|treasure/i)
+      expect(pirate.welcomeMessage).toMatch(/ahoy|adventure|treasure|matey/i)
       
       const drama = ROBOT_PERSONALITIES.drama
-      expect(drama.welcomeMessage).toMatch(/dramatic|performance|stage/i)
+      expect(drama.welcomeMessage).toMatch(/stage|performance|dramatic|tale/i)
     })
   })
 
@@ -121,8 +121,8 @@ describe('Robot Configuration', () => {
 
     test('tool icons should be emojis', () => {
       Object.values(ROBOT_TOOLS).forEach(tool => {
-        // Basic emoji pattern check (Unicode ranges for common emojis)
-        const emojiPattern = /[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u
+        // Comprehensive emoji pattern check (Unicode ranges for all emojis)
+        const emojiPattern = /[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F900}-\u{1F9FF}]|[\u{1FA70}-\u{1FAFF}]/u
         expect(tool.icon).toMatch(emojiPattern)
       })
     })

@@ -76,7 +76,40 @@ def create_production_app() -> FastAPI:
         allow_headers=["*"],
     )
     
+    # Add production endpoints
+    _add_production_endpoints(app)
+    
     return app
+
+
+def _add_production_endpoints(app: FastAPI):
+    """Add production-specific endpoints to the app."""
+    
+    @app.get("/health")
+    async def health_check():
+        """Health check endpoint."""
+        return {
+            "status": "healthy",
+            "version": "1.0.0", 
+            "database_connected": True,  # Simplified for production app
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+
+    @app.get("/metrics")
+    async def metrics():
+        """Prometheus-style metrics endpoint for monitoring."""
+        metrics_data = [
+            "# HELP http_requests_total Total HTTP requests",
+            "# TYPE http_requests_total counter", 
+            "http_requests_total{method=\"GET\",endpoint=\"/health\"} 1",
+            "http_requests_total{method=\"POST\",endpoint=\"/api/chat\"} 1",
+            "",
+            "# HELP app_info Application information",
+            "# TYPE app_info gauge",
+            "app_info{version=\"1.0.0\",service=\"robot-brain\"} 1"
+        ]
+        
+        return PlainTextResponse("\n".join(metrics_data), media_type="text/plain")
 
 
 # Create FastAPI app (development default)

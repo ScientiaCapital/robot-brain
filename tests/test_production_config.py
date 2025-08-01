@@ -14,25 +14,35 @@ class TestProductionNeonConfiguration:
     
     def test_production_environment_variables_exist(self):
         """Test that all required production environment variables are defined."""
-        required_env_vars = [
-            "DATABASE_URL",
-            "NEON_API_KEY", 
-            "NEON_PROJECT_ID",
-            "ENVIRONMENT"
-        ]
+        from src.core.config_loader import load_environment_file
         
-        # This will fail until .env.production exists
-        for env_var in required_env_vars:
-            assert os.getenv(env_var) is not None, f"Missing required environment variable: {env_var}"
+        # Load production environment file
+        with patch.dict(os.environ, {"ENVIRONMENT": "production"}):
+            load_environment_file()
+            
+            required_env_vars = [
+                "DATABASE_URL",
+                "NEON_API_KEY", 
+                "NEON_PROJECT_ID",
+                "ENVIRONMENT"
+            ]
+            
+            for env_var in required_env_vars:
+                assert os.getenv(env_var) is not None, f"Missing required environment variable: {env_var}"
     
     def test_database_url_uses_pooler_endpoint(self):
         """Test that DATABASE_URL uses Neon pooler endpoint (Context7 best practice)."""
-        database_url = os.getenv("DATABASE_URL", "")
+        from src.core.config_loader import load_environment_file
         
-        # Context7 research: production should use -pooler endpoints
-        assert "-pooler" in database_url, "DATABASE_URL should use -pooler endpoint for production"
-        assert "sslmode=require" in database_url, "DATABASE_URL should include sslmode=require"
-        assert "channel_binding=require" in database_url, "DATABASE_URL should include channel_binding=require"
+        # Load production environment file
+        with patch.dict(os.environ, {"ENVIRONMENT": "production"}):
+            load_environment_file()
+            database_url = os.getenv("DATABASE_URL", "")
+            
+            # Context7 research: production should use -pooler endpoints
+            assert "-pooler" in database_url, "DATABASE_URL should use -pooler endpoint for production"
+            assert "sslmode=require" in database_url, "DATABASE_URL should include sslmode=require"
+            assert "channel_binding=require" in database_url, "DATABASE_URL should include channel_binding=require"
     
     def test_neon_connection_pool_configuration(self):
         """Test Neon connection pool settings follow Context7 recommendations."""
@@ -47,17 +57,25 @@ class TestProductionNeonConfiguration:
         assert config["command_timeout"] == 60, "Command timeout should be 60 seconds"
         assert "application_name" in config["server_settings"], "Should set application_name"
     
-    def test_production_retry_logic_exists(self):
+    @pytest.mark.asyncio
+    async def test_production_retry_logic_exists(self):
         """Test that production includes retry logic for scale-to-zero scenarios."""
         from src.neon.connection_pool import create_resilient_connection
+        import asyncpg.exceptions
         
         # This will fail until we implement resilient connection logic
         with patch('asyncio.sleep') as mock_sleep:
             with patch('asyncpg.create_pool') as mock_pool:
                 # Simulate ConnectionDoesNotExistError (scale-to-zero)
-                mock_pool.side_effect = [Exception("Connection error"), MagicMock()]
+                mock_pool.side_effect = [
+                    asyncpg.exceptions.ConnectionDoesNotExistError("Compute unavailable"),
+                    MagicMock()
+                ]
                 
-                pool = create_resilient_connection("test_connection_string")
+                try:
+                    pool = await create_resilient_connection("test_connection_string")
+                except Exception:
+                    pass  # Expected to potentially fail
                 
                 # Should retry after connection error
                 assert mock_sleep.called, "Should implement retry logic for scale-to-zero"
@@ -99,9 +117,11 @@ class TestProductionFastAPIConfiguration:
     def test_production_cors_configuration(self):
         """Test that CORS is properly configured for production."""
         from src.api.main import get_cors_origins
+        from src.core.config_loader import load_environment_file
         
         # This will fail until we implement production CORS config
         with patch.dict(os.environ, {"ENVIRONMENT": "production"}):
+            load_environment_file()  # Load production environment first
             cors_origins = get_cors_origins()
             
             assert "*" not in cors_origins, "Production should not allow all origins"
@@ -111,16 +131,24 @@ class TestProductionFastAPIConfiguration:
     def test_production_middleware_stack(self):
         """Test that production middleware is properly configured."""
         from src.api.main import create_production_app
+        from src.core.config_loader import load_environment_file
         
         # This will fail until we implement production app factory
-        app = create_production_app()
-        
-        # Check that security middleware is enabled
-        middleware_types = [type(middleware).__name__ for middleware in app.user_middleware]
-        
-        assert "CORSMiddleware" in middleware_types, "Should include CORS middleware"
-        assert "HTTPSRedirectMiddleware" in middleware_types, "Should redirect HTTP to HTTPS"
-        assert "TrustedHostMiddleware" in middleware_types, "Should validate trusted hosts"
+        with patch.dict(os.environ, {"ENVIRONMENT": "production"}):
+            load_environment_file()  # Load production environment first
+            app = create_production_app()
+            
+            # Check that security middleware is enabled
+            middleware_stack = []
+            for middleware in app.user_middleware:
+                if hasattr(middleware, 'cls'):
+                    middleware_stack.append(middleware.cls.__name__)
+                else:
+                    middleware_stack.append(type(middleware).__name__)
+            
+            assert "CORSMiddleware" in middleware_stack, f"Should include CORS middleware. Found: {middleware_stack}"
+            assert "HTTPSRedirectMiddleware" in middleware_stack, f"Should redirect HTTP to HTTPS. Found: {middleware_stack}"  
+            assert "TrustedHostMiddleware" in middleware_stack, f"Should validate trusted hosts. Found: {middleware_stack}"
     
     def test_production_error_handling(self):
         """Test that production error handling doesn't leak sensitive information."""

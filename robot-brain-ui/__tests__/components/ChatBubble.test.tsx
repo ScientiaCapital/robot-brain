@@ -37,7 +37,7 @@ describe('ChatBubble', () => {
   })
 
   test('displays typing indicator when isTyping is true', () => {
-    render(
+    const { container } = render(
       <ChatBubble 
         message=""
         sender="robot"
@@ -47,9 +47,10 @@ describe('ChatBubble', () => {
       />
     )
 
-    // Should show typing dots
-    expect(screen.getByText('•••')).toBeInTheDocument()
-    expect(screen.getByText('RoboFriend is typing...')).toBeInTheDocument()
+    // Should show animated typing dots (three div elements with specific classes)
+    const typingDots = container.querySelectorAll('.w-2.h-2.bg-current.rounded-full')
+    expect(typingDots).toHaveLength(3)
+    expect(screen.getByText('RoboFriend')).toBeInTheDocument()
   })
 
   test('applies correct styling for user messages', () => {
@@ -60,8 +61,8 @@ describe('ChatBubble', () => {
       />
     )
 
-    // User messages should be right-aligned with blue styling
-    const messageContainer = container.querySelector('.ml-auto')
+    // User messages should be right-aligned (justify-end class)
+    const messageContainer = container.querySelector('.justify-end')
     expect(messageContainer).toBeInTheDocument()
   })
 
@@ -75,8 +76,8 @@ describe('ChatBubble', () => {
       />
     )
 
-    // Robot messages should be left-aligned
-    const messageContainer = container.querySelector('.mr-auto')
+    // Robot messages should be left-aligned (justify-start class)
+    const messageContainer = container.querySelector('.justify-start')
     expect(messageContainer).toBeInTheDocument()
   })
 
@@ -159,15 +160,18 @@ describe('ChatBubble', () => {
       />
     )
 
-    // Check for typing animation classes or elements
-    const typingDots = container.querySelector('.animate-pulse, [class*="typing"]')
-    expect(typingDots).toBeInTheDocument()
+    // Check for typing animation dots (should have 3 animated dots)
+    const typingDotsContainer = container.querySelector('div.flex.gap-1.py-1')
+    expect(typingDotsContainer).toBeInTheDocument()
+    
+    const typingDots = container.querySelectorAll('.w-2.h-2.bg-current.rounded-full.opacity-60')
+    expect(typingDots).toHaveLength(3)
   })
 
   test('preserves message formatting', () => {
     const formattedMessage = 'Line 1\nLine 2\n\nLine 4 with spaces   here'
     
-    render(
+    const { container } = render(
       <ChatBubble 
         message={formattedMessage}
         sender="robot"
@@ -176,7 +180,9 @@ describe('ChatBubble', () => {
       />
     )
 
-    // Should preserve the formatting
-    expect(screen.getByText(formattedMessage)).toBeInTheDocument()
+    // Should preserve the formatting (target the p element specifically)
+    const messageElement = container.querySelector('p.text-sm.sm\\:text-base.leading-relaxed')
+    expect(messageElement).toBeInTheDocument()
+    expect(messageElement?.textContent).toBe(formattedMessage)
   })
 })
