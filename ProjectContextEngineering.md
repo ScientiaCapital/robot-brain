@@ -5,7 +5,7 @@
 ### Core Principles
 1. **Modularity**: Each component (personality, tool, model) is independently configurable
 2. **Extensibility**: Easy to add new robots, tools, or AI backends
-3. **Dual Deployment**: Same codebase works locally (Docker) and globally (Cloudflare)
+3. **Cloud-Native**: Built for scalable deployment on Neon PostgreSQL
 4. **Progressive Enhancement**: Basic features work everywhere, advanced features when available
 5. **Developer Experience**: Clear debugging, easy configuration, helpful error messages
 
@@ -21,15 +21,13 @@ Robot Brain System
 │   └── Tool validation framework
 ├── Tool System Layer ✅
 │   ├── EmailTool (SMTP integration)
-│   ├── WebScrapingTool (requests/BeautifulSoup)
-│   ├── DatabaseTool (in-memory storage)
-│   ├── PuppeteerScrapingTool (MCP integration)
-│   └── SMSTool (Twilio - planned)
-├── Cloudflare Integration Layer ✅
-│   ├── D1 Client (conversations, interactions)
-│   ├── KV Client (sessions, state management)
-│   ├── Vectorize Client (embeddings, RAG)
-│   └── Workers AI (text generation, embeddings)
+│   ├── DatabaseTool (key-value storage)
+│   └── Calculator (simple math operations)
+├── Neon PostgreSQL Integration Layer ✅
+│   ├── NeonClient (conversations, interactions)
+│   ├── SessionManager (JSONB sessions, state management)
+│   ├── VectorManager (pgvector embeddings, RAG)
+│   └── Connection Pool (asyncpg connection management)
 ├── Orchestration Layer
 │   ├── LangGraph Supervisor
 │   ├── Multi-agent coordination
@@ -41,10 +39,10 @@ Robot Brain System
 │   └── Personality-specific prompts
 ├── AI Backend Layer
 │   ├── Ollama integration (local)
-│   ├── Cloudflare AI integration (edge)
+│   ├── Future AI providers
 │   └── Model selection logic
 └── Interface Layer
-    ├── REST API endpoints ✅
+    ├── FastAPI endpoints ✅
     ├── Tool API endpoints (/api/tools/*) ✅
     ├── WebSocket support (planned)
     ├── Web UI (HTML/JS)
@@ -96,30 +94,29 @@ class BaseTool(ABC):
 
 **Implemented Tools**:
 - **EmailTool**: SMTP email sending with validation
-- **WebScrapingTool**: HTTP content fetching and parsing
-- **DatabaseTool**: In-memory key-value storage
-- **PuppeteerScrapingTool**: JavaScript-heavy site scraping
-- **SMSTool**: SMS via Twilio (tests written, implementation pending)
+- **DatabaseTool**: Key-value storage operations
+- **Calculator**: Simple math calculations (no external dependencies)
 
-### 3. Cloudflare Services Integration ✅
+### 3. Neon PostgreSQL Integration ✅
 
-**D1 Client**:
+**NeonClient**:
 - Store/retrieve conversations
 - Query by robot personality
 - Track tool usage
 - Batch operations
+- Full SQL capabilities
 
-**KV Client**:
-- Session management with TTL
+**SessionManager**:
+- JSONB-based session storage
+- TTL support for expiration
 - Robot state persistence
 - User preferences storage
-- Batch get operations
 
-**Vectorize Client**:
-- Embedding generation via Workers AI
+**VectorManager**:
+- pgvector for embeddings
 - Vector similarity search
 - RAG context retrieval
-- Metadata filtering
+- Mock embedding generation
 
 ### 3. Tool System Architecture
 
@@ -135,14 +132,13 @@ class ToolRegistry:
 
 **Implemented Tools (with Tests)**:
 - **EmailTool**: Send emails via SMTP (4 tests)
-- **WebScrapingTool**: Fetch web content (2 tests)
 - **DatabaseTool**: Key-value storage (1 test)
-- **PuppeteerScrapingTool**: Browser automation (6 tests)
+- **Calculator**: Math operations (integrated)
 
-**Cloudflare Services (with Tests)**:
-- **D1 Database**: Conversation storage (7 tests)
-- **KV Namespace**: State management (9 tests)
-- **Vectorize**: RAG implementation (8 tests)
+**Neon PostgreSQL Services (with Tests)**:
+- **NeonClient**: Conversation storage (8 tests)
+- **SessionManager**: JSONB state management (10 tests)
+- **VectorManager**: pgvector implementation (10 tests)
 
 ### 3. AI Model Management
 
@@ -161,10 +157,10 @@ class ToolRegistry:
   - qwen2.5:14b (analytical)
   - internlm2:7b (general)
 
-- **Cloudflare** (Edge):
-  - @cf/meta/llama-2-7b-chat-int8 (default)
-  - @cf/tinyllama/tinyllama-1.1b-chat-v1.0 (fast)
-  - @cf/mistral/mistral-7b-instruct-v0.1 (smart)
+- **Future AI Providers**:
+  - Support for various cloud AI services
+  - Flexible model selection
+  - Easy integration of new providers
 
 ### 4. API Design
 
@@ -218,37 +214,22 @@ const robotHasTool = (robot, toolId) => robot?.tools.includes(toolId)
 
 ### 5. Deployment Architecture
 
-**Docker Deployment**:
+**Neon PostgreSQL Deployment**:
 ```
 ┌─────────────────┐
-│   nginx/proxy   │ (optional)
+│  FastAPI Server │ Port 8000
 └────────┬────────┘
          │
 ┌────────▼────────┐
-│   Python API    │ Port 8000
-│  (FastAPI/Flask)│
+│  Connection Pool│
+│    (asyncpg)    │
 └────────┬────────┘
          │
 ┌────────▼────────┐
-│     Ollama      │ Port 11434
-│  (Local Models) │
-└─────────────────┘
-```
-
-**Cloudflare Deployment**:
-```
-┌─────────────────┐
-│  Cloudflare CDN │
-└────────┬────────┘
-         │
-┌────────▼────────┐
-│ Workers Runtime │
-│   (V8 Isolate)  │
-└────────┬────────┘
-         │
-┌────────▼────────┐
-│  Workers AI API │
-│ (Edge AI Models)│
+│ Neon PostgreSQL │
+│  - Conversations│
+│  - Sessions     │
+│  - Vectors      │
 └─────────────────┘
 ```
 
@@ -299,11 +280,11 @@ const robotHasTool = (robot, toolId) => robot?.tools.includes(toolId)
    - Streaming support
    - Model management
 
-2. **Cloudflare Workers AI**
-   - Native binding in Workers
-   - Multiple model support
-   - Automatic scaling
-   - Template literal escaping (✅ Fixed)
+2. **Neon PostgreSQL**
+   - Serverless PostgreSQL
+   - Auto-scaling compute
+   - pgvector extension
+   - JSONB for flexible storage
 
 3. **LangGraph Supervisor**
    - Multi-agent orchestration with skill-based delegation
@@ -312,11 +293,11 @@ const robotHasTool = (robot, toolId) => robot?.tools.includes(toolId)
    - Agent handoff capabilities
    - Context preservation across queries
 
-4. **Cloudflare Services** ✅ IMPLEMENTED
-   - D1 Database for conversation storage
-   - KV Namespace for session management
-   - Vectorize for RAG implementation
-   - Workers AI for embeddings and generation
+4. **Neon Services** ✅ IMPLEMENTED
+   - PostgreSQL for conversation storage
+   - JSONB for session management
+   - pgvector for RAG implementation
+   - Mock embeddings for MVP
 
 5. **Future Integrations** (Using TDD)
    - Anthropic Claude API (Test interface before integration)
@@ -362,7 +343,7 @@ ERROR: Connection failures, model errors
 # Python Backend
 pip install -r requirements.txt
 pytest tests/
-docker-compose up
+python -m uvicorn src.api.main:app --reload
 
 # React Frontend
 cd robot-brain-ui
@@ -375,24 +356,21 @@ npm run lint      # ESLint check
 
 ### Production Deployment
 ```bash
-# Build Docker image
-docker build -t robot-brain .
-
-# Deploy to Cloudflare
-wrangler publish
+# Deploy FastAPI to production
+gunicorn -w 4 -k uvicorn.workers.UvicornWorker src.api.main:app
 
 # Build React app
 cd robot-brain-ui
 npm run build
 
 # Health check
-curl https://robot-brain.tkipper.workers.dev/health
+curl https://your-api-domain.com/health
 ```
 
 ### Code Quality Gates
 - **TypeScript**: 0 errors policy ✅
 - **ESLint**: 0 warnings/errors policy ✅
-- **Tests**: 38/38 tests passing ✅
+- **Tests**: 42/42 tests passing ✅
 - **TDD**: Strict Red-Green-Refactor cycle ✅
 - **Test Coverage**: 100% for new features ✅
 

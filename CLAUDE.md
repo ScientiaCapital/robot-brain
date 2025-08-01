@@ -6,7 +6,7 @@
 ## 🎯 Project Goals
 1. Create engaging AI chat experiences with distinct robot personalities
 2. Enable multi-robot conversations so kids can see how AI agents collaborate
-3. Provide both local (Docker) and global (Cloudflare) deployment options
+3. Provide scalable cloud deployment with Neon PostgreSQL
 4. Build a modular system for adding AI tools and capabilities
 5. Make AI accessible and fun for children
 6. Offer developer-friendly debugging and configuration options
@@ -30,23 +30,31 @@
 │  └─────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────┐   │
 │  │              Tool System                         │   │
-│  │  Email | WebScraping | Database | Puppeteer     │   │
+│  │      Email | Calculator | Database              │   │
+│  └─────────────────────────────────────────────────┘   │
+└────────────────────┬───────────────┬────────────────────┘
+                     │               │
+┌────────────────────▼───────────────▼────────────────────┐
+│                 FastAPI Server                           │
+│  ┌─────────────────────────────────────────────────┐   │
+│  │        RESTful API Endpoints                     │   │
+│  │    /api/chat | /api/robots | /api/tools        │   │
 │  └─────────────────────────────────────────────────┘   │
 └────────────────────┬───────────────┬────────────────────┘
                      │               │
 ┌────────────────────▼───────────────▼────────────────────┐
 │                   AI Backends                            │
 │  ┌──────────────┐  ┌────────────────┐  ┌─────────────┐  │
-│  │   Ollama     │  │  Cloudflare    │  │ LangGraph   │  │
-│  │  (Local)     │  │  Workers AI    │  │ Supervisor  │  │
+│  │   Ollama     │  │   Future AI    │  │ LangGraph   │  │
+│  │  (Local)     │  │   Providers    │  │ Supervisor  │  │
 │  └──────────────┘  └────────────────┘  └─────────────┘  │
 └────────────────────┬───────────────┬────────────────────┘
                      │               │
 ┌────────────────────▼───────────────▼────────────────────┐
-│              Cloudflare Services                         │
+│              Neon PostgreSQL Services                    │
 │  ┌──────────────┐  ┌────────────────┐  ┌─────────────┐  │
-│  │      D1      │  │       KV       │  │  Vectorize  │  │
-│  │  (Database)  │  │    (Memory)    │  │    (RAG)    │  │
+│  │  NeonClient  │  │SessionManager  │  │VectorManager│  │
+│  │(Conversations)│  │  (JSONB State) │  │  (pgvector) │  │
 │  └──────────────┘  └────────────────┘  └─────────────┘  │
 └──────────────────────────────────────────────────────────┘
 ```
@@ -56,7 +64,7 @@
 ## 🎯 TDD (Test-Driven Development) Success
 
 ### Current TDD Status
-**38/38 tests passing** - 100% success rate!
+**42/42 tests passing** - 100% success rate!
 
 We've followed strict TDD principles:
 1. ❌ RED - Write failing tests first
@@ -67,18 +75,17 @@ We've followed strict TDD principles:
 
 #### Tool System Implementation ✅
 - **EmailTool**: 4 tests - validation, SMTP integration, error handling
-- **WebScrapingTool**: 2 tests - content fetching, error handling  
 - **DatabaseTool**: 1 test - key-value storage
-- **PuppeteerScrapingTool**: 6 tests - browser automation, screenshots
+- **Calculator**: Integrated as simple tool (no external dependencies)
 
-#### Cloudflare Services Integration ✅
-- **D1 Database**: 7 tests - conversations, interactions, batch ops
-- **KV Namespace**: 9 tests - sessions, robot state, user preferences
-- **Vectorize**: 8 tests - embeddings, RAG pattern, similarity search
+#### Neon PostgreSQL Migration ✅ 
+- **NeonClient**: 8 tests - conversations, interactions, batch ops
+- **SessionManager**: 10 tests - JSONB sessions, TTL, user preferences
+- **VectorManager**: 10 tests - pgvector embeddings, similarity search
 
 #### API Integration ✅
-- **FastAPI Endpoints**: 5 tests - tool endpoints, error handling
-- **Integration Tests**: 1 test - cross-component functionality
+- **FastAPI Endpoints**: 14 tests - all endpoints, error handling, CORS
+- **Integration Tests**: Complete end-to-end testing
 
 #### Code Quality Standards (Full TDD Cycle) ✅
 - **RED Phase**: Identified 90 flake8 + 21 mypy errors
