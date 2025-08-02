@@ -6,5 +6,12 @@
     "verifiedDeliverables": 4,
     "totalClaims": 4
   },
-  "lastUpdated": "2025-08-02T19:29:33.939Z"
+  "lastUpdated": "2025-08-02T19:31:27.275Z",
+  "general-purpose": {
+    "totalSessions": 1,
+    "averageReliability": 0,
+    "phantomClaimsCount": 0,
+    "verifiedDeliverables": 0,
+    "totalClaims": 0
+  }
 }
