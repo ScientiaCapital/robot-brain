@@ -1,0 +1,127 @@
+{
+  "checkpointId": "docs-update-1754162509",
+  "agentType": "project-docs-curator",
+  "timestamp": "2025-08-02T19:29:33.938Z",
+  "claimedDeliverables": [
+    {
+      "type": "file_modified",
+      "path": "/Users/tmk/Documents/my-robot-project/CLAUDE.md",
+      "description": "Updated main project context with guardrails system"
+    },
+    {
+      "type": "file_modified",
+      "path": "/Users/tmk/Documents/my-robot-project/ProjectTasks.md",
+      "description": "Updated task completion status"
+    },
+    {
+      "type": "file_modified",
+      "path": "/Users/tmk/Documents/my-robot-project/ProjectContextEngineering.md",
+      "description": "Updated engineering context"
+    },
+    {
+      "type": "file_modified",
+      "path": "/Users/tmk/Documents/my-robot-project/robot-brain-ui/README.md",
+      "description": "Updated frontend documentation"
+    }
+  ],
+  "actualDeliverables": [
+    {
+      "type": "file_created",
+      "path": ".claude/guardrails/checkpoints/docs-update-1754162509.json",
+      "evidence": "New file detected"
+    },
+    {
+      "type": "file_modified",
+      "path": "README.md",
+      "evidence": "Hash changed: f15aaa42d5d299d091b1171097ea56ad → 45ce00aaccfda91ae79f357d9069bf0f"
+    }
+  ],
+  "validationResults": [
+    {
+      "claim": {
+        "type": "file_modified",
+        "path": "/Users/tmk/Documents/my-robot-project/CLAUDE.md",
+        "description": "Updated main project context with guardrails system"
+      },
+      "status": "verified",
+      "evidence": [
+        "File modified: hash changed from undefined to 71a053aad02083e1392b310fff759b0a"
+      ],
+      "issues": []
+    },
+    {
+      "claim": {
+        "type": "file_modified",
+        "path": "/Users/tmk/Documents/my-robot-project/ProjectTasks.md",
+        "description": "Updated task completion status"
+      },
+      "status": "verified",
+      "evidence": [
+        "File modified: hash changed from undefined to 1ab2fb9667ee2b10a4d5bf7618f0e0ff"
+      ],
+      "issues": []
+    },
+    {
+      "claim": {
+        "type": "file_modified",
+        "path": "/Users/tmk/Documents/my-robot-project/ProjectContextEngineering.md",
+        "description": "Updated engineering context"
+      },
+      "status": "verified",
+      "evidence": [
+        "File modified: hash changed from undefined to 20f1042d9292388af4f70a80ad6a70f3"
+      ],
+      "issues": []
+    },
+    {
+      "claim": {
+        "type": "file_modified",
+        "path": "/Users/tmk/Documents/my-robot-project/robot-brain-ui/README.md",
+        "description": "Updated frontend documentation"
+      },
+      "status": "verified",
+      "evidence": [
+        "File modified: hash changed from undefined to 45ce00aaccfda91ae79f357d9069bf0f"
+      ],
+      "issues": []
+    }
+  ],
+  "reliability": {
+    "claimedVsActual": 100,
+    "phantomClaims": [],
+    "missedChanges": [
+      {
+        "type": "file_created",
+        "path": ".claude/guardrails/checkpoints/docs-update-1754162509.json",
+        "evidence": "New file detected"
+      },
+      {
+        "type": "file_modified",
+        "path": "README.md",
+        "evidence": "Hash changed: f15aaa42d5d299d091b1171097ea56ad → 45ce00aaccfda91ae79f357d9069bf0f"
+      }
+    ],
+    "verified": [
+      {
+        "type": "file_modified",
+        "path": "/Users/tmk/Documents/my-robot-project/CLAUDE.md",
+        "description": "Updated main project context with guardrails system"
+      },
+      {
+        "type": "file_modified",
+        "path": "/Users/tmk/Documents/my-robot-project/ProjectTasks.md",
+        "description": "Updated task completion status"
+      },
+      {
+        "type": "file_modified",
+        "path": "/Users/tmk/Documents/my-robot-project/ProjectContextEngineering.md",
+        "description": "Updated engineering context"
+      },
+      {
+        "type": "file_modified",
+        "path": "/Users/tmk/Documents/my-robot-project/robot-brain-ui/README.md",
+        "description": "Updated frontend documentation"
+      }
+    ]
+  }
+}
