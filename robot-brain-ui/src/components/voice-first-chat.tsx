@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useCallback, useEffect } from "react"
+import "@/types/speech-recognition"
 import { motion } from "framer-motion"
 import { Mic, MicOff, Volume2, VolumeX, MessageSquare } from "lucide-react"
 
@@ -128,7 +129,7 @@ export function VoiceFirstChat() {
         return
       }
 
-      const recognition = new (window as any).webkitSpeechRecognition()
+      const recognition = new window.webkitSpeechRecognition()
       recognition.continuous = false
       recognition.interimResults = false
       recognition.lang = 'en-US'
@@ -137,13 +138,13 @@ export function VoiceFirstChat() {
         setIsListening(true)
       }
 
-      recognition.onresult = (event: any) => {
+      recognition.onresult = (event: SpeechRecognitionEvent) => {
         const transcript = event.results[0][0].transcript
         setInput(transcript)
         sendMessage(transcript)
       }
 
-      recognition.onerror = (event: any) => {
+      recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
         console.error('Speech recognition error:', event.error)
         setIsListening(false)
       }

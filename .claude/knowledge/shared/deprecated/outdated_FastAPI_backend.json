@@ -1,0 +1,7 @@
+{
+  "name": "outdated_FastAPI_backend",
+  "type": "deprecated", 
+  "created": "2025-08-02T17:10:59Z",
+  "observations": ["FastAPI_backend has been superseded by Next.js_API_routes"],
+  "source": "agent_hook_system"
+}

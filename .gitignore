@@ -106,3 +106,17 @@ Desktop.ini
 *.cert
 secrets/
 credentials/neon/
+.vercel
+
+# Claude agent system
+.claude/logs/
+.claude/cache/
+.claude/stats/
+.claude/reports/
+
+# Test directories
+elevenlabs-examples/
+neon/
+
+# Custom activation scripts
+activate.sh

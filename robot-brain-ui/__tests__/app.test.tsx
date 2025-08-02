@@ -33,137 +33,114 @@ describe('RobotBrainApp E2E Tests', () => {
     mockFetch.mockResolvedValue({
       ok: true,
       json: async () => ({
-        personality: 'friend',
-        response: '😊 Hello! I\'m RoboFriend, nice to meet you!',
+        message: '😊 Hello! I\'m Robot Friend, nice to meet you!',
+        personality: 'robot-friend',
         emoji: '😊',
-        name: 'RoboFriend',
-        model: '@cf/meta/llama-2-7b-chat-int8',
-        tools: ['chat', 'jokes', 'encouragement', 'games']
+        name: 'Robot Friend',
+        sessionId: 'test-session'
       }),
     } as Response)
   })
 
-  test('displays robot selection screen initially', async () => {
+  test('displays voice chat interface initially', async () => {
     render(<RobotBrainApp />)
 
-    expect(screen.getByText('Robot Brain')).toBeInTheDocument()
-    expect(screen.getByText('Choose Your Robot Friend')).toBeInTheDocument()
+    // Should show Robot Friend interface directly (MVP: single robot)
+    expect(screen.getByText('Robot Friend')).toBeInTheDocument()
+    expect(screen.getByText('Type your message')).toBeInTheDocument()
     
-    // Wait for robots to load
+    // Should show voice/text mode controls
+    expect(screen.getByText('Text Mode')).toBeInTheDocument()
+    
+    // Should show welcome message
     await waitFor(() => {
-      expect(screen.getByText('RoboFriend')).toBeInTheDocument()
+      expect(screen.getByText(/Hi there! I'm Robot Friend!/)).toBeInTheDocument()
     })
-    
-    expect(screen.getByText('RoboNerd')).toBeInTheDocument()
-    expect(screen.getByText('RoboZen')).toBeInTheDocument()
-    expect(screen.getByText('RoboPirate')).toBeInTheDocument()
-    expect(screen.getByText('RoboDrama')).toBeInTheDocument()
   })
 
-  test('shows loading skeletons initially', async () => {
+  test('shows message input ready for interaction', async () => {
     render(<RobotBrainApp />)
 
-    // Should show skeletons initially
-    const skeletons = screen.getAllByTestId('robot-skeleton') || []
+    // Should show message input ready for use
+    const messageInput = screen.getByPlaceholderText('Ask AI...')
+    expect(messageInput).toBeInTheDocument()
     
-    // Wait for loading to complete
-    await waitFor(() => {
-      expect(screen.getByText('RoboFriend')).toBeInTheDocument()
-    }, { timeout: 1000 })
+    // Should show send button (disabled initially)
+    const sendButton = screen.getByLabelText('Send message')
+    expect(sendButton).toBeInTheDocument()
+    expect(sendButton).toBeDisabled() // Empty input means disabled send
   })
 
-  test('selects robot and shows chat interface', async () => {
+  test('can switch between text and voice modes', async () => {
     const user = userEvent.setup()
     render(<RobotBrainApp />)
 
-    // Wait for robots to load
+    // Should start in text mode
+    expect(screen.getByText('Text Mode')).toBeInTheDocument()
+
+    // Click to switch to voice mode
+    await user.click(screen.getByText('Text Mode'))
+
+    // Should show voice mode
     await waitFor(() => {
-      expect(screen.getByText('RoboFriend')).toBeInTheDocument()
+      expect(screen.getByText('Voice Mode')).toBeInTheDocument()
     })
-
-    // Click on RoboFriend
-    await user.click(screen.getByText('RoboFriend'))
-
-    // Should show chat interface
-    expect(screen.getByText('Chat with RoboFriend')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('Type your message...')).toBeInTheDocument()
   })
 
-  test('displays welcome message when robot is selected', async () => {
-    const user = userEvent.setup()
+  test('displays welcome message immediately', async () => {
     render(<RobotBrainApp />)
 
+    // Should show Robot Friend welcome message immediately
     await waitFor(() => {
-      expect(screen.getByText('RoboNerd')).toBeInTheDocument()
-    })
-
-    await user.click(screen.getByText('RoboNerd'))
-
-    // Should eventually show welcome message
-    await waitFor(() => {
-      expect(screen.getByText(/explore fascinating topics|solve complex problems/i)).toBeInTheDocument()
+      expect(screen.getByText(/Hi there! I'm Robot Friend!/)).toBeInTheDocument()
     }, { timeout: 2000 })
   })
 
-  test('handles null currentRobot safely in chat interface', async () => {
-    const user = userEvent.setup()
+  test('handles chat interface safely', async () => {
     render(<RobotBrainApp />)
 
-    // Wait for robots to load
-    await waitFor(() => {
-      expect(screen.getByText('RoboFriend')).toBeInTheDocument()
-    })
-
-    // Click on RoboFriend
-    await user.click(screen.getByText('RoboFriend'))
-
     // Should show chat interface without errors
-    expect(screen.getByText('Chat with RoboFriend')).toBeInTheDocument()
+    expect(screen.getByText('Robot Friend')).toBeInTheDocument()
     
     // The send button should render without errors
-    const sendButton = screen.getByRole('button', { name: /send message/i })
+    const sendButton = screen.getByLabelText('Send message')
     expect(sendButton).toBeInTheDocument()
     
     // Should have rendered the interface successfully
-    expect(screen.getByPlaceholderText('Type your message...')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Ask AI...')).toBeInTheDocument()
   })
 
   test('sends message and receives response', async () => {
     const user = userEvent.setup()
     render(<RobotBrainApp />)
 
-    // Select robot
+    // Wait for chat interface to be ready
     await waitFor(() => {
-      expect(screen.getByText('RoboFriend')).toBeInTheDocument()
-    })
-    await user.click(screen.getByText('RoboFriend'))
-
-    // Wait for chat interface
-    await waitFor(() => {
-      expect(screen.getByPlaceholderText('Type your message...')).toBeInTheDocument()
+      expect(screen.getByPlaceholderText('Ask AI...')).toBeInTheDocument()
     })
 
     // Type and send message
-    const input = screen.getByPlaceholderText('Type your message...')
+    const input = screen.getByPlaceholderText('Ask AI...')
     await user.type(input, 'Hello there!')
-    await user.click(screen.getByRole('button', { name: /send message/i }))
+    await user.click(screen.getByLabelText('Send message'))
 
-    // Should call API
+    // Should call API with robot-friend personality
     expect(mockFetch).toHaveBeenCalledWith(
-      'https://robot-brain.tkipper.workers.dev/api/chat',
+      '/api/chat',
       expect.objectContaining({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          personality: 'friend',
-          message: 'Hello there!'
+          message: 'Hello there!',
+          personality: 'robot-friend',
+          sessionId: expect.any(String)
         })
       })
     )
 
     // Should show response
     await waitFor(() => {
-      expect(screen.getByText(/Hello! I'm RoboFriend/)).toBeInTheDocument()
+      expect(screen.getByText(/Hello! I'm Robot Friend/)).toBeInTheDocument()
     })
   })
 
@@ -176,10 +153,11 @@ describe('RobotBrainApp E2E Tests', () => {
         setTimeout(() => resolve({
           ok: true,
           json: async () => ({
-            personality: 'friend',
-            response: '😊 Thanks for waiting!',
+            message: '😊 Thanks for waiting!',
+            personality: 'robot-friend',
             emoji: '😊',
-            name: 'RoboFriend'
+            name: 'Robot Friend',
+            sessionId: 'test-session'
           }),
         } as Response), 500)
       )
@@ -187,25 +165,20 @@ describe('RobotBrainApp E2E Tests', () => {
 
     render(<RobotBrainApp />)
 
-    // Select robot and send message
+    // Wait for interface and send message
     await waitFor(() => {
-      expect(screen.getByText('RoboFriend')).toBeInTheDocument()
-    })
-    await user.click(screen.getByText('RoboFriend'))
-
-    await waitFor(() => {
-      expect(screen.getByPlaceholderText('Type your message...')).toBeInTheDocument()
+      expect(screen.getByPlaceholderText('Ask AI...')).toBeInTheDocument()
     })
 
-    const input = screen.getByPlaceholderText('Type your message...')
+    const input = screen.getByPlaceholderText('Ask AI...')
     await user.type(input, 'Test message')
-    await user.click(screen.getByRole('button', { name: /send message/i }))
+    await user.click(screen.getByLabelText('Send message'))
 
     // Should show typing indicator (the ChatBubble component shows animated dots when isTyping=true)
     // The typing indicator appears as a chat bubble with the robot's name above it
     await waitFor(() => {
       // Look for the robot name that appears above typing bubbles
-      const robotNameElements = screen.getAllByText('RoboFriend')
+      const robotNameElements = screen.getAllByText('Robot Friend')
       // There should be at least 2: one in header and one above typing bubble
       expect(robotNameElements.length).toBeGreaterThan(1)
     })
@@ -224,19 +197,14 @@ describe('RobotBrainApp E2E Tests', () => {
 
     render(<RobotBrainApp />)
 
-    // Select robot and send message
+    // Wait for interface and send message
     await waitFor(() => {
-      expect(screen.getByText('RoboFriend')).toBeInTheDocument()
-    })
-    await user.click(screen.getByText('RoboFriend'))
-
-    await waitFor(() => {
-      expect(screen.getByPlaceholderText('Type your message...')).toBeInTheDocument()
+      expect(screen.getByPlaceholderText('Ask AI...')).toBeInTheDocument()
     })
 
-    const input = screen.getByPlaceholderText('Type your message...')
+    const input = screen.getByPlaceholderText('Ask AI...')
     await user.type(input, 'Test message')
-    await user.click(screen.getByRole('button', { name: /send message/i }))
+    await user.click(screen.getByLabelText('Send message'))
 
     // Should handle error gracefully (input should be re-enabled)
     await waitFor(() => {
@@ -244,49 +212,24 @@ describe('RobotBrainApp E2E Tests', () => {
     })
   })
 
-  test('quick action buttons work correctly', async () => {
+  test('suggestion buttons work correctly', async () => {
     const user = userEvent.setup()
     render(<RobotBrainApp />)
 
-    // Select RoboFriend (has joke tool)
+    // Wait for interface to load with suggestions
     await waitFor(() => {
-      expect(screen.getByText('RoboFriend')).toBeInTheDocument()
-    })
-    await user.click(screen.getByText('RoboFriend'))
-
-    await waitFor(() => {
-      expect(screen.getByText('😂 Tell a joke')).toBeInTheDocument()
+      expect(screen.getByText('Tell me about yourself')).toBeInTheDocument()
     })
 
-    // Click joke button
-    await user.click(screen.getByText('😂 Tell a joke'))
+    // Click suggestion button
+    await user.click(screen.getByText('Tell me about yourself'))
 
     // Should populate input
-    const input = screen.getByPlaceholderText('Type your message...')
-    expect(input).toHaveValue('Tell me a joke!')
+    const input = screen.getByPlaceholderText('Ask AI...')
+    expect(input).toHaveValue('Tell me about yourself')
   })
 
-  test('can return to robot selection', async () => {
-    const user = userEvent.setup()
-    render(<RobotBrainApp />)
-
-    // Select robot
-    await waitFor(() => {
-      expect(screen.getByText('RoboFriend')).toBeInTheDocument()
-    })
-    await user.click(screen.getByText('RoboFriend'))
-
-    await waitFor(() => {
-      expect(screen.getByText('Change Robot')).toBeInTheDocument()
-    })
-
-    // Click change robot
-    await user.click(screen.getByText('Change Robot'))
-
-    // Should return to selection screen
-    expect(screen.getByText('Choose Your Robot Friend')).toBeInTheDocument()
-    expect(screen.getByText('RoboFriend')).toBeInTheDocument()
-  })
+  // Removed: Robot selection test - MVP has single robot only
 
   test.skip('dark mode toggle works', async () => {
     const user = userEvent.setup()
@@ -324,21 +267,15 @@ describe('RobotBrainApp E2E Tests', () => {
   })
 
   test('empty input cannot be sent', async () => {
-    const user = userEvent.setup()
     render(<RobotBrainApp />)
 
-    // Select robot
+    // Wait for interface
     await waitFor(() => {
-      expect(screen.getByText('RoboFriend')).toBeInTheDocument()
-    })
-    await user.click(screen.getByText('RoboFriend'))
-
-    await waitFor(() => {
-      expect(screen.getByPlaceholderText('Type your message...')).toBeInTheDocument()
+      expect(screen.getByPlaceholderText('Ask AI...')).toBeInTheDocument()
     })
 
     // Try to send empty message
-    const sendButton = screen.getByRole('button', { name: /send message/i })
+    const sendButton = screen.getByLabelText('Send message')
     expect(sendButton).toBeDisabled()
   })
 
@@ -346,19 +283,14 @@ describe('RobotBrainApp E2E Tests', () => {
     const user = userEvent.setup()
     render(<RobotBrainApp />)
 
-    // Select robot and send message
+    // Wait for interface and send message
     await waitFor(() => {
-      expect(screen.getByText('RoboFriend')).toBeInTheDocument()
-    })
-    await user.click(screen.getByText('RoboFriend'))
-
-    await waitFor(() => {
-      expect(screen.getByPlaceholderText('Type your message...')).toBeInTheDocument()
+      expect(screen.getByPlaceholderText('Ask AI...')).toBeInTheDocument()
     })
 
-    const input = screen.getByPlaceholderText('Type your message...')
+    const input = screen.getByPlaceholderText('Ask AI...')
     await user.type(input, 'Test message')
-    await user.click(screen.getByRole('button', { name: /send message/i }))
+    await user.click(screen.getByLabelText('Send message'))
 
     // Input should be cleared and enabled after response
     await waitFor(() => {

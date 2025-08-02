@@ -1,0 +1,7 @@
+{
+  "name": "outdated_Docker_containers",
+  "type": "deprecated", 
+  "created": "2025-08-02T17:10:59Z",
+  "observations": ["Docker_containers has been superseded by Vercel_serverless"],
+  "source": "agent_hook_system"
+}

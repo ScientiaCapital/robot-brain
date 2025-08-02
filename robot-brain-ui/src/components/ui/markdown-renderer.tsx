@@ -117,20 +117,23 @@ const CodeBlock = ({
   )
 }
 
-function childrenTakeAllStringContents(element: any): string {
+function childrenTakeAllStringContents(element: unknown): string {
   if (typeof element === "string") {
     return element
   }
 
-  if (element?.props?.children) {
-    const children = element.props.children
+  if (element && typeof element === "object" && "props" in element) {
+    const elementWithProps = element as { props?: { children?: unknown } }
+    if (elementWithProps.props?.children) {
+      const children = elementWithProps.props.children
 
-    if (Array.isArray(children)) {
-      return children
-        .map((child) => childrenTakeAllStringContents(child))
-        .join("")
-    } else {
-      return childrenTakeAllStringContents(children)
+      if (Array.isArray(children)) {
+        return children
+          .map((child) => childrenTakeAllStringContents(child))
+          .join("")
+      } else {
+        return childrenTakeAllStringContents(children)
+      }
     }
   }
 
@@ -146,7 +149,7 @@ const COMPONENTS = {
   strong: withClass("strong", "font-semibold"),
   a: withClass("a", "text-primary underline underline-offset-2"),
   blockquote: withClass("blockquote", "border-l-2 border-primary pl-4"),
-  code: ({ children, className, ...rest }: any) => {
+  code: ({ children, className, ...rest }: React.HTMLAttributes<HTMLElement> & { children?: React.ReactNode }) => {
     const match = /language-(\w+)/.exec(className || "")
     return match ? (
       <CodeBlock className={className} language={match[1]} {...rest}>
@@ -163,7 +166,7 @@ const COMPONENTS = {
       </code>
     )
   },
-  pre: ({ children }: any) => children,
+  pre: ({ children }: React.HTMLAttributes<HTMLPreElement> & { children?: React.ReactNode }) => children,
   ol: withClass("ol", "list-decimal space-y-2 pl-6"),
   ul: withClass("ul", "list-disc space-y-2 pl-6"),
   li: withClass("li", "my-1.5"),
@@ -185,9 +188,9 @@ const COMPONENTS = {
 }
 
 function withClass(Tag: keyof React.JSX.IntrinsicElements, classes: string) {
-  const Component = ({ ...props }: any) => (
-    <Tag className={classes} {...props} />
-  )
+  const Component = (props: React.HTMLAttributes<HTMLElement>) => {
+    return React.createElement(Tag, { className: classes, ...props })
+  }
   Component.displayName = String(Tag)
   return Component
 }

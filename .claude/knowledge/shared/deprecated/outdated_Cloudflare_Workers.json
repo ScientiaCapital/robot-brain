@@ -1,0 +1,7 @@
+{
+  "name": "outdated_Cloudflare_Workers",
+  "type": "deprecated", 
+  "created": "2025-08-02T17:10:59Z",
+  "observations": ["Cloudflare_Workers has been superseded by Vercel_functions"],
+  "source": "agent_hook_system"
+}

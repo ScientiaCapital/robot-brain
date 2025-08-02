@@ -1,0 +1,7 @@
+{
+  "name": "current_architecture_frontend",
+  "type": "architecture", 
+  "created": "2025-08-02T17:10:59Z",
+  "observations": ["Next.js 15.4.5 with TypeScript and API routes"],
+  "source": "agent_hook_system"
+}

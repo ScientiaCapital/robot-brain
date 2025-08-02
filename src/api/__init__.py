@@ -1,1 +1,0 @@
-"""FastAPI server for Robot Brain."""

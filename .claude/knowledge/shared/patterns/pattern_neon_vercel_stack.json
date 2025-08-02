@@ -1,0 +1,7 @@
+{
+  "name": "pattern_neon_vercel_stack",
+  "type": "successful_pattern", 
+  "created": "2025-08-02T17:10:59Z",
+  "observations": ["Simple architecture with Neon database and Vercel hosting", "metrics: sub_2s_response_times"],
+  "source": "agent_hook_system"
+}

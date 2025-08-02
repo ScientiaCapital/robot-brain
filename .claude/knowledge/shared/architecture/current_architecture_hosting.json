@@ -1,0 +1,7 @@
+{
+  "name": "current_architecture_hosting",
+  "type": "architecture", 
+  "created": "2025-08-02T17:10:59Z",
+  "observations": ["Vercel serverless deployment with global CDN"],
+  "source": "agent_hook_system"
+}

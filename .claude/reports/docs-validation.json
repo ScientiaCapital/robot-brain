@@ -1,0 +1,12 @@
+{
+  "validation_timestamp": "2025-08-02T17:23:52Z",
+  "total_errors": 1,
+  "status": "needs_attention",
+  "recommendations": [
+    "Ensure NEON + VERCEL architecture is emphasized",
+    "Remove any Docker/Cloudflare/FastAPI references",
+    "Verify deployment URL is current",
+    "Update documentation if older than 7 days"
+  ],
+  "next_action": "Use project-docs-curator agent to fix inconsistencies"
+}

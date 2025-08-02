@@ -33,7 +33,7 @@ interface ChatPropsBase {
     messageId: string,
     rating: "thumbs-up" | "thumbs-down"
   ) => void
-  setMessages?: (messages: any[]) => void
+  setMessages?: (messages: Message[]) => void
   transcribeAudio?: (blob: Blob) => Promise<string>
 }
 
@@ -93,12 +93,12 @@ export function Chat({
             needsUpdate = true
             return {
               ...toolInvocation,
-              state: "result",
+              state: "result" as const,
               result: {
                 content: "Tool execution was cancelled",
                 __cancelled: true, // Special marker to indicate cancellation
               },
-            } as const
+            }
           }
           return toolInvocation
         }
@@ -113,7 +113,7 @@ export function Chat({
     }
 
     if (lastAssistantMessage.parts && lastAssistantMessage.parts.length > 0) {
-      const updatedParts = lastAssistantMessage.parts.map((part: any) => {
+      const updatedParts = lastAssistantMessage.parts.map((part) => {
         if (
           part.type === "tool-invocation" &&
           part.toolInvocation &&
@@ -121,15 +121,15 @@ export function Chat({
         ) {
           needsUpdate = true
           return {
-            ...part,
-            toolInvocation: {
-              ...part.toolInvocation,
-              state: "result",
-              result: {
-                content: "Tool execution was cancelled",
-                __cancelled: true,
-              },
-            },
+          ...part,
+          toolInvocation: {
+          ...part.toolInvocation,
+          state: "result" as const,
+          result: {
+          content: "Tool execution was cancelled",
+          __cancelled: true,
+          },
+          },
           }
         }
         return part

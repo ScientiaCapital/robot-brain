@@ -19,7 +19,50 @@ const customJestConfig = {
     '^@/(.*)$': '<rootDir>/src/$1'
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(react-markdown|remark-gfm|micromark|remark|unified|bail|is-plain-obj|trough|vfile|vfile-message|mdast-util-from-markdown|mdast-util-to-string|unist-util-stringify-position|property-information|hast-util-whitespace|space-separated-tokens|comma-separated-tokens|decode-named-character-reference|character-entities|micromark-util-decode-numeric-character-reference|micromark-util-decode-string)/)'
+    'node_modules/(?!(' +
+    'react-markdown|' +
+    'remark-gfm|' +
+    'remark-parse|' +
+    'remark-rehype|' +
+    'rehype-highlight|' +
+    'rehype-raw|' +
+    'micromark|' +
+    'remark|' +
+    'unified|' +
+    'bail|' +
+    'is-plain-obj|' +
+    'trough|' +
+    'vfile|' +
+    'vfile-message|' +
+    'mdast-util-from-markdown|' +
+    'mdast-util-to-string|' +
+    'mdast-util-to-hast|' +
+    'mdast-util-gfm|' +
+    'hast-util-to-jsx-runtime|' +
+    'unist-util-stringify-position|' +
+    'unist-util-position|' +
+    'unist-util-visit|' +
+    'property-information|' +
+    'hast-util-whitespace|' +
+    'space-separated-tokens|' +
+    'comma-separated-tokens|' +
+    'decode-named-character-reference|' +
+    'character-entities|' +
+    'micromark-util-decode-numeric-character-reference|' +
+    'micromark-util-decode-string|' +
+    'micromark-util-character|' +
+    'micromark-util-chunked|' +
+    'micromark-util-classify-character|' +
+    'micromark-util-combine-extensions|' +
+    'micromark-util-encode|' +
+    'micromark-util-html-tag-name|' +
+    'micromark-util-normalize-identifier|' +
+    'micromark-util-resolve-all|' +
+    'micromark-util-sanitize-uri|' +
+    'micromark-util-subtokenize|' +
+    'micromark-util-symbol|' +
+    'micromark-util-types' +
+    ')/)'
   ],
   // Extended timeout for integration tests
   testTimeout: 10000,
