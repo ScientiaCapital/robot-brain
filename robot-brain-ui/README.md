@@ -4,7 +4,13 @@
 **Robot Brain** is a production-ready AI-powered chat system featuring Robot Friend, built with Next.js 15.4.5 and deployed on Vercel. The project features comprehensive TDD implementation, enterprise-grade security, performance optimization, and the revolutionary Agent Reliability Guardrails System.
 
 ## 🚀 Live Application
-**Production URL**: https://robot-brain-owaxqerjd-scientia-capital.vercel.app
+**Production URL**: https://robot-brain-24lv73qca-scientia-capital.vercel.app
+
+### ✅ Recent Authentication Resolution
+- **Issue Resolved**: Vercel team-level SSO authentication blocking user access
+- **Solution Applied**: Changed OIDC configuration from "Team" to "Global" issuer mode
+- **Result**: Fresh deployment with disabled SSO, enabling public team access
+- **Fresh Deployments**: Multiple deployments created via Vercel CLI to ensure SSO changes take effect
 
 ## 🎯 Key Features
 - **AI Chat**: Anthropic Claude integration (100 tokens, 0.3 temperature optimized)
@@ -155,10 +161,12 @@ npm run test:ci
 ## 🚀 Deployment
 
 ### Production Deployment
-The application is automatically deployed to Vercel on pushes to main branch:
-- **URL**: https://robot-brain-owaxqerjd-scientia-capital.vercel.app
+The application is deployed to Vercel with resolved authentication barriers:
+- **Current URL**: https://robot-brain-24lv73qca-scientia-capital.vercel.app
 - **Platform**: Vercel serverless functions + global CDN
 - **Database**: Neon PostgreSQL with scale-to-zero capability
+- **Authentication**: ✅ SSO authentication issues resolved via global OIDC configuration
+- **Team Access**: ✅ Public team access enabled after SSO configuration change
 
 ### Manual Deployment
 ```bash
@@ -189,6 +197,9 @@ npm run pre-deploy
 
 ## 🏆 Major Achievements
 - ✅ **Production Ready**: Live application with enterprise-grade features
+- ✅ **Authentication Resolution**: Resolved Vercel SSO blocking via global OIDC configuration
+- ✅ **Team Collaboration**: Enabled public team access after SSO configuration changes
+- ✅ **Deployment Pipeline**: Multiple fresh deployments ensuring SSO changes take effect
 - ✅ **Comprehensive Testing**: 53+ test files with 334+ test cases
 - ✅ **Performance Optimized**: 75ms TTS latency with caching and streaming
 - ✅ **Security Hardened**: Input validation, rate limiting, CORS, CSP
