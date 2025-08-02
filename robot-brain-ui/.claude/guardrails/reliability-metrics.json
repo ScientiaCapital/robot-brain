@@ -6,12 +6,19 @@
     "verifiedDeliverables": 4,
     "totalClaims": 4
   },
-  "lastUpdated": "2025-08-02T19:31:27.275Z",
+  "lastUpdated": "2025-08-02T19:49:19.625Z",
   "general-purpose": {
     "totalSessions": 1,
     "averageReliability": 0,
     "phantomClaimsCount": 0,
     "verifiedDeliverables": 0,
     "totalClaims": 0
+  },
+  "bug-hunter-specialist": {
+    "totalSessions": 1,
+    "averageReliability": 50,
+    "phantomClaimsCount": 1,
+    "verifiedDeliverables": 1,
+    "totalClaims": 2
   }
 }
