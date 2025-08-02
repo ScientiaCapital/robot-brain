@@ -26,9 +26,9 @@ interface UseMultiRobotSelectionReturn {
 }
 
 const PRESETS: Record<PresetType, RobotId[]> = {
-  technical: ['nerd'],
-  fun: ['friend', 'pirate', 'drama'],
-  wisdom: ['zen', 'nerd']
+  technical: ['robot-friend'], // MVP: Only one robot available
+  fun: ['robot-friend'],
+  wisdom: ['robot-friend']
 }
 
 export function useMultiRobotSelection(

@@ -37,15 +37,9 @@ export function RobotCircle({ robots, conversation, currentSpeaker }: RobotCircl
   };
 
   // Get robot's thinking style explanation
-  const getThinkingStyle = (robotId: RobotId) => {
-    const styles = {
-      friend: "Uses empathy and kindness to understand others",
-      nerd: "Analyzes facts and explains things step by step", 
-      zen: "Thinks deeply and shares wisdom through stories",
-      pirate: "Approaches problems with bold adventure and creativity",
-      drama: "Expresses ideas with passion and theatrical flair"
-    };
-    return styles[robotId] || "Thinks in their own unique way";
+  const getThinkingStyle = () => {
+    // MVP: Just one robot thinking style
+    return "Uses empathy and kindness to understand others";
   };
 
   // Count messages per robot for activity indicator
@@ -298,7 +292,7 @@ export function RobotCircle({ robots, conversation, currentSpeaker }: RobotCircl
                 )}
               </div>
               <p className="text-xs text-muted-foreground">
-                {getThinkingStyle(robotId)}
+                {getThinkingStyle()}
               </p>
               <div className="flex flex-wrap gap-1 mt-1">
                 {robot.traits.slice(0, 2).map((trait) => (

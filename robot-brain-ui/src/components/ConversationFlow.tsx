@@ -11,9 +11,6 @@ import {
   Clock, 
   Lightbulb,
   Heart,
-  Brain as BrainIcon,
-  Anchor,
-  Theater,
   CheckCircle,
   Users
 } from "lucide-react";
@@ -44,40 +41,14 @@ export function ConversationFlow({
 }: ConversationFlowProps) {
   
   // Get robot-specific styling
-  const getRobotStyle = (robotId: RobotId) => {
-    const styles = {
-      friend: { 
-        bg: "bg-pink-50 dark:bg-pink-950/30", 
-        border: "border-pink-200 dark:border-pink-800",
-        icon: Heart,
-        color: "text-pink-600 dark:text-pink-400"
-      },
-      nerd: { 
-        bg: "bg-blue-50 dark:bg-blue-950/30", 
-        border: "border-blue-200 dark:border-blue-800",
-        icon: BrainIcon,
-        color: "text-blue-600 dark:text-blue-400"
-      },
-      zen: { 
-        bg: "bg-green-50 dark:bg-green-950/30", 
-        border: "border-green-200 dark:border-green-800",
-        icon: Lightbulb,
-        color: "text-green-600 dark:text-green-400"
-      },
-      pirate: { 
-        bg: "bg-orange-50 dark:bg-orange-950/30", 
-        border: "border-orange-200 dark:border-orange-800",
-        icon: Anchor,
-        color: "text-orange-600 dark:text-orange-400"
-      },
-      drama: { 
-        bg: "bg-purple-50 dark:bg-purple-950/30", 
-        border: "border-purple-200 dark:border-purple-800",
-        icon: Theater,
-        color: "text-purple-600 dark:text-purple-400"
-      }
+  const getRobotStyle = () => {
+    // MVP: Just one style for our one robot
+    return { 
+      bg: "bg-pink-50 dark:bg-pink-950/30", 
+      border: "border-pink-200 dark:border-pink-800",
+      icon: Heart,
+      color: "text-pink-600 dark:text-pink-400"
     };
-    return styles[robotId] || styles.friend;
   };
 
   // Group messages by rounds
@@ -161,7 +132,7 @@ export function ConversationFlow({
                 <AnimatePresence>
                   {messagesByRound[roundNum].map((message, index) => {
                     const robot = ROBOT_PERSONALITIES[message.robotId];
-                    const style = getRobotStyle(message.robotId);
+                    const style = getRobotStyle();
                     const Icon = style.icon;
                     const isResponding = message.respondingTo !== undefined;
                     const respondingToMessage = conversation.find(m => m.id === message.respondingTo);
@@ -241,11 +212,7 @@ export function ConversationFlow({
                                 <div className="text-xs text-muted-foreground">
                                   <span className="font-medium">AI Insight:</span>
                                   <span className="ml-1">
-                                    {message.robotId === 'friend' && "Using empathy to connect with others' feelings"}
-                                    {message.robotId === 'nerd' && "Breaking down complex ideas into understandable parts"}
-                                    {message.robotId === 'zen' && "Finding deeper meaning and wisdom in the topic"}
-                                    {message.robotId === 'pirate' && "Approaching with bold creativity and adventure"}
-                                    {message.robotId === 'drama' && "Expressing ideas with passion and theatrical flair"}
+                                    Using empathy and encouragement to make friends smile!
                                   </span>
                                 </div>
                               </div>
