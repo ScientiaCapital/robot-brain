@@ -26,7 +26,7 @@ class TestRobotBrainVercelProduction:
                     json={
                         "personality": personality,
                         "message": "Hello! Can you introduce yourself?",
-                        "model": "ollama"
+                        "model": "elevenlabs"
                     },
                     timeout=30
                 )
@@ -86,7 +86,7 @@ class TestRobotBrainVercelProduction:
                     json={
                         "personality": "friend",  # Use friend as coordinator
                         "message": query,
-                        "model": "ollama"
+                        "model": "elevenlabs"
                     },
                     timeout=30
                 )
@@ -123,7 +123,7 @@ class TestRobotBrainVercelProduction:
                 json={
                     "personality": "friend",
                     "message": "Hello, this is a database test",
-                    "model": "ollama"
+                    "model": "elevenlabs"
                 },
                 timeout=30
             )
@@ -248,7 +248,7 @@ class TestVercelRobotEcosystemIntegration:
                     json={
                         "personality": "friend",  # Use friend as coordinator
                         "message": query,
-                        "model": "ollama"
+                        "model": "elevenlabs"
                     },
                     timeout=30
                 )

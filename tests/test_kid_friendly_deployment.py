@@ -115,7 +115,7 @@ class TestKidFriendlyExperience:
                     json={
                         "personality": scenario["personality"],
                         "message": scenario["message"],
-                        "model": "ollama"
+                        "model": "elevenlabs"
                     },
                     timeout=30
                 )
@@ -177,7 +177,7 @@ class TestKidFriendlyExperience:
                 json={
                     "personality": "unknown_robot",
                     "message": "This should trigger a friendly error",
-                    "model": "ollama"
+                    "model": "elevenlabs"
                 },
                 timeout=15
             )
@@ -225,7 +225,7 @@ class TestKidFriendlyExperience:
                     json={
                         "personality": "friend",
                         "message": question,
-                        "model": "ollama"
+                        "model": "elevenlabs"
                     },
                     timeout=15
                 )
@@ -302,7 +302,7 @@ class TestKidSafetyAndContent:
                     json={
                         "personality": "friend",
                         "message": problematic_input,
-                        "model": "ollama"
+                        "model": "elevenlabs"
                     },
                     timeout=20
                 )
@@ -351,7 +351,7 @@ class TestKidSafetyAndContent:
                     json={
                         "personality": "nerd",  # Educational personality
                         "message": edu_test["query"],
-                        "model": "ollama"
+                        "model": "elevenlabs"
                     },
                     timeout=25
                 )
