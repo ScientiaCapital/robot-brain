@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { neon } from '@neondatabase/serverless';
 import { ROBOT_PERSONALITIES } from '@/lib/robot-config';
+import { schemas, sanitizeInput, validateSessionId, checkRateLimit, getClientIP } from '@/lib/validation';
+import { responseCache, logCachePerformance } from '@/lib/response-cache';
 
 // Initialize Anthropic
 const anthropic = new Anthropic({
@@ -16,12 +18,31 @@ const sql = neon(process.env.NEON_DATABASE_URL!);
 const conversationHistory = new Map<string, Array<{role: string, content: string}>>();
 
 export async function POST(request: NextRequest) {
+  const startTime = Date.now();
+  
   try {
-    const { message, personality = 'robot-friend', sessionId = 'default' } = await request.json();
-
-    if (!message) {
-      return NextResponse.json({ error: 'Message is required' }, { status: 400 });
+    // Rate limiting
+    const ip = getClientIP(request);
+    if (!checkRateLimit(ip, 20, 60000)) { // 20 requests per minute
+      return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
     }
+
+    // Parse and validate input
+    const body = await request.json();
+    const validationResult = schemas.chatRequest.safeParse(body);
+    
+    if (!validationResult.success) {
+      return NextResponse.json({ 
+        error: 'Invalid input',
+        details: validationResult.error.issues.map(i => i.message)
+      }, { status: 400 });
+    }
+
+    const { message, personality, sessionId = 'default' } = validationResult.data;
+    
+    // Sanitize input
+    const sanitizedMessage = sanitizeInput(message);
+    const validatedSessionId = validateSessionId(sessionId);
 
     // Get robot configuration
     const robot = ROBOT_PERSONALITIES[personality as keyof typeof ROBOT_PERSONALITIES];
@@ -29,11 +50,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid personality' }, { status: 400 });
     }
 
+    // Check cache first
+    const cachedResponse = responseCache.get(message, personality);
+    if (cachedResponse) {
+      const responseTime = Date.now() - startTime;
+      console.log(`[Cache Hit] Response time: ${responseTime}ms`);
+      
+      return NextResponse.json({
+        message: cachedResponse,
+        personality: personality,
+        emoji: robot.emoji,
+        name: robot.name,
+        sessionId: sessionId,
+        cached: true,
+        responseTime: responseTime
+      });
+    }
+
     // Get or create conversation history
     const history = conversationHistory.get(sessionId) || [];
     
-    // Add user message to history
-    history.push({ role: 'user', content: message });
+    // Add user message to history (using sanitized message)
+    history.push({ role: 'user', content: sanitizedMessage });
 
     // Create messages array for Anthropic
     const messages = history.map(msg => ({
@@ -44,15 +82,18 @@ export async function POST(request: NextRequest) {
     // Send message to Anthropic
     const response = await anthropic.messages.create({
       model: 'claude-3-haiku-20240307',
-      max_tokens: 150,
-      temperature: 0.7,
-      system: robot.systemPrompt,
+      max_tokens: 100,
+      temperature: 0.3,
+      system: robot.systemPrompt + "\n\nIMPORTANT: Keep responses under 2 sentences. Be concise and clear.",
       messages: messages
     });
 
     const responseText = response.content[0].type === 'text' 
       ? response.content[0].text 
       : '';
+
+    // Cache the response
+    responseCache.set(message, personality, responseText);
 
     // Add assistant response to history
     history.push({ role: 'assistant', content: responseText });
@@ -70,9 +111,9 @@ export async function POST(request: NextRequest) {
           robot_response,
           created_at
         ) VALUES (
-          ${sessionId},
+          ${validatedSessionId},
           ${personality},
-          ${message},
+          ${sanitizedMessage},
           ${responseText},
           NOW()
         )
@@ -82,12 +123,22 @@ export async function POST(request: NextRequest) {
       // Continue even if DB fails
     }
 
+    const responseTime = Date.now() - startTime;
+    console.log(`[API Response] Time: ${responseTime}ms`);
+    
+    // Log cache performance every 10 requests
+    if (Math.random() < 0.1) {
+      logCachePerformance();
+    }
+
     return NextResponse.json({
       message: responseText,
       personality: personality,
       emoji: robot.emoji,
       name: robot.name,
-      sessionId: sessionId
+      sessionId: sessionId,
+      cached: false,
+      responseTime: responseTime
     });
 
   } catch (error) {

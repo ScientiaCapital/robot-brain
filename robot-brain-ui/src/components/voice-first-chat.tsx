@@ -1,14 +1,21 @@
 "use client"
 
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect, memo, lazy, Suspense } from "react"
 import "@/types/speech-recognition"
 import { motion } from "framer-motion"
-import { Mic, MicOff, Volume2, VolumeX, MessageSquare } from "lucide-react"
+import { Mic, MicOff, Volume2, VolumeX, MessageSquare, Zap } from "lucide-react"
 
 import { Chat } from "@/components/ui/chat"
 import { Button } from "@/components/ui/button"
-
 import { ROBOT_PERSONALITIES, type RobotId } from "@/lib/robot-config"
+import { streamTTSAudio, AudioStreamingMetrics } from "@/lib/audio-streaming"
+
+// Lazy load ConversationalAI component for better performance
+const ConversationalAIChat = lazy(() => 
+  import("@/components/conversational-ai-chat").then(module => ({
+    default: module.ConversationalAIChat
+  }))
+);
 
 interface Message {
   id: string
@@ -20,7 +27,17 @@ interface Message {
   }>
 }
 
-export function VoiceFirstChat() {
+// Memoized loading component
+const ConversationalAILoading = memo(() => (
+  <div className="flex items-center justify-center p-8">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    <span className="ml-2 text-muted-foreground">Loading Conversational AI...</span>
+  </div>
+));
+
+ConversationalAILoading.displayName = 'ConversationalAILoading';
+
+export const VoiceFirstChat = memo(function VoiceFirstChat() {
   const selectedRobot: RobotId = "robot-friend" // Single robot for MVP
   const [isListening, setIsListening] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
@@ -28,45 +45,35 @@ export function VoiceFirstChat() {
   const [input, setInput] = useState("")
   const [isGenerating, setIsGenerating] = useState(false)
   const [sessionId] = useState(() => `session-${Date.now()}`)
-  const [conversationMode, setConversationMode] = useState<'text' | 'voice'>('text')
+  const [conversationMode, setConversationMode] = useState<'text' | 'voice' | 'convai'>('text')
+  const [useConversationalAI, setUseConversationalAI] = useState(false)
 
-  // Handle TTS playback using ElevenLabs
+  // Handle TTS playback using streaming audio
   const speakResponse = useCallback(async (text: string) => {
     if (isSpeaking) return
     
     setIsSpeaking(true)
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
-      const response = await fetch(`${apiUrl}/api/voice/text-to-speech`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          text,
-          personality: selectedRobot
-        })
-      })
-
-      if (response.ok) {
-        const { audio } = await response.json()
-        const audioElement = new Audio(`data:audio/mpeg;base64,${audio}`)
-        
-        audioElement.onended = () => {
-          setIsSpeaking(false)
-          // In voice mode, we'll trigger listening from a useEffect
+      const startTime = Date.now();
+      
+      // Use streaming TTS for better performance
+      await streamTTSAudio(text, selectedRobot, {
+        onProgress: (progress) => {
+          console.log(`TTS Progress: ${Math.round(progress * 100)}%`);
+        },
+        onComplete: () => {
+          const endTime = Date.now();
+          AudioStreamingMetrics.recordRequest(startTime, endTime);
+          setIsSpeaking(false);
+          console.log('TTS completed with streaming');
+        },
+        onError: (error) => {
+          console.error('TTS streaming error:', error);
+          setIsSpeaking(false);
         }
-        
-        audioElement.onerror = () => {
-          console.error("Audio playback error")
-          setIsSpeaking(false)
-        }
-        
-        await audioElement.play()
-      } else {
-        console.error("TTS API error:", await response.text())
-        setIsSpeaking(false)
-      }
+      });
     } catch (error) {
-      console.error("TTS playback failed:", error)
+      console.error("TTS streaming failed:", error)
       setIsSpeaking(false)
     }
   }, [isSpeaking, selectedRobot])
@@ -191,6 +198,15 @@ export function VoiceFirstChat() {
     return "Audio transcription coming soon!"
   }
 
+  // Conditionally render Conversational AI or Standard Chat
+  if (useConversationalAI) {
+    return (
+      <Suspense fallback={<ConversationalAILoading />}>
+        <ConversationalAIChat />
+      </Suspense>
+    )
+  }
+
   return (
     <div className="flex h-screen bg-gradient-to-br from-purple-50 to-pink-50">
       <div className="flex-1 flex flex-col max-w-6xl mx-auto w-full">
@@ -219,14 +235,26 @@ export function VoiceFirstChat() {
             {/* Voice Controls */}
             <div className="flex items-center gap-2">
               <Button
-                variant={conversationMode === 'voice' ? "default" : "outline"}
+                variant={useConversationalAI ? "default" : "outline"}
                 size="sm"
-                onClick={() => setConversationMode(conversationMode === 'voice' ? 'text' : 'voice')}
+                onClick={() => setUseConversationalAI(!useConversationalAI)}
                 className="flex items-center gap-2"
               >
-                {conversationMode === 'voice' ? <Mic className="h-4 w-4" /> : <MessageSquare className="h-4 w-4" />}
-                {conversationMode === 'voice' ? 'Voice Mode' : 'Text Mode'}
+                <Zap className="h-4 w-4" />
+                {useConversationalAI ? 'Conv AI' : 'Standard'}
               </Button>
+              
+              {!useConversationalAI && (
+                <Button
+                  variant={conversationMode === 'voice' ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setConversationMode(conversationMode === 'voice' ? 'text' : 'voice')}
+                  className="flex items-center gap-2"
+                >
+                  {conversationMode === 'voice' ? <Mic className="h-4 w-4" /> : <MessageSquare className="h-4 w-4" />}
+                  {conversationMode === 'voice' ? 'Voice Mode' : 'Text Mode'}
+                </Button>
+              )}
               
               {conversationMode === 'voice' && (
                 <>
@@ -285,4 +313,4 @@ export function VoiceFirstChat() {
       </div>
     </div>
   )
-}
+});
