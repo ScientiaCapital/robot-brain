@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import Anthropic from '@anthropic-ai/sdk';
+import { neon } from '@neondatabase/serverless';
 import { ROBOT_PERSONALITIES } from '@/lib/robot-config';
 
-// Initialize Gemini AI
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
+// Initialize Anthropic
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY!,
+});
+
+// Initialize Neon
+const sql = neon(process.env.NEON_DATABASE_URL!);
 
 // For now, we'll use in-memory session storage
 // In production, this would use Neon PostgreSQL
@@ -29,24 +35,24 @@ export async function POST(request: NextRequest) {
     // Add user message to history
     history.push({ role: 'user', content: message });
 
-    // Create the model
-    const model = genAI.getGenerativeModel({ 
-      model: 'gemini-pro',
-      systemInstruction: robot.systemPrompt
+    // Create messages array for Anthropic
+    const messages = history.map(msg => ({
+      role: msg.role === 'user' ? 'user' as const : 'assistant' as const,
+      content: msg.content
+    }));
+
+    // Send message to Anthropic
+    const response = await anthropic.messages.create({
+      model: 'claude-3-haiku-20240307',
+      max_tokens: 150,
+      temperature: 0.7,
+      system: robot.systemPrompt,
+      messages: messages
     });
 
-    // Start a chat session with history
-    const chat = model.startChat({
-      history: history.map(msg => ({
-        role: msg.role === 'user' ? 'user' : 'model',
-        parts: [{ text: msg.content }]
-      }))
-    });
-
-    // Send the message
-    const result = await chat.sendMessage(message);
-    const response = await result.response;
-    const responseText = response.text();
+    const responseText = response.content[0].type === 'text' 
+      ? response.content[0].text 
+      : '';
 
     // Add assistant response to history
     history.push({ role: 'assistant', content: responseText });
@@ -54,8 +60,27 @@ export async function POST(request: NextRequest) {
     // Store updated history
     conversationHistory.set(sessionId, history);
 
-    // TODO: Store in Neon PostgreSQL using the backend API
-    // For now, we'll use the FastAPI backend later
+    // Store in Neon PostgreSQL
+    try {
+      await sql`
+        INSERT INTO conversations (
+          session_id,
+          robot_personality,
+          user_message,
+          robot_response,
+          created_at
+        ) VALUES (
+          ${sessionId},
+          ${personality},
+          ${message},
+          ${responseText},
+          NOW()
+        )
+      `;
+    } catch (dbError) {
+      console.error('Database error:', dbError);
+      // Continue even if DB fails
+    }
 
     return NextResponse.json({
       message: responseText,

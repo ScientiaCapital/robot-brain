@@ -35,7 +35,8 @@ export function VoiceFirstChat() {
     
     setIsSpeaking(true)
     try {
-      const response = await fetch("/api/voice/text-to-speech", {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
+      const response = await fetch(`${apiUrl}/api/voice/text-to-speech`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
