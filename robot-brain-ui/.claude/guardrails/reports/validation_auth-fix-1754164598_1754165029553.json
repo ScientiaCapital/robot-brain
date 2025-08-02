@@ -1,0 +1,94 @@
+{
+  "checkpointId": "auth-fix-1754164598",
+  "agentType": "security-auditor-expert",
+  "timestamp": "2025-08-02T20:03:49.552Z",
+  "claimedDeliverables": [
+    {
+      "type": "file_analyzed",
+      "path": "src/app/api/chat/route.ts",
+      "description": "Verified API security implementation"
+    },
+    {
+      "type": "file_analyzed",
+      "path": "src/middleware.ts",
+      "description": "Verified security headers and CORS"
+    },
+    {
+      "type": "file_analyzed",
+      "path": "vercel.json",
+      "description": "Verified deployment configuration"
+    },
+    {
+      "type": "diagnosis_completed",
+      "description": "Identified Vercel team SSO as root cause"
+    }
+  ],
+  "actualDeliverables": [
+    {
+      "type": "file_created",
+      "path": ".claude/guardrails/checkpoints/auth-fix-1754164598.json",
+      "evidence": "New file detected"
+    }
+  ],
+  "validationResults": [
+    {
+      "claim": {
+        "type": "file_analyzed",
+        "path": "src/app/api/chat/route.ts",
+        "description": "Verified API security implementation"
+      },
+      "status": "unknown",
+      "evidence": [],
+      "issues": [
+        "Unknown deliverable type: file_analyzed"
+      ]
+    },
+    {
+      "claim": {
+        "type": "file_analyzed",
+        "path": "src/middleware.ts",
+        "description": "Verified security headers and CORS"
+      },
+      "status": "unknown",
+      "evidence": [],
+      "issues": [
+        "Unknown deliverable type: file_analyzed"
+      ]
+    },
+    {
+      "claim": {
+        "type": "file_analyzed",
+        "path": "vercel.json",
+        "description": "Verified deployment configuration"
+      },
+      "status": "unknown",
+      "evidence": [],
+      "issues": [
+        "Unknown deliverable type: file_analyzed"
+      ]
+    },
+    {
+      "claim": {
+        "type": "diagnosis_completed",
+        "description": "Identified Vercel team SSO as root cause"
+      },
+      "status": "unknown",
+      "evidence": [],
+      "issues": [
+        "Unknown deliverable type: diagnosis_completed"
+      ]
+    }
+  ],
+  "reliability": {
+    "claimedVsActual": 0,
+    "phantomClaims": [],
+    "missedChanges": [
+      {
+        "type": "file_created",
+        "path": ".claude/guardrails/checkpoints/auth-fix-1754164598.json",
+        "evidence": "New file detected"
+      }
+    ],
+    "verified": []
+  }
+}
