@@ -1,21 +1,14 @@
 "use client"
 
-import { useState, useCallback, useEffect, memo, lazy, Suspense } from "react"
+import { useState, useCallback, useEffect, memo } from "react"
 import "@/types/speech-recognition"
 import { motion } from "framer-motion"
-import { Mic, MicOff, Volume2, VolumeX, MessageSquare, Zap } from "lucide-react"
+import { Mic, MicOff, Volume2, VolumeX, MessageSquare } from "lucide-react"
 
 import { Chat } from "@/components/ui/chat"
 import { Button } from "@/components/ui/button"
 import { ROBOT_PERSONALITIES, type RobotId } from "@/lib/robot-config"
 import { streamTTSAudio, AudioStreamingMetrics } from "@/lib/audio-streaming"
-
-// Lazy load ConversationalAI component for better performance
-const ConversationalAIChat = lazy(() => 
-  import("@/components/conversational-ai-chat").then(module => ({
-    default: module.ConversationalAIChat
-  }))
-);
 
 interface Message {
   id: string
@@ -27,16 +20,6 @@ interface Message {
   }>
 }
 
-// Memoized loading component
-const ConversationalAILoading = memo(() => (
-  <div className="flex items-center justify-center p-8">
-    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-    <span className="ml-2 text-muted-foreground">Loading Conversational AI...</span>
-  </div>
-));
-
-ConversationalAILoading.displayName = 'ConversationalAILoading';
-
 export const VoiceFirstChat = memo(function VoiceFirstChat() {
   const selectedRobot: RobotId = "robot-friend" // Single robot for MVP
   const [isListening, setIsListening] = useState(false)
@@ -45,8 +28,7 @@ export const VoiceFirstChat = memo(function VoiceFirstChat() {
   const [input, setInput] = useState("")
   const [isGenerating, setIsGenerating] = useState(false)
   const [sessionId] = useState(() => `session-${Date.now()}`)
-  const [conversationMode, setConversationMode] = useState<'text' | 'voice' | 'convai'>('text')
-  const [useConversationalAI, setUseConversationalAI] = useState(false)
+  const [conversationMode, setConversationMode] = useState<'text' | 'voice'>('text')
 
   // Handle TTS playback using streaming audio
   const speakResponse = useCallback(async (text: string) => {
@@ -198,14 +180,8 @@ export const VoiceFirstChat = memo(function VoiceFirstChat() {
     return "Audio transcription coming soon!"
   }
 
-  // Conditionally render Conversational AI or Standard Chat
-  if (useConversationalAI) {
-    return (
-      <Suspense fallback={<ConversationalAILoading />}>
-        <ConversationalAIChat />
-      </Suspense>
-    )
-  }
+  // Always render Standard Chat for MVP
+  // ConversationalAI is coming in future updates
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-purple-50 to-pink-50">
@@ -234,27 +210,16 @@ export const VoiceFirstChat = memo(function VoiceFirstChat() {
 
             {/* Voice Controls */}
             <div className="flex items-center gap-2">
+              
               <Button
-                variant={useConversationalAI ? "default" : "outline"}
+                variant={conversationMode === 'voice' ? "default" : "outline"}
                 size="sm"
-                onClick={() => setUseConversationalAI(!useConversationalAI)}
+                onClick={() => setConversationMode(conversationMode === 'voice' ? 'text' : 'voice')}
                 className="flex items-center gap-2"
               >
-                <Zap className="h-4 w-4" />
-                {useConversationalAI ? 'Conv AI' : 'Standard'}
+                {conversationMode === 'voice' ? <Mic className="h-4 w-4" /> : <MessageSquare className="h-4 w-4" />}
+                {conversationMode === 'voice' ? 'Voice Mode' : 'Text Mode'}
               </Button>
-              
-              {!useConversationalAI && (
-                <Button
-                  variant={conversationMode === 'voice' ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setConversationMode(conversationMode === 'voice' ? 'text' : 'voice')}
-                  className="flex items-center gap-2"
-                >
-                  {conversationMode === 'voice' ? <Mic className="h-4 w-4" /> : <MessageSquare className="h-4 w-4" />}
-                  {conversationMode === 'voice' ? 'Voice Mode' : 'Text Mode'}
-                </Button>
-              )}
               
               {conversationMode === 'voice' && (
                 <>

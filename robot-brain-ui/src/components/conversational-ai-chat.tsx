@@ -78,12 +78,12 @@ export function ConversationalAIChat() {
   // Fallback functions for missing API
   const startConversation = useCallback(async (config: unknown) => {
     console.log("Starting conversation with config:", config)
-    addSystemMessage("Conversational AI mode requires ElevenLabs agent configuration.")
+    addSystemMessage("Advanced Conversational AI is coming soon! For now, please use Standard chat mode for full functionality.")
   }, [addSystemMessage])
   
   const endConversation = useCallback(async () => {
     console.log("Ending conversation")
-    addSystemMessage("Conversation ended.")
+    addSystemMessage("Switching back to Standard chat mode for full functionality.")
   }, [addSystemMessage])
   
   const sendTextInput = useCallback(async (text: string) => {
