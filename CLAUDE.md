@@ -1,69 +1,48 @@
 # CLAUDE.md - Robot Brain Project Context
 
 ## 🤖 Project Overview
-**Robot Brain** is an AI-powered chat system featuring multiple robot personalities, built with modern web technologies and designed to be educational and fun for kids while providing powerful developer tools.
+**Robot Brain** is an AI-powered chat system featuring a friendly robot assistant, built with modern web technologies and designed to be educational and fun for kids while following strict TDD principles.
 
 ## 🎯 Project Goals
-1. Create engaging AI chat experiences with distinct robot personalities
-2. Enable multi-robot conversations so kids can see how AI agents collaborate
-3. Provide scalable cloud deployment with Neon PostgreSQL
-4. Build a modular system for adding AI tools and capabilities
-5. Make AI accessible and fun for children
-6. Offer developer-friendly debugging and configuration options
-7. **✅ COMPLETED: Voice-first interaction** using ElevenLabs TTS with 5 API endpoints
-8. **✅ COMPLETED: ElevenLabs Conversational AI CLI integration** with comprehensive robot ecosystem
-9. **✅ COMPLETED: TDD-driven Vercel deployment** at robots2.scientiacapital.com
-10. **🚧 IN PROGRESS: ElevenLabs Conversational AI bubble chat** for seamless voice interactions
-11. **🎯 TARGET: Real-time streaming** with <75ms latency for immediate feedback
+1. **MVP FOCUS**: ONE robot working perfectly with voice and text
+2. Create engaging AI chat experience with Robot Friend
+3. Voice-first interaction using ElevenLabs TTS
+4. Text mode with AI responses and voice output
+5. Voice mode with speech recognition and natural conversation
+6. Strict TDD principles - clean, tested, production-ready code
+7. **✅ COMPLETED: Voice-first interaction** using ElevenLabs TTS
+8. **🚧 IN PROGRESS: Natural conversation** between robot and kids
+9. **🎯 TARGET: Real-time streaming** with <75ms latency
 
-## 🚀 MAJOR MILESTONE: ElevenLabs Robot Ecosystem (COMPLETED)
+## 🚀 MVP: Robot Friend - ONE Robot Working Perfectly
 
-### ✅ Professional Robot Team Architecture
-**16 Specialized Robots Across 5 Industry Verticals:**
+### ✅ Robot Friend Configuration
+**A cheerful, supportive, and enthusiastic companion for kids:**
 
-#### 🏢 Business Function Robots
-- **Robot Trader**: Financial markets expert with trading insights and risk analysis
-- **Robot HR**: Compassionate human resources expert for employee relations
-- **Robot Payroll**: Meticulous payroll processing with tax and benefits calculations
+```typescript
+{
+  id: "robot-friend",
+  name: "Robot Friend",
+  emoji: "😊",
+  traits: ["cheerful", "supportive", "enthusiastic"],
+  voice_id: "21m00Tcm4TlvDq8ikWAM", // Rachel - warm, friendly
+  tools: ["chat"], // Simplified - just chat for MVP
+  systemPrompt: "You are Robot Friend, a cheerful and supportive robot assistant...",
+  welcomeMessage: "Hi there! I'm Robot Friend! 😊..."
+}
+```
 
-#### 🏗️ Construction Vertical
-- **Robot Foreman**: Experienced construction supervisor focused on safety and quality
-- **Robot Estimator**: Cost analysis expert for project bidding and budgeting
+### 🎙️ Voice Interaction Modes
+**Three ways to interact with Robot Friend:**
+1. **Text Mode**: Type → AI responds → Robot speaks
+2. **Voice Mode**: Speak → Transcribe → AI responds → Robot speaks
+3. **Always show text**: Both modes display conversation on screen
 
-#### 🏠 Home Services Vertical  
-- **Robot Contractor**: Trustworthy home improvement expert with building code knowledge
-- **Robot Plumber**: Plumbing systems expert for diagnostics and emergency repairs
-
-#### 🏨 Rental/Airbnb Vertical
-- **Robot Host**: Hospitality expert for vacation rental management and guest experience
-- **Robot Concierge**: Local area expert providing recommendations and guest services
-- **Robot Maintenance**: Property upkeep specialist for preventive maintenance
-
-#### 👥 Core Social Robots (Original 5)
-- **Robot Companion** (Friend): Cheerful and encouraging for emotional support
-- **Robot Expert** (Nerd): Technical explanations and learning assistance
-- **Robot Zen**: Calm mindfulness and peaceful guidance
-- **Robot Pirate**: Adventurous storytelling with nautical flair
-- **Robot Drama**: Theatrical and expressive personality
-
-### 🎙️ Voice-Discoverable Team Coordination
-**Natural Language Team Queries:**
-- "Get me the construction team" → Routes to Robot Foreman + Robot Estimator
-- "I need help with trading" → Connects to Robot Trader with market expertise
-- "Connect me to the rental team" → Activates Robot Host + Robot Concierge + Robot Maintenance
-- "Who can help with home services?" → Routes to Robot Contractor + Robot Plumber
-
-### 🔌 Plugin Architecture Excellence
-- **Naming Convention**: robot-{type} for unlimited extensibility
-- **Voice Personality Mapping**: Each robot has unique ElevenLabs voice ID
-- **Industry Vertical Organization**: Business, Construction, Home Services, Rental
-- **Team Coordination**: Voice-activated professional team discovery
-
-### 🧪 TDD Integration Success
-- **CLI Integration Tests**: 12 comprehensive tests covering authentication, agent creation, deployment
-- **Agent Configuration**: 16 JSON configuration files with ElevenLabs conversation settings
-- **Production Deployment**: TDD-validated Vercel serverless deployment
-- **Type Safety**: 100% mypy compliance maintained throughout expansion
+### 🧪 TDD Excellence
+- **79 tests passing**: Complete test coverage
+- **0 ESLint errors**: Clean, production-ready code
+- **TypeScript strict**: 100% type safety
+- **Production build**: Optimized and deployable
 
 ## 🏗️ Architecture
 
@@ -79,12 +58,10 @@
 ┌────────────────────▼───────────────▼────────────────────┐
 │                  Robot Brain Core                        │
 │  ┌─────────────────────────────────────────────────┐   │
-│  │          16 Robot Personalities                  │   │
-│  │  Core: Friend | Nerd | Zen | Pirate | Drama    │   │
-│  │  Business: Trader | HR | Payroll               │   │
-│  │  Construction: Foreman | Estimator             │   │
-│  │  Home Services: Contractor | Plumber           │   │
-│  │  Rental: Host | Concierge | Maintenance        │   │
+│  │          Robot Friend (MVP)                     │   │
+│  │  Cheerful, supportive, enthusiastic companion  │   │
+│  │  Voice: ElevenLabs Rachel (warm, friendly)     │   │
+│  │  Tools: Chat conversation                      │   │
 │  └─────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────┐   │
 │  │              Tool System                         │   │

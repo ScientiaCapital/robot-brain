@@ -18,12 +18,12 @@ describe('RobotCard', () => {
   test('renders robot card with correct content', () => {
     render(
       <RobotCard 
-        robotId="friend" 
+        robotId="robot-friend" 
         onClick={mockOnClick}
       />
     )
 
-    expect(screen.getByText('RoboFriend')).toBeInTheDocument()
+    expect(screen.getByText('Robot Friend')).toBeInTheDocument()
     expect(screen.getByText('😊')).toBeInTheDocument()
     expect(screen.getByText(/cheerful/)).toBeInTheDocument()
     expect(screen.getByText(/supportive/)).toBeInTheDocument()
@@ -32,45 +32,31 @@ describe('RobotCard', () => {
   test('displays robot tools as badges', () => {
     render(
       <RobotCard 
-        robotId="nerd" 
+        robotId="robot-friend" 
         onClick={mockOnClick}
       />
     )
 
-    // Should show first 3 tools
-    expect(screen.getByText(/Chat/)).toBeInTheDocument()
-    expect(screen.getByText(/Calculator/)).toBeInTheDocument()
-    expect(screen.getByText(/Explainer/)).toBeInTheDocument()
-  })
-
-  test('shows "+X more" when robot has more than 3 tools', () => {
-    render(
-      <RobotCard 
-        robotId="nerd" 
-        onClick={mockOnClick}
-      />
-    )
-
-    // RoboNerd has more than 3 tools, should show "+X more"
-    expect(screen.getByText(/\+\d+ more/)).toBeInTheDocument()
+    // robot-friend only has chat tool
+    expect(screen.getByText(/chat/i)).toBeInTheDocument()
   })
 
   test('calls onClick when card is clicked', () => {
     render(
       <RobotCard 
-        robotId="friend" 
+        robotId="robot-friend" 
         onClick={mockOnClick}
       />
     )
 
-    fireEvent.click(screen.getByText('RoboFriend'))
+    fireEvent.click(screen.getByText('Robot Friend'))
     expect(mockOnClick).toHaveBeenCalledTimes(1)
   })
 
   test('applies selected styling when isSelected is true', () => {
     const { container } = render(
       <RobotCard 
-        robotId="friend" 
+        robotId="robot-friend" 
         isSelected={true}
         onClick={mockOnClick}
       />
@@ -83,7 +69,7 @@ describe('RobotCard', () => {
   test('does not apply selected styling when isSelected is false', () => {
     const { container } = render(
       <RobotCard 
-        robotId="friend" 
+        robotId="robot-friend" 
         isSelected={false}
         onClick={mockOnClick}
       />
@@ -93,67 +79,40 @@ describe('RobotCard', () => {
     expect(card).not.toHaveClass('ring-2', 'ring-primary')
   })
 
-  test('renders all robot personalities correctly', () => {
-    const robotIds = ['friend', 'nerd', 'zen', 'pirate', 'drama'] as const
-
-    robotIds.forEach(robotId => {
-      const { unmount } = render(
-        <RobotCard 
-          robotId={robotId} 
-          onClick={mockOnClick}
-        />
-      )
-
-      // Each robot should have its emoji and name visible
-      const robotConfig = {
-        friend: { name: 'RoboFriend', emoji: '😊' },
-        nerd: { name: 'RoboNerd', emoji: '🤓' },
-        zen: { name: 'RoboZen', emoji: '🧘' },
-        pirate: { name: 'RoboPirate', emoji: '🏴‍☠️' },
-        drama: { name: 'RoboDrama', emoji: '🎭' }
-      }
-
-      expect(screen.getByText(robotConfig[robotId].name)).toBeInTheDocument()
-      expect(screen.getByText(robotConfig[robotId].emoji)).toBeInTheDocument()
-
-      unmount()
-    })
-  })
-
   test('handles missing onClick gracefully', () => {
     render(
       <RobotCard 
-        robotId="friend"
+        robotId="robot-friend"
       />
     )
 
     // Should not throw error when clicked without onClick handler
     expect(() => {
-      fireEvent.click(screen.getByText('RoboFriend'))
+      fireEvent.click(screen.getByText('Robot Friend'))
     }).not.toThrow()
   })
 
   test('uses correct index for animation delay', () => {
     const { rerender } = render(
       <RobotCard 
-        robotId="friend" 
+        robotId="robot-friend" 
         index={0}
         onClick={mockOnClick}
       />
     )
 
     // Component should render without error with index
-    expect(screen.getByText('RoboFriend')).toBeInTheDocument()
+    expect(screen.getByText('Robot Friend')).toBeInTheDocument()
 
     rerender(
       <RobotCard 
-        robotId="friend" 
+        robotId="robot-friend" 
         index={5}
         onClick={mockOnClick}
       />
     )
 
     // Should still render correctly with different index
-    expect(screen.getByText('RoboFriend')).toBeInTheDocument()
+    expect(screen.getByText('Robot Friend')).toBeInTheDocument()
   })
 })

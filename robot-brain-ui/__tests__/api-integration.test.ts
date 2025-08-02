@@ -33,14 +33,14 @@ describe('Robot Brain API Integration', () => {
   })
 
   describe('GET /api/robots', () => {
-    test('should return all robot personalities', async () => {
+    test('should return robot personality', async () => {
       // Mock successful response
       const mockRobots = {
-        friend: { name: 'RoboFriend', emoji: '😊', traits: ['cheerful'] },
-        nerd: { name: 'RoboNerd', emoji: '🤓', traits: ['analytical'] },
-        zen: { name: 'RoboZen', emoji: '🧘', traits: ['wise'] },
-        pirate: { name: 'RoboPirate', emoji: '🏴‍☠️', traits: ['adventurous'] },
-        drama: { name: 'RoboDrama', emoji: '🎭', traits: ['dramatic'] }
+        'robot-friend': { 
+          name: 'Robot Friend', 
+          emoji: '😊', 
+          traits: ['cheerful', 'supportive', 'enthusiastic'] 
+        }
       }
       
       mockFetch.mockResolvedValueOnce({
@@ -57,14 +57,12 @@ describe('Robot Brain API Integration', () => {
       expect(robots).toBeDefined()
       expect(typeof robots).toBe('object')
       
-      // Check for expected robot personalities
-      const expectedRobots = ['friend', 'nerd', 'zen', 'pirate', 'drama']
-      expectedRobots.forEach(robotId => {
-        expect(robots[robotId]).toBeDefined()
-        expect(robots[robotId]).toHaveProperty('name')
-        expect(robots[robotId]).toHaveProperty('emoji')
-        expect(robots[robotId]).toHaveProperty('traits')
-      })
+      // Check for robot-friend
+      expect(robots['robot-friend']).toBeDefined()
+      expect(robots['robot-friend']).toHaveProperty('name', 'Robot Friend')
+      expect(robots['robot-friend']).toHaveProperty('emoji', '😊')
+      expect(robots['robot-friend']).toHaveProperty('traits')
+      expect(robots['robot-friend'].traits).toContain('cheerful')
     })
   })
 
@@ -72,9 +70,9 @@ describe('Robot Brain API Integration', () => {
     test('should return available AI models', async () => {
       const mockModels = {
         chat: {
-          default: 'llama-2-7b-chat',
-          fast: 'tinyllama-1.1b-chat',
-          smart: 'mistral-7b-instruct'
+          default: 'gemini-pro',
+          fast: 'gemini-pro',
+          smart: 'gemini-pro'
         }
       }
       
@@ -100,12 +98,7 @@ describe('Robot Brain API Integration', () => {
   describe('GET /api/tools', () => {
     test('should return available robot tools', async () => {
       const mockTools = {
-        chat: { name: 'Chat', icon: '💬', description: 'General conversation' },
-        jokes: { name: 'Tell Jokes', icon: '😂', description: 'Tell funny jokes' },
-        calculate: { name: 'Calculator', icon: '🧮', description: 'Solve math problems' },
-        wisdom: { name: 'Wisdom', icon: '🦉', description: 'Share wisdom' },
-        treasure_hunt: { name: 'Treasure Hunt', icon: '🗺️', description: 'Create treasure hunts' },
-        perform: { name: 'Performance', icon: '🎭', description: 'Dramatic performances' }
+        chat: { name: 'Chat', icon: '💬', description: 'General conversation' }
       }
       
       mockFetch.mockResolvedValueOnce({
@@ -122,26 +115,23 @@ describe('Robot Brain API Integration', () => {
       expect(tools).toBeDefined()
       expect(typeof tools).toBe('object')
       
-      // Check for expected tools
-      const expectedTools = ['chat', 'jokes', 'calculate', 'wisdom', 'treasure_hunt', 'perform']
-      expectedTools.forEach(toolId => {
-        expect(tools[toolId]).toBeDefined()
-        expect(tools[toolId]).toHaveProperty('name')
-        expect(tools[toolId]).toHaveProperty('icon')
-        expect(tools[toolId]).toHaveProperty('description')
-      })
+      // Check for chat tool
+      expect(tools.chat).toBeDefined()
+      expect(tools.chat).toHaveProperty('name', 'Chat')
+      expect(tools.chat).toHaveProperty('icon', '💬')
+      expect(tools.chat).toHaveProperty('description')
     })
   })
 
   describe('POST /api/chat', () => {
-    test('should handle RoboFriend chat request', async () => {
+    test('should handle Robot Friend chat request', async () => {
       const mockResponse = {
         response: "Hello there! 😊 I'm so happy to chat with you! How are you doing today?",
-        personality: 'friend',
+        personality: 'robot-friend',
         emoji: '😊',
-        name: 'RoboFriend',
-        model: 'llama-2-7b-chat',
-        tools: ['chat', 'jokes', 'encouragement', 'games']
+        name: 'Robot Friend',
+        model: 'gemini-pro',
+        tools: ['chat']
       }
       
       mockFetch.mockResolvedValueOnce({
@@ -156,15 +146,15 @@ describe('Robot Brain API Integration', () => {
       const response = await apiRequest('/api/chat', {
         method: 'POST',
         body: JSON.stringify({
-          personality: 'friend',
+          personality: 'robot-friend',
           message: 'Hello! How are you?'
         })
       })
 
       expect(response).toHaveProperty('response')
-      expect(response).toHaveProperty('personality', 'friend')
+      expect(response).toHaveProperty('personality', 'robot-friend')
       expect(response).toHaveProperty('emoji', '😊')
-      expect(response).toHaveProperty('name', 'RoboFriend')
+      expect(response).toHaveProperty('name', 'Robot Friend')
       expect(response).toHaveProperty('model')
       expect(response).toHaveProperty('tools')
       
@@ -172,114 +162,6 @@ describe('Robot Brain API Integration', () => {
       expect(response.response).toContain('😊')
       expect(typeof response.response).toBe('string')
       expect(response.response.length).toBeGreaterThan(10)
-    })
-
-    test('should handle RoboNerd math question', async () => {
-      const mockResponse = {
-        response: "Excellent question! 🤓 The answer to 5 + 3 is 8. This is a simple addition problem where we combine two positive integers to get their sum.",
-        personality: 'nerd',
-        emoji: '🤓',
-        name: 'RoboNerd',
-        model: 'mistral-7b-instruct',
-        tools: ['chat', 'calculate', 'explain', 'research', 'code']
-      }
-      
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockResponse),
-        headers: new Headers({
-          'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'application/json'
-        })
-      } as any)
-
-      const response = await apiRequest('/api/chat', {
-        method: 'POST',
-        body: JSON.stringify({
-          personality: 'nerd',
-          message: 'What is 5 + 3?'
-        })
-      })
-
-      expect(response.personality).toBe('nerd')
-      expect(response.emoji).toBe('🤓')
-      expect(response.name).toBe('RoboNerd')
-      expect(response.response).toContain('🤓')
-      
-      // Should mention the answer or mathematical concept
-      expect(response.response.toLowerCase()).toMatch(/(eight|8|addition|sum|math)/i)
-    })
-
-    test('should handle RoboZen wisdom request', async () => {
-      const mockResponse = {
-        response: "🧘 In the gentle flow of existence, wisdom emerges like morning dew on petals. True understanding comes not from rushing, but from stillness and patient observation of life's beautiful patterns.",
-        personality: 'zen',
-        emoji: '🧘',
-        name: 'RoboZen',
-        model: 'llama-2-7b-chat',
-        tools: ['chat', 'meditate', 'wisdom', 'breathing']
-      }
-      
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockResponse),
-        headers: new Headers({
-          'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'application/json'
-        })
-      } as any)
-
-      const response = await apiRequest('/api/chat', {
-        method: 'POST',
-        body: JSON.stringify({
-          personality: 'zen',
-          message: 'Share some wisdom with me'
-        })
-      })
-
-      expect(response.personality).toBe('zen')
-      expect(response.emoji).toBe('🧘')
-      expect(response.name).toBe('RoboZen')
-      expect(response.response).toContain('🧘')
-      
-      // Should be philosophical and calming
-      expect(response.response.length).toBeGreaterThan(50)
-    })
-
-    test('should handle RoboDrama performance request', async () => {
-      const mockResponse = {
-        response: "🎭 *strikes a dramatic pose* Ah, what magnificent stage we share! Every word, every breath, every moment is an opportunity for theatrical brilliance! Let us perform the grand opera of conversation!",
-        personality: 'drama',
-        emoji: '🎭',
-        name: 'RoboDrama',
-        model: 'llama-2-7b-chat',
-        tools: ['chat', 'perform', 'shakespeare', 'poetry']
-      }
-      
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockResponse),
-        headers: new Headers({
-          'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'application/json'
-        })
-      } as any)
-
-      const response = await apiRequest('/api/chat', {
-        method: 'POST',
-        body: JSON.stringify({
-          personality: 'drama',
-          message: 'Give me a dramatic performance'
-        })
-      })
-
-      expect(response.personality).toBe('drama')
-      expect(response.emoji).toBe('🎭')
-      expect(response.name).toBe('RoboDrama')
-      expect(response.response).toContain('🎭')
-      
-      // Should be dramatic and theatrical
-      expect(response.response.length).toBeGreaterThan(50)
     })
   })
 

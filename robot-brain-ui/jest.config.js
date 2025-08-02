@@ -18,6 +18,9 @@ const customJestConfig = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1'
   },
+  transformIgnorePatterns: [
+    'node_modules/(?!(react-markdown|remark-gfm|micromark|remark|unified|bail|is-plain-obj|trough|vfile|vfile-message|mdast-util-from-markdown|mdast-util-to-string|unist-util-stringify-position|property-information|hast-util-whitespace|space-separated-tokens|comma-separated-tokens|decode-named-character-reference|character-entities|micromark-util-decode-numeric-character-reference|micromark-util-decode-string)/)'
+  ],
   // Extended timeout for integration tests
   testTimeout: 10000,
   // Maximum workers for parallel tests

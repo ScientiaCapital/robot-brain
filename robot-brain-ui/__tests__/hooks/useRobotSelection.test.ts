@@ -15,10 +15,10 @@ describe('useRobotSelection Hook', () => {
       const { result } = renderHook(() => useRobotSelection())
       
       act(() => {
-        result.current.selectRobot('friend' as RobotId)
+        result.current.selectRobot('robot-friend' as RobotId)
       })
       
-      expect(result.current.selectedRobot).toBe('friend')
+      expect(result.current.selectedRobot).toBe('robot-friend')
       expect(result.current.isRobotSelected).toBe(true)
     })
 
@@ -26,10 +26,10 @@ describe('useRobotSelection Hook', () => {
       const { result } = renderHook(() => useRobotSelection())
       
       act(() => {
-        result.current.selectRobot('nerd' as RobotId)
+        result.current.selectRobot('robot-friend' as RobotId)
       })
       
-      expect(result.current.selectedRobot).toBe('nerd')
+      expect(result.current.selectedRobot).toBe('robot-friend')
       
       act(() => {
         result.current.clearSelection()
@@ -43,16 +43,16 @@ describe('useRobotSelection Hook', () => {
       const { result } = renderHook(() => useRobotSelection())
       
       act(() => {
-        result.current.selectRobot('friend' as RobotId)
+        result.current.selectRobot('robot-friend' as RobotId)
       })
       
-      expect(result.current.selectedRobot).toBe('friend')
+      expect(result.current.selectedRobot).toBe('robot-friend')
       
       act(() => {
-        result.current.selectRobot('pirate' as RobotId)
+        result.current.selectRobot('robot-friend' as RobotId)
       })
       
-      expect(result.current.selectedRobot).toBe('pirate')
+      expect(result.current.selectedRobot).toBe('robot-friend')
     })
   })
 
@@ -65,7 +65,7 @@ describe('useRobotSelection Hook', () => {
       })
       
       expect(result.current.filteredRobots).toHaveLength(1)
-      expect(result.current.filteredRobots[0]).toBe('friend')
+      expect(result.current.filteredRobots[0]).toBe('robot-friend')
     })
 
     test('should filter robots by trait', () => {
@@ -76,14 +76,15 @@ describe('useRobotSelection Hook', () => {
       })
       
       // RoboZen has wise trait
-      expect(result.current.filteredRobots).toContain('zen')
+      // Only robot-friend exists now
+      expect(result.current.filteredRobots).toHaveLength(0)
     })
 
     test('should return all robots when search is empty', () => {
       const { result } = renderHook(() => useRobotSelection())
       
-      expect(result.current.filteredRobots).toHaveLength(5)
-      expect(result.current.filteredRobots).toEqual(['friend', 'nerd', 'zen', 'pirate', 'drama'])
+      expect(result.current.filteredRobots).toHaveLength(1)
+      expect(result.current.filteredRobots).toEqual(['robot-friend'])
     })
 
     test('should be case-insensitive in search', () => {
@@ -93,7 +94,7 @@ describe('useRobotSelection Hook', () => {
         result.current.setSearchTerm('FRIEND')
       })
       
-      expect(result.current.filteredRobots).toContain('friend')
+      expect(result.current.filteredRobots).toContain('robot-friend')
     })
   })
 
@@ -101,17 +102,17 @@ describe('useRobotSelection Hook', () => {
     test('should check if robot is available', () => {
       const { result } = renderHook(() => useRobotSelection())
       
-      expect(result.current.isRobotAvailable('friend')).toBe(true)
+      expect(result.current.isRobotAvailable('robot-friend')).toBe(true)
       expect(result.current.isRobotAvailable('invalid' as RobotId)).toBe(false)
     })
 
     test('should get robot info', () => {
       const { result } = renderHook(() => useRobotSelection())
       
-      const friendInfo = result.current.getRobotInfo('friend')
+      const friendInfo = result.current.getRobotInfo('robot-friend')
       
       expect(friendInfo).toBeDefined()
-      expect(friendInfo?.name).toBe('RoboFriend')
+      expect(friendInfo?.name).toBe('Robot Friend')
       expect(friendInfo?.emoji).toBe('😊')
       expect(friendInfo?.traits).toContain('cheerful')
     })
@@ -132,22 +133,22 @@ describe('useRobotSelection Hook', () => {
       expect(result.current.selectionHistory).toEqual([])
       
       act(() => {
-        result.current.selectRobot('friend' as RobotId)
+        result.current.selectRobot('robot-friend' as RobotId)
       })
       
-      expect(result.current.selectionHistory).toEqual(['friend'])
+      expect(result.current.selectionHistory).toEqual(['robot-friend'])
       
       act(() => {
-        result.current.selectRobot('nerd' as RobotId)
+        result.current.selectRobot('robot-friend' as RobotId)
       })
       
-      expect(result.current.selectionHistory).toEqual(['friend', 'nerd'])
+      expect(result.current.selectionHistory).toEqual(['robot-friend', 'robot-friend'])
     })
 
     test('should limit selection history to last 5', () => {
       const { result } = renderHook(() => useRobotSelection())
       
-      const robots: RobotId[] = ['friend', 'nerd', 'zen', 'pirate', 'drama', 'friend']
+      const robots: RobotId[] = ['robot-friend', 'robot-friend', 'robot-friend', 'robot-friend', 'robot-friend', 'robot-friend']
       
       robots.forEach(robot => {
         act(() => {
@@ -156,18 +157,18 @@ describe('useRobotSelection Hook', () => {
       })
       
       expect(result.current.selectionHistory).toHaveLength(5)
-      expect(result.current.selectionHistory).toEqual(['nerd', 'zen', 'pirate', 'drama', 'friend'])
+      expect(result.current.selectionHistory).toEqual(['robot-friend', 'robot-friend', 'robot-friend', 'robot-friend', 'robot-friend'])
     })
 
     test('should get most recent selection', () => {
       const { result } = renderHook(() => useRobotSelection())
       
       act(() => {
-        result.current.selectRobot('friend' as RobotId)
-        result.current.selectRobot('nerd' as RobotId)
+        result.current.selectRobot('robot-friend' as RobotId)
+        result.current.selectRobot('robot-friend' as RobotId)
       })
       
-      expect(result.current.getMostRecentSelection()).toBe('nerd')
+      expect(result.current.getMostRecentSelection()).toBe('robot-friend')
     })
   })
 
@@ -175,30 +176,29 @@ describe('useRobotSelection Hook', () => {
     test('should toggle robot as favorite', () => {
       const { result } = renderHook(() => useRobotSelection())
       
-      expect(result.current.isFavorite('friend')).toBe(false)
+      expect(result.current.isFavorite('robot-friend')).toBe(false)
       
       act(() => {
-        result.current.toggleFavorite('friend' as RobotId)
+        result.current.toggleFavorite('robot-friend' as RobotId)
       })
       
-      expect(result.current.isFavorite('friend')).toBe(true)
+      expect(result.current.isFavorite('robot-friend')).toBe(true)
       
       act(() => {
-        result.current.toggleFavorite('friend' as RobotId)
+        result.current.toggleFavorite('robot-friend' as RobotId)
       })
       
-      expect(result.current.isFavorite('friend')).toBe(false)
+      expect(result.current.isFavorite('robot-friend')).toBe(false)
     })
 
     test('should get list of favorite robots', () => {
       const { result } = renderHook(() => useRobotSelection())
       
       act(() => {
-        result.current.toggleFavorite('friend' as RobotId)
-        result.current.toggleFavorite('zen' as RobotId)
+        result.current.toggleFavorite('robot-friend' as RobotId)
       })
       
-      expect(result.current.favoriteRobots).toEqual(['friend', 'zen'])
+      expect(result.current.favoriteRobots).toEqual(['robot-friend'])
     })
   })
 })
