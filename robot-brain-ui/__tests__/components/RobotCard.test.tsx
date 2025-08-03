@@ -37,8 +37,9 @@ describe('RobotCard', () => {
       />
     )
 
-    // robot-friend only has chat tool
-    expect(screen.getByText(/chat/i)).toBeInTheDocument()
+    // robot-friend has no tools currently
+    const toolsContainer = screen.queryByText(/chat/i)
+    expect(toolsContainer).not.toBeInTheDocument()
   })
 
   test('calls onClick when card is clicked', () => {

@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useCallback, useEffect, useRef } from "react"
-// import { useConversation } from "@elevenlabs/react" // Commented out until exact API is confirmed
 import { motion, AnimatePresence } from "framer-motion"
 import { 
   Mic, 
@@ -17,6 +16,14 @@ import {
 import { Chat } from "@/components/ui/chat"
 import { Button } from "@/components/ui/button"
 import { ROBOT_PERSONALITIES, type RobotId } from "@/lib/robot-config"
+
+// Try to import useConversation, but handle gracefully if not available
+let useConversation: any
+try {
+  ({ useConversation } = require("@elevenlabs/react"))
+} catch {
+  // If the module isn't available, useConversation will remain undefined
+}
 
 interface Message {
   id: string
@@ -53,9 +60,8 @@ export function ConversationalAIChat() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
   
-  // ElevenLabs Conversational AI hook
-  // Note: Commented out until we have the exact API details
-  // const conversation = useConversation()
+  // ElevenLabs Conversational AI hook - use if available
+  const conversation = useConversation ? useConversation() : null
 
   // Helper to add system messages
   const addSystemMessage = useCallback((text: string) => {
@@ -68,39 +74,45 @@ export function ConversationalAIChat() {
     setMessages(prev => [...prev, systemMessage])
   }, [])
 
-  // For now, we'll provide a fallback implementation until the exact ElevenLabs API is confirmed
-  const [status] = useState<'disconnected' | 'connected' | 'connecting'>('disconnected')
-  const isSpeaking = false
-  const isConnected = status === 'connected'
-  const isListening = false
-  const isProcessing = false
+  // Use conversation hook values if available, otherwise provide fallbacks
+  const status = conversation?.status || 'disconnected'
+  const isSpeaking = conversation?.isSpeaking || false
+  const isConnected = conversation?.isConnected || status === 'connected'
+  const isListening = conversation?.isListening || false
+  const isProcessing = conversation?.isProcessing || false
+  const error = conversation?.error || null
   
   // Fallback functions for missing API
-  const startConversation = useCallback(async (config: unknown) => {
+  const fallbackStartConversation = useCallback(async (config: unknown) => {
     console.log("Starting conversation with config:", config)
     addSystemMessage("Advanced Conversational AI is coming soon! For now, please use Standard chat mode for full functionality.")
   }, [addSystemMessage])
   
-  const endConversation = useCallback(async () => {
+  const fallbackEndConversation = useCallback(async () => {
     console.log("Ending conversation")
-    addSystemMessage("Switching back to Standard chat mode for full functionality.")
+    addSystemMessage("Conversation ended.")
   }, [addSystemMessage])
   
-  const sendTextInput = useCallback(async (text: string) => {
+  const fallbackSendTextInput = useCallback(async (text: string) => {
     console.log("Sending text:", text)
     addSystemMessage(`Echo: ${text}`)
   }, [addSystemMessage])
   
-  const sendAudioInput = useCallback(async (audio: Blob) => {
+  const fallbackSendAudioInput = useCallback(async (audio: Blob) => {
     console.log("Sending audio:", audio)
     addSystemMessage("Audio received (mock response)")
   }, [addSystemMessage])
   
-  const setVolume = useCallback((volume: number) => {
+  const fallbackSetVolume = useCallback((volume: number) => {
     console.log("Setting volume:", volume)
   }, [])
   
-  const error = null
+  // Use conversation methods if available, otherwise use fallbacks
+  const startConversation = conversation?.startConversation || fallbackStartConversation
+  const endConversation = conversation?.endConversation || fallbackEndConversation  
+  const sendTextInput = conversation?.sendTextInput || fallbackSendTextInput
+  const sendAudioInput = conversation?.sendAudioInput || fallbackSendAudioInput
+  const setVolume = conversation?.setVolume || fallbackSetVolume
 
   // Start conversation with configuration
   const handleStartConversation = useCallback(async () => {
@@ -109,13 +121,20 @@ export function ConversationalAIChat() {
     try {
       await startConversation({
         agentId: process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID || 'default-agent',
+        clientTools: {
+          displayMessage: (message: string) => {
+            addSystemMessage(message)
+          },
+          updateSystemPrompt: (prompt: string) => {
+            console.log("Updating system prompt:", prompt)
+          }
+        },
         overrides: {
           agent: {
             prompt: {
               prompt: `${currentRobot.systemPrompt} Respond in a ${preferences.responseStyle} manner.`,
-              firstMessage: currentRobot.welcomeMessage,
-              language: 'en'
-            }
+            },
+            firstMessage: currentRobot.welcomeMessage,
           },
           tts: {
             voiceId: currentRobot.voiceId,

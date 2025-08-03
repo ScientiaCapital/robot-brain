@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { MessageSquare, X, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -31,6 +31,23 @@ export function BubbleChatWidget() {
   const handleClose = () => {
     setIsOpen(false)
   }
+
+  // Handle escape key
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isOpen) {
+        handleClose()
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape)
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isOpen])
 
   const getPositionStyles = () => {
     const base = "fixed z-50"

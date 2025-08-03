@@ -8,9 +8,15 @@ const {
   mockNeonQuery,
   mockResponseCache,
   mockPerformanceMonitor,
+  mockTrackAPICall,
+  mockMeasureAsync,
+  mockMeasureSync,
+  mockAudioStreamingMetrics,
+  mockAudioStreamManager,
   mockAudioContext,
   mockSpeechRecognition
 } = require('./__tests__/setup/mocks')
+const { mockFramerMotion } = require('./__tests__/test-utils')
 
 // Mock react-markdown to avoid ES module issues
 jest.mock('react-markdown', () => {
@@ -25,10 +31,15 @@ jest.mock('remark-gfm', () => ({
   default: () => {}
 }))
 
+// Mock framer-motion to avoid animation issues in tests
+jest.mock('framer-motion', () => mockFramerMotion())
+
 import '@testing-library/jest-dom'
 import 'whatwg-fetch'
 import { TextDecoder, TextEncoder } from 'util'
 import { setupDomMocks } from './__tests__/test-utils'
+
+// ==================== GLOBAL SETUP ====================
 
 // Add TextDecoder/TextEncoder to global scope for Neon
 global.TextDecoder = TextDecoder
@@ -39,6 +50,8 @@ process.env.ANTHROPIC_API_KEY = 'sk-ant-test-key'
 process.env.NEON_DATABASE_URL = 'postgresql://test:test@ep-test.neon.tech/testdb?sslmode=require'
 process.env.ELEVENLABS_API_KEY = 'sk_test_elevenlabs_key'
 process.env.NODE_ENV = 'test'
+
+// ==================== MODULE MOCKS ====================
 
 // Mock Neon database for tests
 jest.mock('@neondatabase/serverless', () => ({
@@ -62,13 +75,36 @@ jest.mock('@anthropic-ai/sdk', () => ({
 
 // Mock performance utilities
 jest.mock('./src/lib/performance-monitor', () => ({
-  performanceMonitor: mockPerformanceMonitor
+  performanceMonitor: mockPerformanceMonitor,
+  trackAPICall: mockTrackAPICall,
+  measureAsync: mockMeasureAsync,
+  measureSync: mockMeasureSync
 }))
 
 jest.mock('./src/lib/response-cache', () => ({
   responseCache: mockResponseCache,
   logCachePerformance: jest.fn()
 }))
+
+// Mock audio streaming utilities with ReadableStream support
+jest.mock('./src/lib/audio-streaming', () => ({
+  AudioStreamingMetrics: mockAudioStreamingMetrics,
+  getAudioStreamManager: jest.fn(() => mockAudioStreamManager),
+  AudioStreamManager: jest.fn(() => mockAudioStreamManager),
+  streamTTSAudio: jest.fn().mockResolvedValue(undefined),
+  ELEVENLABS_STREAM_CONFIG: {
+    optimizeStreamingLatency: 1,
+    outputFormat: 'mp3_44100_128',
+    voiceSettings: {
+      stability: 0.5,
+      similarityBoost: 0.8,
+      style: 0.0,
+      useSpeakerBoost: true
+    }
+  }
+}))
+
+// ==================== INTERNAL MODULE MOCKS ====================
 
 // Mock validation utilities
 jest.mock('./src/lib/validation', () => ({
@@ -91,6 +127,8 @@ jest.mock('./src/lib/validation', () => ({
   checkRateLimit: jest.fn(() => true),
   getClientIP: jest.fn(() => '127.0.0.1')
 }))
+
+// ==================== GLOBAL API MOCKS ====================
 
 // Mock Audio APIs
 global.AudioContext = jest.fn(() => mockAudioContext)
@@ -132,8 +170,38 @@ class LocalStorageMock {
 
 global.localStorage = new LocalStorageMock()
 
+// ==================== BROWSER API MOCKS ====================
+
 // Setup all DOM mocks
 setupDomMocks()
+
+// Mock fetch for ReadableStream support in audio streaming
+global.fetch = jest.fn()
+
+// Mock ReadableStream for audio streaming tests
+global.ReadableStream = class ReadableStream {
+  constructor(source) {
+    this.source = source
+  }
+  
+  getReader() {
+    return {
+      read: jest.fn().mockResolvedValue({ done: true, value: undefined }),
+      releaseLock: jest.fn(),
+      cancel: jest.fn()
+    }
+  }
+  
+  pipeTo(dest) {
+    return Promise.resolve()
+  }
+  
+  tee() {
+    return [this, this]
+  }
+}
+
+// ==================== TEST LIFECYCLE MANAGEMENT ====================
 
 // Mock console methods to reduce noise in tests
 const originalError = console.error

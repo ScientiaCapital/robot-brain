@@ -24,8 +24,9 @@ describe('Bubble Chat Widget', () => {
     it('should be positioned at bottom-right by default', () => {
       render(<BubbleChatWidget />);
       
-      const widget = screen.getByRole('button', { name: /open chat/i }).closest('div');
-      expect(widget).toHaveClass('fixed', 'z-50', 'bottom-4', 'right-4');
+      const bubbleButton = screen.getByRole('button', { name: /open chat/i });
+      const widgetContainer = bubbleButton.closest('div').parentElement;
+      expect(widgetContainer).toHaveClass('fixed', 'z-50', 'bottom-4', 'right-4');
     });
   });
 
@@ -63,14 +64,16 @@ describe('Bubble Chat Widget', () => {
       const bubbleButton = screen.getByRole('button', { name: /open chat/i });
       await user.click(bubbleButton);
       
+      // Verify it's open
+      expect(screen.getByTestId('conversational-ai-chat')).toBeInTheDocument();
+      
       // Close widget
       const closeButton = screen.getByRole('button', { name: /close chat/i });
       await user.click(closeButton);
       
-      // Wait for animation to complete and check visibility
+      // Wait for animation to complete and check that element is removed
       await waitFor(() => {
-        const chatContainer = screen.queryByTestId('conversational-ai-chat')?.parentElement;
-        expect(chatContainer).toHaveStyle('opacity: 0');
+        expect(screen.queryByTestId('conversational-ai-chat')).not.toBeInTheDocument();
       });
     });
   });
@@ -141,13 +144,15 @@ describe('Bubble Chat Widget', () => {
       const bubbleButton = screen.getByRole('button', { name: /open chat/i });
       await user.click(bubbleButton);
       
+      // Verify it's open
+      expect(screen.getByTestId('conversational-ai-chat')).toBeInTheDocument();
+      
       // Press Escape
       await user.keyboard('{Escape}');
       
-      // Wait for animation and check visibility
+      // Wait for animation and check that element is removed
       await waitFor(() => {
-        const chatContainer = screen.queryByTestId('conversational-ai-chat')?.parentElement;
-        expect(chatContainer).toHaveStyle('opacity: 0');
+        expect(screen.queryByTestId('conversational-ai-chat')).not.toBeInTheDocument();
       });
     });
   });

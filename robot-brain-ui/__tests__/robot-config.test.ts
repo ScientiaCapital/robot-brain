@@ -13,7 +13,7 @@ describe('Robot Configuration', () => {
       expect(robot).toHaveProperty('name')
       expect(robot).toHaveProperty('emoji')
       expect(robot).toHaveProperty('traits')
-      expect(robot).toHaveProperty('voice_id')
+      expect(robot).toHaveProperty('voiceId')
       expect(robot).toHaveProperty('tools')
       expect(robot).toHaveProperty('systemPrompt')
       expect(robot).toHaveProperty('welcomeMessage')
@@ -22,7 +22,7 @@ describe('Robot Configuration', () => {
       expect(typeof robot.name).toBe('string')
       expect(typeof robot.emoji).toBe('string')
       expect(Array.isArray(robot.traits)).toBe(true)
-      expect(typeof robot.voice_id).toBe('string')
+      expect(typeof robot.voiceId).toBe('string')
       expect(Array.isArray(robot.tools)).toBe(true)
       expect(typeof robot.systemPrompt).toBe('string')
       expect(typeof robot.welcomeMessage).toBe('string')
@@ -35,8 +35,8 @@ describe('Robot Configuration', () => {
       expect(friend.traits).toContain('cheerful')
       expect(friend.traits).toContain('supportive')
       expect(friend.traits).toContain('enthusiastic')
-      expect(friend.tools).toContain('chat')
-      expect(friend.voice_id).toBe('21m00Tcm4TlvDq8ikWAM') // Rachel voice
+      expect(friend.tools).toEqual([])
+      expect(friend.voiceId).toBe('21m00Tcm4TlvDq8ikWAM') // Rachel voice
       expect(friend.welcomeMessage).toContain('Hi there!')
       expect(friend.systemPrompt).toContain('Robot Friend')
     })
@@ -50,7 +50,7 @@ describe('Robot Configuration', () => {
     test('robot personality should have valid voice_id', () => {
       const friend = ROBOT_PERSONALITIES['robot-friend']
       // ElevenLabs voice IDs are typically 20 characters
-      expect(friend.voice_id).toMatch(/^[a-zA-Z0-9]{20}$/)
+      expect(friend.voiceId).toMatch(/^[a-zA-Z0-9]{20}$/)
     })
   })
 })

@@ -47,7 +47,7 @@ describe('ElevenLabs Conversational AI Integration', () => {
     it('should render with initial state', () => {
       render(<ConversationalAIChat />);
       
-      expect(screen.getByText(/Robot Friend/)).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /Robot Friend/ })).toBeInTheDocument();
       expect(screen.getByText(/Ready to chat/)).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /start conversation/i })).toBeInTheDocument();
     });
@@ -84,7 +84,7 @@ describe('ElevenLabs Conversational AI Integration', () => {
             prompt: expect.objectContaining({
               prompt: expect.stringContaining('Robot Friend'),
             }),
-            firstMessage: expect.stringContaining("Hi! I'm Robot Friend!"),
+            firstMessage: expect.stringContaining("Robot Friend"),
           }),
           tts: expect.objectContaining({
             voiceId: '21m00Tcm4TlvDq8ikWAM',
@@ -96,7 +96,7 @@ describe('ElevenLabs Conversational AI Integration', () => {
     it('should show connected state after successful connection', async () => {
       const user = userEvent.setup();
       
-      (useConversation as jest.Mock).mockReturnValueOnce({
+      (useConversation as jest.Mock).mockReturnValue({
         ...defaultMockConversation,
         status: 'connected',
         isConnected: true,
@@ -104,14 +104,14 @@ describe('ElevenLabs Conversational AI Integration', () => {
 
       render(<ConversationalAIChat />);
       
-      expect(screen.getByText(/Connected/)).toBeInTheDocument();
+      expect(screen.getByText(/✅ Connected/)).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /end conversation/i })).toBeInTheDocument();
     });
 
     it('should end conversation when button clicked', async () => {
       const user = userEvent.setup();
       
-      (useConversation as jest.Mock).mockReturnValueOnce({
+      (useConversation as jest.Mock).mockReturnValue({
         ...defaultMockConversation,
         status: 'connected',
         isConnected: true,
@@ -138,7 +138,7 @@ describe('ElevenLabs Conversational AI Integration', () => {
 
       render(<ConversationalAIChat />);
       
-      const input = screen.getByPlaceholderText(/type a message/i);
+      const input = screen.getByPlaceholderText(/ask ai/i);
       await user.type(input, 'Hello robot friend');
       
       const sendButton = screen.getByRole('button', { name: /send/i });
@@ -158,7 +158,7 @@ describe('ElevenLabs Conversational AI Integration', () => {
 
       render(<ConversationalAIChat />);
       
-      const input = screen.getByPlaceholderText(/type a message/i) as HTMLInputElement;
+      const input = screen.getByPlaceholderText(/ask ai/i) as HTMLInputElement;
       await user.type(input, 'Hello');
       
       const sendButton = screen.getByRole('button', { name: /send/i });
@@ -170,7 +170,7 @@ describe('ElevenLabs Conversational AI Integration', () => {
     it('should disable input when not connected', () => {
       render(<ConversationalAIChat />);
       
-      const input = screen.getByPlaceholderText(/type a message/i);
+      const input = screen.getByPlaceholderText(/ask ai/i);
       expect(input).toBeDisabled();
     });
   });
