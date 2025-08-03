@@ -17,7 +17,7 @@ export class AudioStreamManager {
 
   constructor() {
     if (typeof window !== 'undefined') {
-      this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      this.audioContext = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
     }
   }
 
@@ -113,51 +113,206 @@ export const ELEVENLABS_STREAM_CONFIG = {
   }
 };
 
-// Audio streaming metrics interface
-export interface AudioStreamingMetrics {
-  bufferSize: number;
-  playbackTime: number;
-  downloadTime: number;
-  firstByteLatency: number;
+// Audio streaming metrics interface and implementation
+export interface AudioStreamingMetricsStats {
+  totalRequests: number;
+  totalErrors: number;
+  totalLatency: number;
+  totalFirstByteLatency: number;
+  totalChunks: number;
+  averageLatency: number;
+  averageFirstByteLatency: number;
+  averageChunksPerRequest: number;
+  errorRate: number;
+  errorTypes: Record<string, number>;
 }
 
-// Stream TTS audio function
+class AudioStreamingMetricsImpl {
+  private requests: Array<{
+    startTime: number;
+    endTime: number;
+    firstByteTime?: number;
+    chunks?: number;
+  }> = [];
+  
+  private errors: Array<{
+    timestamp: number;
+    error: string;
+  }> = [];
+
+  recordRequest(
+    startTime: number, 
+    endTime: number, 
+    firstByteTime?: number, 
+    chunks?: number
+  ): void {
+    this.requests.push({
+      startTime,
+      endTime,
+      firstByteTime,
+      chunks
+    });
+  }
+
+  recordError(error: string): void {
+    this.errors.push({
+      timestamp: Date.now(),
+      error
+    });
+  }
+
+  getStats(): AudioStreamingMetricsStats {
+    const totalRequests = this.requests.length;
+    const totalErrors = this.errors.length;
+    
+    if (totalRequests === 0 && totalErrors === 0) {
+      return {
+        totalRequests: 0,
+        totalErrors: 0,
+        totalLatency: 0,
+        totalFirstByteLatency: 0,
+        totalChunks: 0,
+        averageLatency: 0,
+        averageFirstByteLatency: 0,
+        averageChunksPerRequest: 0,
+        errorRate: 0,
+        errorTypes: {}
+      };
+    }
+
+    const totalLatency = this.requests.reduce(
+      (sum, req) => sum + (req.endTime - req.startTime), 
+      0
+    );
+    
+    const firstByteLatencies = this.requests
+      .filter(req => req.firstByteTime)
+      .map(req => req.firstByteTime! - req.startTime);
+    
+    const totalFirstByteLatency = firstByteLatencies.reduce((sum, lat) => sum + lat, 0);
+    
+    const chunksData = this.requests.filter(req => req.chunks !== undefined);
+    const totalChunks = chunksData.reduce((sum, req) => sum + (req.chunks || 0), 0);
+    
+    const errorTypes: Record<string, number> = {};
+    this.errors.forEach(error => {
+      errorTypes[error.error] = (errorTypes[error.error] || 0) + 1;
+    });
+    
+    const totalOperations = totalRequests + totalErrors;
+    const errorRate = totalOperations > 0 ? (totalErrors / totalOperations) * 100 : 0;
+
+    return {
+      totalRequests,
+      totalErrors,
+      totalLatency,
+      totalFirstByteLatency,
+      totalChunks,
+      averageLatency: totalRequests > 0 ? totalLatency / totalRequests : 0,
+      averageFirstByteLatency: firstByteLatencies.length > 0 ? totalFirstByteLatency / firstByteLatencies.length : 0,
+      averageChunksPerRequest: chunksData.length > 0 ? totalChunks / chunksData.length : 0,
+      errorRate,
+      errorTypes
+    };
+  }
+
+  reset(): void {
+    this.requests = [];
+    this.errors = [];
+  }
+}
+
+// Create singleton instance
+const audioStreamingMetrics = new AudioStreamingMetricsImpl();
+
+export const AudioStreamingMetrics = audioStreamingMetrics;
+
+// Stream TTS audio callbacks interface
+export interface StreamTTSCallbacks {
+  onStart?: () => void;
+  onChunk?: (chunk: Uint8Array, loaded: number, total: number) => void;
+  onComplete?: (totalBytes: number, duration: number) => void;
+  onError?: (error: Error) => void;
+  onProgress?: (progress: number) => void; // Backward compatibility
+}
+
+// Stream TTS audio function with proper callback support
 export async function streamTTSAudio(
   text: string,
   voiceId: string,
-  onProgress?: (progress: number) => void
+  callbacks?: StreamTTSCallbacks
 ): Promise<void> {
-  const response = await fetch('/api/voice/text-to-speech', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ text, personality: 'robot-friend' }),
-  });
+  const startTime = Date.now();
+  let firstByteTime: number | undefined;
+  let chunkCount = 0;
+  
+  try {
+    // Call onStart callback
+    callbacks?.onStart?.();
+    
+    const response = await fetch('/api/voice/text-to-speech', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ text, personality: 'robot-friend' }),
+    });
 
-  if (!response.ok) {
-    throw new Error('Failed to generate speech');
-  }
-
-  const audioManager = getAudioStreamManager();
-  await audioManager.initialize();
-
-  const reader = response.body?.getReader();
-  if (!reader) return;
-
-  const contentLength = response.headers.get('content-length');
-  const total = contentLength ? parseInt(contentLength, 10) : 0;
-  let loaded = 0;
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-
-    loaded += value.length;
-    if (onProgress && total > 0) {
-      onProgress(loaded / total);
+    if (!response.ok) {
+      const error = new Error(`Failed to generate speech: ${response.status} ${response.statusText}`);
+      callbacks?.onError?.(error);
+      AudioStreamingMetrics.recordError(error.message);
+      return;
     }
 
-    await audioManager.addAudioChunk(value.buffer);
+    const audioManager = getAudioStreamManager();
+    await audioManager.initialize();
+
+    const reader = response.body?.getReader();
+    if (!reader) {
+      const error = new Error('No response body reader available');
+      callbacks?.onError?.(error);
+      AudioStreamingMetrics.recordError(error.message);
+      return;
+    }
+
+    const contentLength = response.headers.get('content-length');
+    const total = contentLength ? parseInt(contentLength, 10) : 0;
+    let loaded = 0;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      // Record first byte time
+      if (!firstByteTime) {
+        firstByteTime = Date.now();
+      }
+      
+      chunkCount++;
+      loaded += value.length;
+      
+      // Call callbacks
+      callbacks?.onChunk?.(value, loaded, total);
+      if (callbacks?.onProgress && total > 0) {
+        callbacks.onProgress(loaded / total);
+      }
+
+      await audioManager.addAudioChunk(value.buffer);
+    }
+    
+    const endTime = Date.now();
+    const duration = endTime - startTime;
+    
+    // Record successful metrics
+    AudioStreamingMetrics.recordRequest(startTime, endTime, firstByteTime, chunkCount);
+    
+    // Call onComplete callback
+    callbacks?.onComplete?.(loaded, duration);
+    
+  } catch (error) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    callbacks?.onError?.(err);
+    AudioStreamingMetrics.recordError(err.message);
   }
 }

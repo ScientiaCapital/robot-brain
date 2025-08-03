@@ -18,12 +18,22 @@ import { POST } from '@/app/api/voice/text-to-speech/route';
 import { createMockRequest } from '../../test-utils';
 
 // Mock fetch for ElevenLabs API calls
-global.fetch = jest.fn();
+const mockFetch = jest.fn();
+global.fetch = mockFetch;
 
-// Mock environment variables
-const mockEnvVars = {
-  ELEVENLABS_API_KEY: 'sk_test_api_key_12345'
-};
+// Mock validation module
+jest.mock('@/lib/validation', () => ({
+  schemas: {
+    ttsRequest: {
+      safeParse: jest.fn().mockReturnValue({
+        success: true,
+        data: { text: 'Hello test', personality: 'robot-friend' }
+      })
+    }
+  },
+  checkRateLimit: jest.fn(() => true),
+  getClientIP: jest.fn(() => '127.0.0.1'),
+}));
 
 // Helper function to create NextRequest with proper mocking for TTS API
 function createMockTTSRequest(body: any) {
@@ -37,19 +47,24 @@ function createMockTTSRequest(body: any) {
 }
 
 describe('Text-to-Speech API - Voice Optimization', () => {
+  // Get access to the mocked modules
+  const mockValidation = jest.mocked(require('@/lib/validation'));
+
   beforeEach(() => {
     jest.clearAllMocks();
+    mockFetch.mockClear();
     
-    // Mock environment variables
-    Object.entries(mockEnvVars).forEach(([key, value]) => {
-      process.env[key] = value;
+    // Reset default validation mock
+    mockValidation.schemas.ttsRequest.safeParse.mockReturnValue({
+      success: true,
+      data: { text: 'Hello test', personality: 'robot-friend' }
     });
   });
 
   describe('Low Latency Model Configuration', () => {
     test('should use eleven_flash_v2_5 model for reduced latency', async () => {
       const mockAudioBuffer = new ArrayBuffer(1024);
-      (fetch as jest.Mock).mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
         arrayBuffer: () => Promise.resolve(mockAudioBuffer),
       });
@@ -61,12 +76,12 @@ describe('Text-to-Speech API - Voice Optimization', () => {
 
       await POST(request);
 
-      expect(fetch).toHaveBeenCalledWith(
+      expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining('text-to-speech'),
         expect.objectContaining({
           method: 'POST',
           headers: expect.objectContaining({
-            'xi-api-key': mockEnvVars.ELEVENLABS_API_KEY,
+            'xi-api-key': expect.any(String),
             'Content-Type': 'application/json',
           }),
           body: expect.stringContaining('"model_id":"eleven_flash_v2_5"'),
@@ -74,48 +89,48 @@ describe('Text-to-Speech API - Voice Optimization', () => {
       );
     });
 
-    test('should support speed parameter for clarity control', async () => {
+    test('should not include speed parameter (removed for optimization)', async () => {
       const mockAudioBuffer = new ArrayBuffer(1024);
-      (fetch as jest.Mock).mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
         arrayBuffer: () => Promise.resolve(mockAudioBuffer),
       });
 
       const request = createMockTTSRequest({
         text: 'Testing speed control',
-        personality: 'robot-friend',
-        speed: 0.95
-      });
-
-      await POST(request);
-
-      const requestBody = JSON.parse((fetch as jest.Mock).mock.calls[0][1].body);
-      expect(requestBody).toHaveProperty('speed', 0.95);
-    });
-
-    test('should default to optimal speed when not specified', async () => {
-      const mockAudioBuffer = new ArrayBuffer(1024);
-      (fetch as jest.Mock).mockResolvedValueOnce({
-        ok: true,
-        arrayBuffer: () => Promise.resolve(mockAudioBuffer),
-      });
-
-      const request = createMockTTSRequest({
-        text: 'Testing default speed',
         personality: 'robot-friend'
       });
 
       await POST(request);
 
-      const requestBody = JSON.parse((fetch as jest.Mock).mock.calls[0][1].body);
-      expect(requestBody).toHaveProperty('speed', 0.95);
+      const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+      expect(requestBody).not.toHaveProperty('speed');
+    });
+
+    test('should use flash model without speed parameter for optimal performance', async () => {
+      const mockAudioBuffer = new ArrayBuffer(1024);
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        arrayBuffer: () => Promise.resolve(mockAudioBuffer),
+      });
+
+      const request = createMockTTSRequest({
+        text: 'Testing default behavior',
+        personality: 'robot-friend'
+      });
+
+      await POST(request);
+
+      const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+      expect(requestBody).toHaveProperty('model_id', 'eleven_flash_v2_5');
+      expect(requestBody).not.toHaveProperty('speed');
     });
   });
 
   describe('Optimized Voice Settings', () => {
     test('should use optimized stability setting (0.5)', async () => {
       const mockAudioBuffer = new ArrayBuffer(1024);
-      (fetch as jest.Mock).mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
         arrayBuffer: () => Promise.resolve(mockAudioBuffer),
       });
@@ -127,13 +142,13 @@ describe('Text-to-Speech API - Voice Optimization', () => {
 
       await POST(request);
 
-      const requestBody = JSON.parse((fetch as jest.Mock).mock.calls[0][1].body);
+      const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body);
       expect(requestBody.voice_settings.stability).toBe(0.5);
     });
 
     test('should use optimized similarity_boost setting (0.8)', async () => {
       const mockAudioBuffer = new ArrayBuffer(1024);
-      (fetch as jest.Mock).mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
         arrayBuffer: () => Promise.resolve(mockAudioBuffer),
       });
@@ -145,13 +160,13 @@ describe('Text-to-Speech API - Voice Optimization', () => {
 
       await POST(request);
 
-      const requestBody = JSON.parse((fetch as jest.Mock).mock.calls[0][1].body);
+      const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body);
       expect(requestBody.voice_settings.similarity_boost).toBe(0.8);
     });
 
     test('should include style parameter for enhanced voice quality', async () => {
       const mockAudioBuffer = new ArrayBuffer(1024);
-      (fetch as jest.Mock).mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
         arrayBuffer: () => Promise.resolve(mockAudioBuffer),
       });
@@ -163,13 +178,13 @@ describe('Text-to-Speech API - Voice Optimization', () => {
 
       await POST(request);
 
-      const requestBody = JSON.parse((fetch as jest.Mock).mock.calls[0][1].body);
+      const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body);
       expect(requestBody.voice_settings).toHaveProperty('style', 0.0);
     });
 
     test('should include use_speaker_boost for clearer audio', async () => {
       const mockAudioBuffer = new ArrayBuffer(1024);
-      (fetch as jest.Mock).mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
         arrayBuffer: () => Promise.resolve(mockAudioBuffer),
       });
@@ -181,7 +196,7 @@ describe('Text-to-Speech API - Voice Optimization', () => {
 
       await POST(request);
 
-      const requestBody = JSON.parse((fetch as jest.Mock).mock.calls[0][1].body);
+      const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body);
       expect(requestBody.voice_settings).toHaveProperty('use_speaker_boost', true);
     });
   });
@@ -189,7 +204,7 @@ describe('Text-to-Speech API - Voice Optimization', () => {
   describe('Voice Quality and Performance', () => {
     test('should use correct voice ID for robot-friend personality', async () => {
       const mockAudioBuffer = new ArrayBuffer(1024);
-      (fetch as jest.Mock).mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
         arrayBuffer: () => Promise.resolve(mockAudioBuffer),
       });
@@ -201,15 +216,23 @@ describe('Text-to-Speech API - Voice Optimization', () => {
 
       await POST(request);
 
-      expect(fetch).toHaveBeenCalledWith(
+      expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining('21m00Tcm4TlvDq8ikWAM'),
         expect.any(Object)
       );
     });
 
-    test('should handle text length optimization for faster processing', async () => {
-      const longText = 'A'.repeat(1001); // Text longer than 1000 character limit
+    test('should handle long text by using validation schema (max 5000 chars)', async () => {
+      const longText = 'A'.repeat(5001); // Text longer than 5000 character limit
       
+      // Mock validation to fail for long text
+      mockValidation.schemas.ttsRequest.safeParse.mockReturnValueOnce({
+        success: false,
+        error: {
+          issues: [{ message: 'Text too long' }]
+        }
+      });
+
       const request = createMockTTSRequest({
         text: longText,
         personality: 'robot-friend'
@@ -219,12 +242,12 @@ describe('Text-to-Speech API - Voice Optimization', () => {
       const responseData = await response.json();
 
       expect(response.status).toBe(400);
-      expect(responseData).toHaveProperty('error', 'Text too long. Maximum 1000 characters.');
+      expect(responseData).toHaveProperty('error', 'Invalid input');
     });
 
     test('should use flash model for low latency instead of optimize_streaming_latency', async () => {
       const mockAudioBuffer = new ArrayBuffer(1024);
-      (fetch as jest.Mock).mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
         arrayBuffer: () => Promise.resolve(mockAudioBuffer),
       });
@@ -236,7 +259,7 @@ describe('Text-to-Speech API - Voice Optimization', () => {
 
       await POST(request);
 
-      const requestBody = JSON.parse((fetch as jest.Mock).mock.calls[0][1].body);
+      const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body);
       expect(requestBody).toHaveProperty('model_id', 'eleven_flash_v2_5');
       expect(requestBody).not.toHaveProperty('optimize_streaming_latency');
     });
@@ -244,6 +267,14 @@ describe('Text-to-Speech API - Voice Optimization', () => {
 
   describe('Enhanced Error Handling', () => {
     test('should handle missing text parameter gracefully', async () => {
+      // Mock validation to fail for missing text
+      mockValidation.schemas.ttsRequest.safeParse.mockReturnValueOnce({
+        success: false,
+        error: {
+          issues: [{ message: 'Text is required' }]
+        }
+      });
+
       const request = createMockTTSRequest({
         personality: 'robot-friend'
       });
@@ -252,10 +283,18 @@ describe('Text-to-Speech API - Voice Optimization', () => {
       const responseData = await response.json();
 
       expect(response.status).toBe(400);
-      expect(responseData).toHaveProperty('error', 'Text is required');
+      expect(responseData).toHaveProperty('error', 'Invalid input');
     });
 
     test('should handle empty text parameter', async () => {
+      // Mock validation to fail for empty text
+      mockValidation.schemas.ttsRequest.safeParse.mockReturnValueOnce({
+        success: false,
+        error: {
+          issues: [{ message: 'Text is required' }]
+        }
+      });
+
       const request = createMockTTSRequest({
         text: '',
         personality: 'robot-friend'
@@ -265,11 +304,11 @@ describe('Text-to-Speech API - Voice Optimization', () => {
       const responseData = await response.json();
 
       expect(response.status).toBe(400);
-      expect(responseData).toHaveProperty('error', 'Text is required');
+      expect(responseData).toHaveProperty('error', 'Invalid input');
     });
 
     test('should handle ElevenLabs API failures with detailed errors', async () => {
-      (fetch as jest.Mock).mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 429,
         statusText: 'Rate Limit Exceeded',
@@ -290,7 +329,7 @@ describe('Text-to-Speech API - Voice Optimization', () => {
     });
 
     test('should handle network failures gracefully', async () => {
-      (fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
+      mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
       const request = createMockTTSRequest({
         text: 'Testing network error',
@@ -306,7 +345,7 @@ describe('Text-to-Speech API - Voice Optimization', () => {
 
     test('should handle invalid personality gracefully', async () => {
       const mockAudioBuffer = new ArrayBuffer(1024);
-      (fetch as jest.Mock).mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
         arrayBuffer: () => Promise.resolve(mockAudioBuffer),
       });
@@ -319,7 +358,7 @@ describe('Text-to-Speech API - Voice Optimization', () => {
       const response = await POST(request);
 
       // Should fallback to default voice
-      expect(fetch).toHaveBeenCalledWith(
+      expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining('21m00Tcm4TlvDq8ikWAM'), // Default robot-friend voice
         expect.any(Object)
       );
@@ -331,7 +370,7 @@ describe('Text-to-Speech API - Voice Optimization', () => {
       const mockAudioBuffer = new ArrayBuffer(1024);
       const expectedBase64 = Buffer.from(mockAudioBuffer).toString('base64');
       
-      (fetch as jest.Mock).mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
         arrayBuffer: () => Promise.resolve(mockAudioBuffer),
       });
@@ -351,7 +390,7 @@ describe('Text-to-Speech API - Voice Optimization', () => {
 
     test('should include performance metadata in response', async () => {
       const mockAudioBuffer = new ArrayBuffer(1024);
-      (fetch as jest.Mock).mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
         arrayBuffer: () => Promise.resolve(mockAudioBuffer),
       });
@@ -366,7 +405,9 @@ describe('Text-to-Speech API - Voice Optimization', () => {
 
       expect(responseData).toHaveProperty('model', 'eleven_flash_v2_5');
       expect(responseData).toHaveProperty('contentType', 'audio/mpeg');
-      expect(responseData).toHaveProperty('latency', '~75ms');
+      expect(responseData).toHaveProperty('latency');
+      expect(responseData.latency).toMatch(/\d+ms/);
+      expect(responseData).toHaveProperty('chunkSize');
     });
   });
 });

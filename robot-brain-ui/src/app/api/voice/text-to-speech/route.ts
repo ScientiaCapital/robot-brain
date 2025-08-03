@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const { text, personality, speed } = validationResult.data;
+    const { text, personality } = validationResult.data;
 
     const voiceId = ROBOT_VOICES[personality as keyof typeof ROBOT_VOICES] || ROBOT_VOICES['robot-friend'];
 
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
           style: 0.0, // Natural style
           use_speaker_boost: true, // Enhanced clarity
         },
-        speed: speed, // Slightly slower for clarity
+        // Speed removed - using default for optimal performance
       }),
     });
 

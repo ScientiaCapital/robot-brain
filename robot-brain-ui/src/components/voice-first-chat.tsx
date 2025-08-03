@@ -8,7 +8,8 @@ import { Mic, MicOff, Volume2, VolumeX, MessageSquare } from "lucide-react"
 import { Chat } from "@/components/ui/chat"
 import { Button } from "@/components/ui/button"
 import { ROBOT_PERSONALITIES, type RobotId } from "@/lib/robot-config"
-import { streamTTSAudio, AudioStreamingMetrics } from "@/lib/audio-streaming"
+import { streamTTSAudio, type StreamTTSCallbacks } from "@/lib/audio-streaming"
+import { logAudioError, createAudioError } from "@/lib/audio-error-logging"
 
 interface Message {
   id: string
@@ -38,27 +39,46 @@ export const VoiceFirstChat = memo(function VoiceFirstChat() {
     try {
       const startTime = Date.now();
       
-      // Use streaming TTS for better performance
-      await streamTTSAudio(text, selectedRobot, {
+      // Use streaming TTS for better performance with proper callbacks
+      const callbacks: StreamTTSCallbacks = {
+        onStart: () => {
+          console.log('TTS streaming started');
+        },
         onProgress: (progress) => {
           console.log(`TTS Progress: ${Math.round(progress * 100)}%`);
         },
-        onComplete: () => {
-          const endTime = Date.now();
-          AudioStreamingMetrics.recordRequest(startTime, endTime);
-          setIsSpeaking(false);
-          console.log('TTS completed with streaming');
+        onChunk: () => {
+          // Optional: Add chunk processing logic if needed
         },
-        onError: (error) => {
+        onComplete: (totalBytes, duration) => {
+          setIsSpeaking(false);
+          console.log(`TTS completed: ${totalBytes} bytes in ${duration}ms`);
+        },
+        onError: async (error) => {
           console.error('TTS streaming error:', error);
           setIsSpeaking(false);
+          
+          // Log error to Neon database
+          try {
+            const audioError = createAudioError(
+              'tts_streaming',
+              error.message,
+              Date.now() - startTime,
+              0 // chunk count not available here
+            );
+            await logAudioError(sessionId, audioError);
+          } catch (logError) {
+            console.error('Failed to log audio error:', logError);
+          }
         }
-      });
+      };
+      
+      await streamTTSAudio(text, selectedRobot, callbacks);
     } catch (error) {
       console.error("TTS streaming failed:", error)
       setIsSpeaking(false)
     }
-  }, [isSpeaking, selectedRobot])
+  }, [isSpeaking, selectedRobot, sessionId])
 
   // Send message function
   const sendMessage = useCallback(async (text: string) => {

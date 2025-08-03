@@ -49,8 +49,8 @@ export function RobotCard({ robotId, isSelected = false, onClick, index = 0 }: R
           </div>
           
           <div className="flex flex-wrap gap-1">
-            {robot.tools.slice(0, 3).map((toolId, i) => {
-              const tool = ROBOT_TOOLS[toolId];
+            {robot.tools?.slice(0, 3).map((toolId, i) => {
+              const tool = ROBOT_TOOLS[toolId as keyof typeof ROBOT_TOOLS];
               return (
                 <motion.div
                   key={toolId}
@@ -64,9 +64,9 @@ export function RobotCard({ robotId, isSelected = false, onClick, index = 0 }: R
                 </motion.div>
               );
             })}
-            {robot.tools.length > 3 && (
+            {(robot.tools?.length ?? 0) > 3 && (
               <span className="text-xs text-muted-foreground ml-1">
-                +{robot.tools.length - 3} more
+                +{(robot.tools?.length ?? 0) - 3} more
               </span>
             )}
           </div>

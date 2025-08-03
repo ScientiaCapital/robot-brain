@@ -118,7 +118,7 @@ export function ConversationalAIChat() {
             }
           },
           tts: {
-            voiceId: currentRobot.voice_id,
+            voiceId: currentRobot.voiceId,
             model: 'eleven_flash_v2_5',
             stability: 0.5,
             similarityBoost: 0.8,
