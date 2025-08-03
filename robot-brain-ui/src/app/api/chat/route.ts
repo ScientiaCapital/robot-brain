@@ -51,7 +51,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Check cache first
-    const cachedResponse = responseCache.get(message, personality);
+    const cacheKey = responseCache.generateKey({ message: sanitizedMessage, personality });
+    const cachedResponse = responseCache.get(cacheKey);
     if (cachedResponse) {
       const responseTime = Date.now() - startTime;
       console.log(`[Cache Hit] Response time: ${responseTime}ms`);
@@ -93,7 +94,7 @@ export async function POST(request: NextRequest) {
       : '';
 
     // Cache the response
-    responseCache.set(message, personality, responseText);
+    responseCache.set(cacheKey, responseText);
 
     // Add assistant response to history
     history.push({ role: 'assistant', content: responseText });
