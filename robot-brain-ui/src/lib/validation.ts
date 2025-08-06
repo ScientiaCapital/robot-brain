@@ -14,7 +14,8 @@ export const schemas = {
   
   ttsRequest: z.object({
     text: z.string().min(1).max(5000),
-    personality: z.string()
+    personality: z.string(),
+    voiceId: z.string().optional()
   })
 };
 

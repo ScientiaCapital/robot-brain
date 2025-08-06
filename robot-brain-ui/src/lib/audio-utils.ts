@@ -64,7 +64,7 @@ export class AudioRecorder {
         resolve(audioBlob);
       };
 
-      this.mediaRecorder.stop();
+      this.mediaRecorder!.stop();
     });
   }
 

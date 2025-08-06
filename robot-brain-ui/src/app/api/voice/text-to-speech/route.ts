@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { schemas, checkRateLimit, getClientIP } from '@/lib/validation';
+import { getAgentConfig } from '@/lib/config';
 
 const ELEVENLABS_API_URL = 'https://api.elevenlabs.io/v1';
-
-// Voice IDs for our robot personality
-const ROBOT_VOICES = {
-  'robot-friend': '21m00Tcm4TlvDq8ikWAM', // Rachel - warm, friendly
-};
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -29,9 +25,11 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const { text, personality } = validationResult.data;
-
-    const voiceId = ROBOT_VOICES[personality as keyof typeof ROBOT_VOICES] || ROBOT_VOICES['robot-friend'];
+    const { text, voiceId: requestVoiceId } = validationResult.data;
+    
+    // Get voice configuration from agent config
+    const config = getAgentConfig();
+    const voiceId = requestVoiceId || config.voiceId;
 
     // Call ElevenLabs API with optimized settings
     const response = await fetch(`${ELEVENLABS_API_URL}/text-to-speech/${voiceId}`, {
@@ -42,14 +40,13 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({
         text,
-        model_id: 'eleven_flash_v2_5', // Low latency model (~75ms)
+        model_id: config.voiceSettings.model,
         voice_settings: {
-          stability: 0.5, // More natural variation
-          similarity_boost: 0.8, // Maintain voice character
-          style: 0.0, // Natural style
-          use_speaker_boost: true, // Enhanced clarity
+          stability: config.voiceSettings.stability,
+          similarity_boost: config.voiceSettings.similarityBoost,
+          style: config.voiceSettings.style,
+          use_speaker_boost: config.voiceSettings.useSpeakerBoost,
         },
-        // Speed removed - using default for optimal performance
       }),
     });
 
@@ -71,7 +68,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       audio: audioBase64,
       contentType: 'audio/mpeg',
-      model: 'eleven_flash_v2_5',
+      model: config.voiceSettings.model,
       latency: `${processingTime}ms`,
       chunkSize: text.length,
     });

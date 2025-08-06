@@ -1,69 +1,32 @@
-# CLAUDE.md - Robot Brain Project Context
+# CLAUDE.md - AI Voice Agent Template
 
 ## 🤖 Project Overview
-**Robot Brain** is a production-ready AI-powered chat system featuring Robot Friend, built with Next.js 15.4.5 and deployed on Vercel with Neon PostgreSQL backend. The project features comprehensive TDD implementation, advanced performance optimizations, enterprise-grade security, and the revolutionary Agent Reliability Guardrails System that solves agent reliability issues.
+**AI Voice Agent Template** is a cloneable GitHub repository that allows anyone to rapidly deploy custom AI voice agents for any industry vertical (BDR, Construction, Operations, etc.). Built with Next.js 15.4.5, the template features a dynamic JSON configuration system enabling users to create personalized AI agents without writing code.
 
-## 🎯 Project Status: ✅ PRODUCTION COMPLETE + DATABASE ENVIRONMENT RESOLVED
-1. **✅ COMPLETED**: Robot Friend production-ready with enterprise features
-2. **✅ COMPLETED**: Next.js 15.4.5 app deployed on Vercel with resolved authentication
-3. **✅ COMPLETED**: Anthropic Claude integration (100 tokens, 0.3 temperature optimized)
-4. **✅ COMPLETED**: ElevenLabs TTS with eleven_flash_v2_5 model (75ms latency)
-5. **✅ COMPLETED**: Neon PostgreSQL for conversation storage with optimized queries
-6. **✅ COMPLETED**: Database Connection Issues RESOLVED - No more daily environment failures
-7. **✅ COMPLETED**: Comprehensive database infrastructure with health monitoring services
-8. **✅ COMPLETED**: Environment-aware testing with real database integration
-9. **✅ COMPLETED**: Agent Reliability Guardrails System preventing phantom work
-10. **✅ COMPLETED**: Enhanced agent-aware hook system with 9 specialized agents
-11. **🚀 LIVE**: https://robot-brain-24lv73qca-scientia-capital.vercel.app
+## 🎯 Current Status: 🚧 TEMPLATE TRANSFORMATION IN PROGRESS
+1. **✅ PHASE 1**: TypeScript compilation errors fixed - Clean template foundation
+2. **✅ PHASE 2**: Configuration system created - JSON-based agent customization  
+3. **✅ PHASE 3**: Voice pipeline made configurable - Dynamic ElevenLabs integration
+4. **🚧 PHASE 4**: Database setup script and generic schema (IN PROGRESS)
+5. **📋 PHASE 5**: Vercel deployment automation (PENDING)
+6. **📋 PHASE 6**: Template documentation and setup guides (PENDING)
 
-## 🚀 Current Deployment
+## 🏗️ Template Architecture
 
-### 🌐 Live Application
-- **URL**: https://robot-brain-24lv73qca-scientia-capital.vercel.app
-- **Platform**: Vercel (Next.js)
-- **Database**: Neon PostgreSQL
-- **Status**: ✅ Production Ready with Resolved Authentication
-- **Team Access**: ✅ Public team collaboration enabled after SSO resolution
-
-### 🔓 Authentication Resolution
-**Successfully Resolved Vercel SSO Blocking Issue:**
-- **Problem**: Team-level SSO authentication was blocking Robot Friend access
-- **Root Cause**: Vercel OIDC configuration set to "Team" issuer mode
-- **Solution**: Changed OIDC configuration from "Team" to "Global" issuer mode
-- **Implementation**: Multiple fresh deployments via Vercel CLI to ensure changes take effect
-- **Result**: Public team access restored, authentication barriers removed
-
-### 🤖 Robot Friend Configuration
-**A cheerful, supportive, and enthusiastic companion for kids:**
-
-```typescript
-{
-  id: "robot-friend",
-  name: "Robot Friend", 
-  emoji: "😊",
-  traits: ["cheerful", "supportive", "enthusiastic"],
-  voice_id: "21m00Tcm4TlvDq8ikWAM", // Rachel - warm, friendly ElevenLabs voice
-  systemPrompt: "You are Robot Friend, a cheerful and supportive robot assistant for kids...",
-  welcomeMessage: "Hi there! I'm Robot Friend! 😊..."
-}
-```
-
-### 🎙️ Interaction Modes
-1. **Text Mode**: Type → Anthropic Claude responds → ElevenLabs speaks
-2. **Voice Mode**: Browser speech recognition → Claude responds → ElevenLabs speaks
-3. **Conversation Storage**: All interactions saved to Neon PostgreSQL
-
-## 🏗️ Enhanced Architecture with Agent System
-
-**Next.js 15.4.5 App on Vercel with Sophisticated Agent Development Framework:**
+**Next.js 15.4.5 App with Configuration-Driven AI Voice Agent:**
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    Next.js App (Vercel)                  │
+│                 AI Voice Agent Template                  │
 │  ┌──────────────┐  ┌─────────────┐  ┌──────────────┐   │
 │  │  Frontend    │  │  API Routes │  │   Database   │   │
 │  │  (React)     │  │ (/api/*)    │  │    (Neon)    │   │
 │  └──────────────┘  └─────────────┘  └──────────────┘   │
+│  ┌─────────────────────────────────────────────────────┐ │
+│  │         Configuration System (JSON)                 │ │
+│  │  • agent.json       • voices.json                   │ │
+│  │  • personalities.json                               │ │
+│  └─────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────┘
                      │               │
 ┌────────────────────▼───────────────▼────────────────────┐
@@ -71,174 +34,142 @@
 │  ┌────────────────┐  ┌─────────────┐                    │
 │  │   Anthropic    │  │ ElevenLabs  │                    │
 │  │    Claude      │  │  Voice TTS  │                    │
-│  │   (Chat AI)    │  │             │                    │
 │  └────────────────┘  └─────────────┘                    │
+└─────────────────────────────────────────────────────────┘
 ```
-
-**Components:**
-- **Frontend**: React components for chat interface
-- **API Routes**: Next.js serverless functions
-  - `/api/chat` - Anthropic Claude integration
-  - `/api/voice/text-to-speech` - ElevenLabs TTS
-- **Database**: Neon PostgreSQL for conversation storage
-- **Deployment**: Single Vercel deployment with resolved authentication
-- **Team Access**: Public collaboration enabled via global OIDC configuration
 
 ## 🔧 Technical Stack
 
-### 🌐 Frontend & Backend
+### 🌐 Core Framework
 - **Framework**: Next.js 15.4.5 (App Router + API Routes)
 - **Frontend**: React 19.1.0 with TypeScript (strict mode)
 - **UI**: Radix UI components + Tailwind CSS + Framer Motion
 - **Deployment**: Vercel (serverless functions + global CDN)
 - **Build**: ✅ Successful production build
-- **Authentication**: ✅ SSO barriers resolved via global OIDC configuration
 
 ### 🗄️ Database
 - **Provider**: Neon (Serverless PostgreSQL)
-- **Connection**: `postgresql://neondb_owner:***@ep-plain-pond-afedblyp-pooler.c-2.us-west-2.aws.neon.tech/neondb`
 - **Tables**: `conversations`, `sessions`, `embeddings`, `robot_interactions`, `tool_usage`
-- **Status**: ✅ Connected and operational
+- **Setup**: Automated database setup script (npm run setup:database)
 
 ### 🤖 AI & Voice Services
-- **Chat AI**: Anthropic Claude (claude-3-haiku-20240307) - 100 tokens, 0.3 temperature optimized
-- **Voice TTS**: ElevenLabs eleven_flash_v2_5 model (Rachel voice - 21m00Tcm4TlvDq8ikWAM) - 75ms latency
+- **Chat AI**: Anthropic Claude (configurable model and settings)
+- **Voice TTS**: ElevenLabs (configurable voices and models)
 - **Speech Recognition**: Browser Web Speech API
-- **Status**: ✅ All integrations working with production-grade performance
 
-### 🎯 Enhanced Agent System & Reliability Guardrails
-- **Agent Framework**: Claude Code with 9 specialized agents
-- **Hook System**: Sophisticated context preservation in `.claude/` directory
-- **Knowledge Base**: Agent-specific context and architectural patterns
-- **Specializations**: Full-stack development, database architecture, deployment, security, performance
-- **Reliability Guardrails**: Revolutionary system preventing agent phantom work with validation CLI
-- **Test Suite**: Comprehensive coverage with 13/16 test suites passing, continuous improvements
+## 🎛️ Configuration System
+
+### 📁 Configuration Files (`/config/`)
+
+**`agent.json`** - Main agent configuration:
+```json
+{
+  "agentName": "Your Agent Name",
+  "personality": "professional", 
+  "emoji": "👔",
+  "voiceId": "pNInz6obpgDQGcFmaJgB",
+  "voiceName": "Adam",
+  "welcomeMessage": "Hello! How can I help you today?",
+  "industry": "business",
+  "modelSettings": {
+    "maxTokens": 100,
+    "temperature": 0.3,
+    "model": "claude-3-haiku-20240307"
+  },
+  "voiceSettings": {
+    "model": "eleven_flash_v2_5",
+    "stability": 0.5,
+    "similarityBoost": 0.8,
+    "style": 0.0,
+    "useSpeakerBoost": true
+  }
+}
+```
+
+**`personalities.json`** - Available personality types:
+- cheerful, professional, friendly, educational, supportive, energetic
+
+**`voices.json`** - ElevenLabs voice options:
+- Rachel (friendly female), Adam (professional male), Bella (educational female)
+- Charlie (authoritative British male), Domi (energetic female)
+
+### 🔄 Dynamic Configuration Loading
+- Real-time configuration loading via `/src/lib/config.ts`
+- Fallback configurations for robustness
+- Validation system ensuring configuration integrity
+
+## 🚀 Template Usage
+
+### 🏁 Quick Start (Future - Phase 6)
+1. Clone this repository
+2. Copy `.env.example` to `.env.local` and add API keys
+3. Customize `/config/agent.json` with your agent details
+4. Run `npm install && npm run setup:database`
+5. Deploy with `npm run dev`
+
+### 🎯 Customization Options
+- **Agent Name & Personality**: Edit `agent.json`
+- **Voice Selection**: Choose from available voices in `voices.json`
+- **Industry Vertical**: Customize system prompts and traits
+- **AI Model Settings**: Configure Claude model parameters
+- **Voice Settings**: Adjust ElevenLabs TTS parameters
 
 ## 🔐 Environment Configuration
 
-### 🔑 Required Environment Variables
+### 🔑 Required API Keys
 ```bash
-# Database
-NEON_DATABASE_URL=postgresql://neondb_owner:npg_TVtQA82WDdcE@ep-plain-pond-afedblyp-pooler.c-2.us-west-2.aws.neon.tech/neondb?channel_binding=require&sslmode=require
+# Database (Neon PostgreSQL)
+NEON_DATABASE_URL="postgresql://..."
 
-# AI Services  
-ANTHROPIC_API_KEY=sk-ant-api03-***
-ELEVENLABS_API_KEY=sk_***
-
-# Frontend (optional - defaults to same origin)
-NEXT_PUBLIC_API_URL=
+# AI Services
+ANTHROPIC_API_KEY="sk-ant-api03-..."
+ELEVENLABS_API_KEY="sk_..."
 ```
 
-### 🛣️ API Routes
-```
-/api/chat                    - Anthropic Claude integration
-  POST: { message, personality, sessionId }
-  
-/api/voice/text-to-speech   - ElevenLabs TTS
-  POST: { text, personality }
-  
-/api/signed-url             - File upload (legacy)
-```
+### 🛣️ API Endpoints
+- `/api/chat` - Anthropic Claude integration with configurable settings
+- `/api/voice/text-to-speech` - ElevenLabs TTS with voice configuration
+- `/api/health` - System health monitoring
 
-## 📋 Current Project Status
+## 📋 Development Status
 
-### ✅ Production Complete with Database Environment Resolution
-- **Frontend**: Next.js 15.4.5 app with React 19.1.0 components, optimized performance
-- **Backend**: Next.js API routes with enterprise-grade security and performance optimization
-- **Database Environment**: ✅ RESOLVED - Daily connection failures eliminated with proper .env.local configuration
-- **Database Infrastructure**: Complete health monitoring with DatabaseHealthCheckService, DatabasePerformanceMonitor, DatabaseBenchmarkService
-- **Database Connectivity**: Real Neon connection established to my-robot-project (dry-hall-96285777)
-- **Database Schema**: All required tables validated (conversations, sessions, embeddings, robot_interactions, tool_usage)
-- **Database Scripts**: npm run db:setup and db:health commands for daily validation
-- **Testing**: Environment-aware test configuration with real database integration validation (12/12 tests ✅)
-- **Security**: Input validation, rate limiting, CORS protection, CSP headers
-- **Performance**: Caching, streaming, bundle optimization, 75ms TTS latency
-- **Innovation**: Agent Reliability Guardrails System solving phantom work issues
-- **Deployment**: Vercel serverless platform with resolved authentication
-- **Status**: ✅ Production live with all daily environment friction eliminated
+### ✅ Completed Features
+1. **Clean Template Foundation**: TypeScript compilation errors resolved
+2. **Configuration System**: JSON-based agent customization system
+3. **Configurable Voice Pipeline**: Dynamic ElevenLabs integration with voice settings
+4. **API Integration**: Anthropic Claude with configurable model settings
+5. **UI Components**: React components that adapt to configuration
 
-### 🗂️ Database Schema (Neon PostgreSQL)
-```sql
--- Conversations table (primary storage)
-CREATE TABLE conversations (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  robot_personality varchar NOT NULL,
-  user_message text NOT NULL,
-  robot_response text NOT NULL,
-  session_id varchar,
-  metadata jsonb DEFAULT '{}',
-  created_at timestamptz DEFAULT now()
-);
+### 🚧 Current Work (Phase 4)
+- Database setup automation script
+- Generic database schema for any agent type
+- Template-ready database configuration
 
--- Additional tables for future features
-CREATE TABLE sessions (...);
-CREATE TABLE embeddings (...);
-CREATE TABLE robot_interactions (...);
-CREATE TABLE tool_usage (...);
-```
+### 📋 Upcoming Features (Phases 5-6)
+- Vercel deployment automation (`vercel.json` configuration)
+- Comprehensive template documentation
+- Setup guides and tutorials
+- Template validation and testing
 
-## 🎯 Enhanced Agent Development System
+## 🎯 Template Goals
 
-### 🤖 Specialized Agent Team (9 Agents)
-1. **general-purpose** - Versatile development tasks and coordination
-2. **project-docs-curator** - Documentation excellence and maintenance
-3. **fullstack-tdd-architect** - Test-driven development and architecture
-4. **bug-hunter-specialist** - Issue identification and resolution
-5. **vercel-deployment-specialist** - Deployment optimization and monitoring
-6. **neon-database-architect** - Database design and performance
-7. **nextjs-performance-optimizer** - Frontend performance and optimization
-8. **api-integration-specialist** - External API integration and management
-9. **security-auditor-expert** - Security analysis and compliance
+**Primary Objective**: Create a plug-and-play template where users can:
+1. Clone the repository
+2. Configure their agent via JSON files (no coding required)
+3. Deploy their custom AI voice agent with minimal setup
 
-### 🔗 Sophisticated Hook System
+**Target Users**: 
+- Business owners wanting AI agents for their industry
+- Developers needing rapid AI agent prototyping  
+- Companies requiring custom voice assistants
+- Anyone wanting to create "my-robot-brain" or similar AI agents
 
-**Directory Structure: `.claude/knowledge/`**
-```
-.claude/knowledge/
-├── agents/                    # Agent-specific knowledge
-│   ├── project-docs-curator/
-│   ├── fullstack-tdd-architect/
-│   ├── vercel-deployment-specialist/
-│   └── [7 other specialized agents]
-├── shared/                    # Cross-agent knowledge
-│   ├── architecture/          # Current system architecture
-│   ├── patterns/             # Successful implementation patterns
-│   └── deprecated/           # Outdated approaches to avoid
-└── successful_pattern/        # Proven solutions and approaches
-```
+## 🔄 Configuration-First Architecture
 
-**Hook Features:**
-- **Context Preservation**: Maintains project knowledge across sessions
-- **Agent Specialization**: Each agent has domain-specific context
-- **Pattern Recognition**: Tracks successful vs. deprecated approaches
-- **Knowledge Sharing**: Cross-agent collaboration and learning
-- **Architecture Awareness**: Deep understanding of NEON + Vercel stack
+Unlike traditional hard-coded applications, this template uses a **configuration-first approach**:
+- All agent behavior defined in JSON configuration files
+- Dynamic loading of agent personalities, voices, and settings
+- No code changes required for customization
+- Template ready for immediate cloning and deployment
 
-## 🏆 Authentication Resolution Achievement
-
-### 🔓 SSO Authentication Resolution Process
-1. **Issue Identification**: Team-level SSO blocking Robot Friend access for team members
-2. **Root Cause Analysis**: Vercel OIDC configuration set to "Team" issuer mode
-3. **Solution Implementation**: Changed OIDC from "Team" to "Global" issuer mode
-4. **Deployment Strategy**: Multiple fresh deployments via Vercel CLI ensuring changes take effect
-5. **Verification**: Public team access restored, authentication barriers removed
-6. **Result**: Robot Friend now accessible to all team members without SSO authentication
-
-### 🏆 Major Achievements Summary
-1. **✅ PRODUCTION READY**: Live application deployed and fully functional with enterprise features
-2. **✅ DATABASE ENVIRONMENT RESOLVED**: Eliminated daily connection failures that were causing user frustration
-3. **✅ DATABASE INFRASTRUCTURE**: Complete monitoring and health check services with real connectivity validation
-4. **✅ ENVIRONMENT AUTOMATION**: npm run db:setup command ensures database connection "just works" daily
-5. **✅ PERFORMANCE OPTIMIZED**: 75ms TTS latency, caching, streaming, bundle optimization
-6. **✅ ENTERPRISE SECURITY**: Input validation, rate limiting, CORS, CSP headers
-7. **✅ AGENT INNOVATION**: Revolutionary Agent Reliability Guardrails System solving phantom work
-8. **✅ TECHNICAL EXCELLENCE**: TypeScript strict mode, Next.js 15.4.5, React 19.1.0
-
-### 🚀 Revolutionary Innovation: Agent Reliability Guardrails
-**This project has solved a fundamental problem in AI agent development** - the issue of agents claiming work they didn't actually execute. The Agent Reliability Guardrails System provides:
-- Real-time validation of agent deliverables vs actual tool executions
-- Comprehensive reliability scoring and phantom work detection
-- CLI tooling for checkpoint creation, validation, and verification
-- Production-ready framework preventing agent reliability issues
-
-**Robot Brain is now a production-ready system with comprehensive testing, enterprise-grade security, performance optimization, and groundbreaking agent reliability innovations! 🚀**
+**This AI Voice Agent Template transforms the original Robot Brain project into a universal, configurable template for creating custom AI voice agents across any industry! 🚀**

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { neon } from '@neondatabase/serverless';
-import { ROBOT_PERSONALITIES } from '@/lib/robot-config';
+import { getConfiguredRobot } from '@/lib/robot-config';
+import { getAgentConfig } from '@/lib/config';
 import { schemas, sanitizeInput, validateSessionId, checkRateLimit, getClientIP } from '@/lib/validation';
 import { responseCache, logCachePerformance } from '@/lib/response-cache';
 
@@ -44,11 +45,9 @@ export async function POST(request: NextRequest) {
     const sanitizedMessage = sanitizeInput(message);
     const validatedSessionId = validateSessionId(sessionId);
 
-    // Get robot configuration
-    const robot = ROBOT_PERSONALITIES[personality as keyof typeof ROBOT_PERSONALITIES];
-    if (!robot) {
-      return NextResponse.json({ error: 'Invalid personality' }, { status: 400 });
-    }
+    // Get robot configuration from config system
+    const robot = getConfiguredRobot();
+    const agentConfig = getAgentConfig();
 
     // Check cache first
     const cacheKey = responseCache.generateKey({ message: sanitizedMessage, personality });
@@ -80,11 +79,11 @@ export async function POST(request: NextRequest) {
       content: msg.content
     }));
 
-    // Send message to Anthropic
+    // Send message to Anthropic using configured settings
     const response = await anthropic.messages.create({
-      model: 'claude-3-haiku-20240307',
-      max_tokens: 100,
-      temperature: 0.3,
+      model: agentConfig.modelSettings.model,
+      max_tokens: agentConfig.modelSettings.maxTokens,
+      temperature: agentConfig.modelSettings.temperature,
       system: robot.systemPrompt + "\n\nIMPORTANT: Keep responses under 2 sentences. Be concise and clear.",
       messages: messages
     });

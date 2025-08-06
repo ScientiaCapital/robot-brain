@@ -1,4 +1,5 @@
 // Audio streaming utilities for ElevenLabs TTS
+import { getAgentConfig } from './config';
 
 export interface AudioStreamOptions {
   voiceId: string;
@@ -101,17 +102,20 @@ export function getAudioStreamManager(): AudioStreamManager {
   return audioStreamManager;
 }
 
-// ElevenLabs streaming configuration
-export const ELEVENLABS_STREAM_CONFIG = {
-  optimizeStreamingLatency: 1, // 0-4, lower = faster
-  outputFormat: 'mp3_44100_128',
-  voiceSettings: {
-    stability: 0.5,
-    similarityBoost: 0.8,
-    style: 0.0,
-    useSpeakerBoost: true
-  }
-};
+// Get ElevenLabs streaming configuration from agent config
+export function getElevenLabsStreamConfig() {
+  const config = getAgentConfig();
+  return {
+    optimizeStreamingLatency: 1, // 0-4, lower = faster
+    outputFormat: 'mp3_44100_128',
+    voiceSettings: {
+      stability: config.voiceSettings.stability,
+      similarityBoost: config.voiceSettings.similarityBoost,
+      style: config.voiceSettings.style,
+      useSpeakerBoost: config.voiceSettings.useSpeakerBoost
+    }
+  };
+}
 
 // Audio streaming metrics interface and implementation
 export interface AudioStreamingMetricsStats {
@@ -255,7 +259,7 @@ export async function streamTTSAudio(
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ text, personality: 'robot-friend' }),
+      body: JSON.stringify({ text, voiceId, personality: 'robot-friend' }),
     });
 
     if (!response.ok) {
@@ -298,7 +302,7 @@ export async function streamTTSAudio(
         callbacks.onProgress(loaded / total);
       }
 
-      await audioManager.addAudioChunk(value.buffer);
+      await audioManager.addAudioChunk(value.buffer as ArrayBuffer);
     }
     
     const endTime = Date.now();

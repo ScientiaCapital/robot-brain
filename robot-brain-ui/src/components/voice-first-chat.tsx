@@ -7,7 +7,8 @@ import { Mic, MicOff, Volume2, VolumeX, MessageSquare } from "lucide-react"
 
 import { Chat } from "@/components/ui/chat"
 import { Button } from "@/components/ui/button"
-import { ROBOT_PERSONALITIES, type RobotId } from "@/lib/robot-config"
+import { getConfiguredRobot } from "@/lib/robot-config"
+import { getAgentConfig } from "@/lib/config"
 import { streamTTSAudio, type StreamTTSCallbacks } from "@/lib/audio-streaming"
 import { logAudioError } from "@/lib/audio-error-logging"
 
@@ -22,7 +23,8 @@ interface Message {
 }
 
 export const VoiceFirstChat = memo(function VoiceFirstChat() {
-  const selectedRobot: RobotId = "robot-friend" // Single robot for MVP
+  const configuredRobot = getConfiguredRobot()
+  const agentConfig = getAgentConfig()
   const [isListening, setIsListening] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
@@ -69,12 +71,12 @@ export const VoiceFirstChat = memo(function VoiceFirstChat() {
         }
       };
       
-      await streamTTSAudio(text, selectedRobot, callbacks);
+      await streamTTSAudio(text, agentConfig.voiceId, callbacks);
     } catch (error) {
       console.error("TTS streaming failed:", error)
       setIsSpeaking(false)
     }
-  }, [isSpeaking, selectedRobot, sessionId])
+  }, [isSpeaking, agentConfig.voiceId])
 
   // Send message function
   const sendMessage = useCallback(async (text: string) => {
@@ -97,7 +99,7 @@ export const VoiceFirstChat = memo(function VoiceFirstChat() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: text,
-          personality: selectedRobot,
+          personality: configuredRobot.id,
           sessionId: sessionId
         })
       })
@@ -124,7 +126,7 @@ export const VoiceFirstChat = memo(function VoiceFirstChat() {
     } finally {
       setIsGenerating(false)
     }
-  }, [selectedRobot, sessionId, speakResponse])
+  }, [configuredRobot.id, sessionId, speakResponse])
 
   // Simple speech recognition for voice input
   const startVoiceInput = useCallback(async () => {
@@ -180,15 +182,15 @@ export const VoiceFirstChat = memo(function VoiceFirstChat() {
     ? [{
         id: "welcome",
         role: "assistant" as const,
-        content: ROBOT_PERSONALITIES[selectedRobot].welcomeMessage,
+        content: configuredRobot.welcomeMessage,
         parts: [{
           type: "text" as const,
-          text: ROBOT_PERSONALITIES[selectedRobot].welcomeMessage
+          text: configuredRobot.welcomeMessage
         }]
       }]
     : messages
 
-  const currentRobot = ROBOT_PERSONALITIES[selectedRobot]
+  const currentRobot = configuredRobot
 
   // Placeholder for transcribeAudio - this would be implemented with a real transcription service
   const transcribeAudio = async (audioBlob: Blob): Promise<string> => {

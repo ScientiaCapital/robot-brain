@@ -1,0 +1,46 @@
+{
+  "available_voices": {
+    "Rachel": {
+      "id": "21m00Tcm4TlvDq8ikWAM",
+      "description": "Warm, friendly female voice - Great for customer service and general conversation",
+      "gender": "female",
+      "accent": "American",
+      "use_cases": ["customer_service", "general", "friendly_chat"]
+    },
+    "Adam": {
+      "id": "pNInz6obpgDQGcFmaJgB",
+      "description": "Professional male voice - Perfect for business and commercial applications",
+      "gender": "male", 
+      "accent": "American",
+      "use_cases": ["business", "commercial", "professional"]
+    },
+    "Bella": {
+      "id": "EXAVITQu4vr4xnSDxMaL",
+      "description": "Clear, articulate female voice - Ideal for educational and informative content",
+      "gender": "female",
+      "accent": "American",
+      "use_cases": ["education", "informative", "clear_communication"]
+    },
+    "Charlie": {
+      "id": "IKne3meq5aSn9XLyUdCD",
+      "description": "Calm, authoritative male voice - Great for coaching and guidance",
+      "gender": "male",
+      "accent": "British",
+      "use_cases": ["coaching", "guidance", "authority"]
+    },
+    "Domi": {
+      "id": "AZnzlk1XvdvUeBnXmlld",
+      "description": "Energetic, youthful female voice - Perfect for entertainment and engaging content",
+      "gender": "female",
+      "accent": "American",
+      "use_cases": ["entertainment", "youth", "energetic"]
+    }
+  },
+  "personality_recommendations": {
+    "cheerful": "Rachel",
+    "professional": "Adam", 
+    "educational": "Bella",
+    "authoritative": "Charlie",
+    "energetic": "Domi"
+  }
+}
