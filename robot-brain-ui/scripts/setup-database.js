@@ -171,7 +171,7 @@ async function createTables(sql, retryOnError = true) {
           const functionMatch = statement.match(/CREATE OR REPLACE FUNCTION (\w+)/i);
           const extensionMatch = statement.match(/CREATE EXTENSION IF NOT EXISTS "?(\w+)"?/i);
           
-          await sql(statement);
+          await sql`${statement}`;
           
           if (tableMatch) {
             log.success(`  Table '${tableMatch[1]}' ready`);
@@ -243,7 +243,7 @@ async function createTables(sql, retryOnError = true) {
           }
           
           try {
-            await sql(statement);
+            await sql`${statement}`;
             successCount++;
           } catch (err) {
             if (!err.message.includes('already exists')) {

@@ -1,0 +1,310 @@
+{
+  "$schema": "https://voicefirst-agents.ai/schemas/agent-config/v1.0.0",
+  "agent": {
+    "metadata": {
+      "name": "MyVoiceAgent",
+      "version": "1.0.0",
+      "description": "A Manus-inspired voice-first AI agent",
+      "author": "Developer Name",
+      "license": "Apache-2.0",
+      "tags": ["customer-service", "voice-first", "multi-agent"]
+    },
+    "voice": {
+      "provider": "elevenlabs",
+      "settings": {
+        "voice_id": "EXAVITQu4vr4xnSDxMaL",
+        "model_id": "eleven_monolingual_v1",
+        "voice_settings": {
+          "stability": 0.5,
+          "similarity_boost": 0.75,
+          "style": 0.5,
+          "use_speaker_boost": true
+        },
+        "streaming": {
+          "enabled": true,
+          "chunk_size": 1024,
+          "latency_optimization": 3
+        }
+      },
+      "personality": {
+        "base_prompt": "You are a helpful, professional assistant with a warm and friendly demeanor.",
+        "traits": {
+          "friendliness": 0.8,
+          "formality": 0.6,
+          "patience": 0.9,
+          "enthusiasm": 0.7,
+          "empathy": 0.85
+        },
+        "conversation_style": {
+          "greeting": "Hello! I'm here to help you today. How can I assist you?",
+          "acknowledgment_phrases": [
+            "I understand",
+            "Got it",
+            "That makes sense",
+            "I see what you mean"
+          ],
+          "thinking_phrases": [
+            "Let me check that for you",
+            "Give me just a moment",
+            "I'm looking into that now"
+          ],
+          "clarification_style": "polite_and_specific"
+        }
+      }
+    },
+    "orchestration": {
+      "mode": "multi_agent",
+      "sub_agents": [
+        {
+          "id": "planning_agent",
+          "type": "planning",
+          "enabled": true,
+          "config": {
+            "model": "gpt-4",
+            "max_planning_steps": 5,
+            "voice_feedback": true,
+            "voice_updates": {
+              "on_plan_start": "I'm organizing the best way to help you with this...",
+              "on_plan_complete": "I have a plan ready. Let me execute it for you."
+            }
+          }
+        },
+        {
+          "id": "knowledge_agent",
+          "type": "knowledge",
+          "enabled": true,
+          "config": {
+            "vector_store": "pinecone",
+            "embedding_model": "text-embedding-3-small",
+            "top_k": 5,
+            "voice_feedback": true,
+            "voice_updates": {
+              "on_search": "Let me search for that information...",
+              "on_found": "I found some relevant information."
+            }
+          }
+        },
+        {
+          "id": "execution_agent",
+          "type": "execution",
+          "enabled": true,
+          "config": {
+            "codeact_enabled": true,
+            "sandbox_environment": "docker",
+            "max_execution_time": 30,
+            "allowed_operations": [
+              "calculations",
+              "data_processing",
+              "api_calls",
+              "file_operations"
+            ],
+            "voice_narration": true
+          }
+        },
+        {
+          "id": "memory_agent",
+          "type": "memory",
+          "enabled": true,
+          "config": {
+            "session_duration": 1800,
+            "context_window": 4096,
+            "persistent_memory": true,
+            "memory_backend": "redis",
+            "voice_context": {
+              "remember_speaker": true,
+              "remember_preferences": true,
+              "remember_past_queries": true
+            }
+          }
+        }
+      ],
+      "coordination": {
+        "strategy": "parallel_with_aggregation",
+        "conflict_resolution": "confidence_weighted",
+        "timeout": 30,
+        "fallback_behavior": "graceful_degradation"
+      }
+    },
+    "context_engineering": {
+      "context_management": {
+        "strategy": "append_only",
+        "max_context_tokens": 8192,
+        "compression": {
+          "enabled": true,
+          "strategy": "selective_summarization",
+          "preserve_errors": true
+        }
+      },
+      "state_machine": {
+        "initial_state": "listening",
+        "states": {
+          "listening": {
+            "on_voice_input": "processing",
+            "timeout": 30,
+            "timeout_action": "idle"
+          },
+          "processing": {
+            "on_complete": "responding",
+            "on_error": "error_handling",
+            "max_duration": 10
+          },
+          "responding": {
+            "on_complete": "listening",
+            "allow_interruption": true
+          },
+          "error_handling": {
+            "retry_count": 2,
+            "on_success": "responding",
+            "on_failure": "fallback"
+          },
+          "idle": {
+            "on_voice_input": "listening",
+            "periodic_check": 60
+          }
+        }
+      },
+      "event_tracking": {
+        "log_level": "info",
+        "events_to_track": [
+          "user_request",
+          "agent_action",
+          "tool_execution",
+          "error_occurred",
+          "response_generated"
+        ],
+        "structured_format": true
+      }
+    },
+    "tools": [
+      {
+        "name": "web_search",
+        "type": "api",
+        "enabled": true,
+        "config": {
+          "provider": "serpapi",
+          "api_key": "${SERPAPI_KEY}",
+          "max_results": 5
+        },
+        "voice_feedback": {
+          "on_start": "Searching the web for you...",
+          "on_complete": "I found some results.",
+          "on_error": "I'm having trouble searching right now."
+        }
+      },
+      {
+        "name": "calculator",
+        "type": "codeact",
+        "enabled": true,
+        "config": {
+          "sandbox": true,
+          "timeout": 5
+        },
+        "voice_feedback": {
+          "on_start": "Let me calculate that...",
+          "on_complete": "Here's the result:",
+          "on_error": "I couldn't complete that calculation."
+        }
+      },
+      {
+        "name": "database_query",
+        "type": "api",
+        "enabled": true,
+        "config": {
+          "connection_string": "${DATABASE_URL}",
+          "read_only": true,
+          "timeout": 10
+        },
+        "voice_feedback": {
+          "on_start": "Checking the database...",
+          "on_complete": "I found the information.",
+          "on_error": "I couldn't access the database right now."
+        }
+      }
+    ],
+    "conversation_flow": {
+      "interruption_handling": {
+        "enabled": true,
+        "sensitivity": 0.7,
+        "behaviors": {
+          "on_interruption": "pause_and_listen",
+          "acknowledgment": "Yes, go ahead.",
+          "resume_strategy": "summarize_and_continue"
+        }
+      },
+      "turn_taking": {
+        "max_response_length": 150,
+        "pause_detection": {
+          "silence_threshold": 1.5,
+          "end_of_speech_probability": 0.8
+        },
+        "backchannel": {
+          "enabled": true,
+          "phrases": ["mm-hmm", "I see", "okay", "understood"]
+        }
+      },
+      "error_responses": {
+        "timeout": "I'm sorry, I didn't catch that. Could you please repeat?",
+        "no_understanding": "I'm not quite sure I understood. Could you rephrase that?",
+        "system_error": "I'm experiencing a technical issue. Please give me a moment.",
+        "rate_limit": "I need to slow down a bit. Please wait a moment."
+      }
+    },
+    "performance": {
+      "targets": {
+        "first_byte_latency": 500,
+        "complete_response_time": 3000,
+        "stt_accuracy": 0.95,
+        "tts_quality": 0.9
+      },
+      "optimization": {
+        "cache_strategy": "aggressive",
+        "prefetch_common_responses": true,
+        "parallel_processing": true,
+        "edge_deployment": false
+      },
+      "monitoring": {
+        "metrics_enabled": true,
+        "log_level": "info",
+        "alerts": {
+          "high_latency": 5000,
+          "error_rate": 0.05,
+          "cache_miss_rate": 0.3
+        }
+      }
+    },
+    "deployment": {
+      "environment": "production",
+      "scaling": {
+        "min_instances": 1,
+        "max_instances": 10,
+        "scale_trigger": "concurrent_sessions",
+        "threshold": 100
+      },
+      "regions": ["us-east-1", "eu-west-1"],
+      "cdn": {
+        "enabled": true,
+        "cache_duration": 3600
+      }
+    },
+    "compliance": {
+      "data_retention": {
+        "audio_recordings": false,
+        "transcripts": true,
+        "retention_days": 30
+      },
+      "privacy": {
+        "pii_detection": true,
+        "pii_masking": true,
+        "gdpr_compliant": true
+      },
+      "security": {
+        "encryption": "tls_1_3",
+        "authentication": "jwt",
+        "rate_limiting": {
+          "enabled": true,
+          "requests_per_minute": 60
+        }
+      }
+    }
+  }
+}

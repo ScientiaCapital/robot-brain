@@ -199,7 +199,7 @@ The AI Voice Agent Template now provides:
 **Template Status**: 83% Complete (5 of 6 phases finished)
 **Next Phase**: Phase 5 - Vercel Deployment Automation
 
-The template is now ready for users to clone and create their own custom AI voice agents (like "my-robot-brain" or "manua-ai") with professional-grade database infrastructure automatically configured!
+The template is now ready for users to clone and create their own custom AI voice agents with professional-grade database infrastructure automatically configured!
 
 ---
 

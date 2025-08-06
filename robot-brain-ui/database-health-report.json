@@ -1,0 +1,11 @@
+{
+  "timestamp": "2025-08-06T20:24:07.751Z",
+  "results": {
+    "passed": 0,
+    "failed": 5,
+    "warnings": 0,
+    "details": []
+  },
+  "healthScore": 50,
+  "status": "critical"
+}

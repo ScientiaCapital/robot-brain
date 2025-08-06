@@ -99,10 +99,10 @@ async function quickTest() {
       const sessionId = sessionResult[0].id;
       
       await sql`
-        INSERT INTO conversations (session_id, agent_personality, user_message, agent_response, metadata)
+        INSERT INTO conversations (session_id, robot_personality, user_message, robot_response, metadata)
         VALUES (
           ${sessionId},
-          'test',
+          'robot-friend',
           'Test message',
           'Test response',
           '{"test": true}'

@@ -1,0 +1,273 @@
+{
+  "manus_ai_architecture": {
+    "core_patterns": {
+      "multi_agent_orchestration": {
+        "description": "Specialized sub-agents handle different task domains",
+        "implementation": {
+          "orchestrator": "High-level coordinator managing sub-agent interactions",
+          "sub_agents": [
+            "planning_agent",
+            "knowledge_retrieval_agent",
+            "code_generation_agent",
+            "execution_agent",
+            "memory_management_agent"
+          ],
+          "isolation": "Each sub-agent runs in isolated sandbox environment"
+        }
+      },
+      "codeact_paradigm": {
+        "description": "Executable code as universal action format",
+        "advantages": [
+          "Flexibility to combine multiple tools in one action",
+          "Handle conditional flows dynamically",
+          "Leverage unlimited Python libraries",
+          "Higher success rates on complex tasks"
+        ],
+        "implementation": {
+          "action_format": "python_code",
+          "execution_environment": "sandboxed_python",
+          "safety": "strict_resource_limits"
+        }
+      },
+      "iterative_agent_loop": {
+        "phases": [
+          {
+            "phase": "analyze",
+            "description": "Understand user request and current state",
+            "voice_adaptation": "Parse voice input with intent recognition"
+          },
+          {
+            "phase": "plan",
+            "description": "Select appropriate tools and strategy",
+            "voice_adaptation": "Generate voice-aware action sequences"
+          },
+          {
+            "phase": "execute",
+            "description": "Run selected actions",
+            "voice_adaptation": "Stream execution updates via voice"
+          },
+          {
+            "phase": "observe",
+            "description": "Process results and determine next steps",
+            "voice_adaptation": "Synthesize results for voice delivery"
+          }
+        ]
+      }
+    },
+    "context_engineering": {
+      "state_management": {
+        "context_aware_state_machine": {
+          "description": "Manages tool availability through token masking",
+          "implementation": "Mask logits during decoding instead of removing tools"
+        },
+        "append_only_context": {
+          "description": "Maintain KV-cache consistency",
+          "benefits": "Optimal performance and cost reduction"
+        },
+        "structured_events": {
+          "format": "typed_event_stream",
+          "examples": [
+            "user_request",
+            "action_executed",
+            "observation_recorded",
+            "error_occurred"
+          ]
+        }
+      },
+      "memory_systems": {
+        "file_system_memory": {
+          "description": "Unlimited external context storage",
+          "patterns": [
+            "todo.md for goal persistence",
+            "session files for state preservation",
+            "knowledge base for reference data"
+          ]
+        },
+        "error_preservation": {
+          "description": "Keep failed actions in context for implicit learning",
+          "benefit": "Reduces repetition of same errors"
+        }
+      },
+      "performance_optimization": {
+        "kv_cache_hit_rate": {
+          "priority": "highest",
+          "target": ">90%",
+          "techniques": [
+            "Stable prompt prefixes",
+            "Deterministic serialization",
+            "Session-based routing"
+          ]
+        }
+      }
+    }
+  },
+  "voice_first_adaptations": {
+    "conversation_patterns": {
+      "voice_aware_prompting": {
+        "description": "Optimize prompts for voice interaction",
+        "patterns": [
+          "Short, clear responses optimized for TTS",
+          "Progressive disclosure of complex information",
+          "Natural conversation flow with interruption handling",
+          "Context-aware voice tone adaptation"
+        ]
+      },
+      "streaming_architecture": {
+        "description": "Real-time voice processing pipeline",
+        "components": [
+          "Voice activity detection (VAD)",
+          "Streaming STT with partial results",
+          "Incremental response generation",
+          "Low-latency TTS synthesis"
+        ]
+      },
+      "multi_modal_context": {
+        "voice_context": {
+          "elements": [
+            "Speaker identification",
+            "Emotion detection",
+            "Prosody analysis",
+            "Ambient noise level"
+          ]
+        },
+        "adaptation_strategies": [
+          "Adjust response verbosity based on context",
+          "Modify speaking pace based on user comprehension",
+          "Handle interruptions gracefully"
+        ]
+      }
+    },
+    "elevenlabs_integration": {
+      "voice_synthesis": {
+        "configuration": {
+          "model": "eleven_monolingual_v1",
+          "voice_settings": {
+            "stability": 0.5,
+            "similarity_boost": 0.75,
+            "style": "conversational"
+          }
+        },
+        "optimization": {
+          "streaming": true,
+          "chunk_size": 1024,
+          "latency_optimization": "aggressive"
+        }
+      },
+      "voice_cloning": {
+        "description": "Custom voice personas for different agent types",
+        "implementation": "Professional voice samples for domain-specific agents"
+      }
+    }
+  },
+  "configuration_schema": {
+    "agent_config": {
+      "metadata": {
+        "name": "string",
+        "version": "string",
+        "description": "string",
+        "voice_profile": "string"
+      },
+      "capabilities": {
+        "sub_agents": [
+          {
+            "id": "string",
+            "type": "planning|knowledge|execution|memory",
+            "enabled": "boolean",
+            "config": "object"
+          }
+        ],
+        "tools": [
+          {
+            "name": "string",
+            "type": "codeact|api|webhook",
+            "enabled": "boolean",
+            "voice_feedback": "boolean",
+            "config": "object"
+          }
+        ]
+      },
+      "context_engineering": {
+        "max_context_length": "number",
+        "cache_strategy": "append_only|dynamic",
+        "memory_backend": "filesystem|database|hybrid",
+        "error_handling": {
+          "preserve_errors": "boolean",
+          "max_retries": "number",
+          "fallback_strategy": "string"
+        }
+      },
+      "voice_settings": {
+        "provider": "elevenlabs|azure|google",
+        "voice_id": "string",
+        "language": "string",
+        "speaking_rate": "number",
+        "pitch": "number",
+        "response_style": "concise|detailed|conversational",
+        "interruption_handling": {
+          "enabled": "boolean",
+          "sensitivity": "number"
+        }
+      },
+      "conversation_flow": {
+        "greeting": "string",
+        "confirmation_style": "explicit|implicit",
+        "error_messages": {
+          "timeout": "string",
+          "failure": "string",
+          "clarification": "string"
+        },
+        "personality_traits": {
+          "formality": "number",
+          "enthusiasm": "number",
+          "patience": "number"
+        }
+      },
+      "performance": {
+        "target_latency_ms": "number",
+        "cache_size_mb": "number",
+        "concurrent_actions": "number",
+        "timeout_seconds": "number"
+      }
+    }
+  },
+  "implementation_guidelines": {
+    "phase_5a_integration": {
+      "knowledge_extraction": [
+        "Map Manus multi-agent patterns to voice-first architecture",
+        "Adapt CodeAct for voice-triggered actions",
+        "Implement context-aware state management for voice sessions",
+        "Create voice-optimized memory systems"
+      ],
+      "template_features": [
+        "JSON-based agent configuration",
+        "Plug-and-play sub-agent modules",
+        "Voice-first tool orchestration",
+        "Built-in ElevenLabs optimization",
+        "Error recovery with voice feedback"
+      ],
+      "blue_ocean_differentiators": [
+        "Voice-first design from ground up",
+        "Configuration-driven customization",
+        "Open-source with community contributions",
+        "Pre-built voice personas and templates",
+        "Integrated voice analytics and optimization"
+      ]
+    },
+    "development_priorities": {
+      "mvp_features": [
+        "Basic multi-agent orchestration",
+        "ElevenLabs voice integration",
+        "JSON configuration system",
+        "File-based memory management",
+        "Simple CodeAct implementation"
+      ],
+      "phase_2_enhancements": [
+        "Advanced context engineering",
+        "Voice-aware state machine",
+        "Distributed sub-agent execution",
+        "Performance optimization tools",
+        "Community template marketplace"
+      ]
+    }
+  }
+}
