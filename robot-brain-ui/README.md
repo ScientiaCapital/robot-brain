@@ -1,7 +1,7 @@
-# Robot Brain UI - Production AI Chat System
+# AI Voice Agent Template - Universal Agent Builder
 
 ## 🤖 Overview
-**Robot Brain** is a production-ready AI-powered chat system featuring Robot Friend, built with Next.js 15.4.5 and deployed on Vercel. The project features comprehensive TDD implementation, enterprise-grade security, performance optimization, and the revolutionary Agent Reliability Guardrails System.
+**AI Voice Agent Template** is a production-ready, configurable AI agent system that allows anyone to create custom voice-enabled agents for any industry or use case. Built with Next.js 15.4.5, featuring enterprise-grade database infrastructure, comprehensive testing, and seamless voice integration with Anthropic Claude and ElevenLabs.
 
 ## 🚀 Live Application
 **Production URL**: https://robot-brain-24lv73qca-scientia-capital.vercel.app
@@ -13,14 +13,15 @@
 - **Fresh Deployments**: Multiple deployments created via Vercel CLI to ensure SSO changes take effect
 
 ## 🎯 Key Features
-- **AI Chat**: Anthropic Claude integration (100 tokens, 0.3 temperature optimized)
-- **Voice TTS**: ElevenLabs eleven_flash_v2_5 model with 75ms latency
+- **Universal Agent Configuration**: Create any type of agent (Sales, Support, Operations, etc.)
+- **AI Chat**: Anthropic Claude integration with configurable personalities
+- **Voice TTS**: ElevenLabs voice synthesis with multiple voice options
 - **Voice Input**: Browser speech recognition support
-- **Conversation Storage**: Neon PostgreSQL database integration
+- **Database**: Generic Neon PostgreSQL schema for any agent type
+- **Auto Setup**: One-command database initialization (`npm run setup:database`)
 - **Performance**: Caching, streaming, bundle optimization
 - **Security**: Input validation, rate limiting, CORS, CSP headers
-- **Testing**: Comprehensive test suite with 13/16 test suites passing (81% success rate)
-- **Test Coverage**: 160/182 individual tests passing (88% success rate)
+- **Fully Configurable**: JSON-based configuration system for agents, personalities, and voices
 
 ## 🛡️ Agent Reliability Guardrails System
 Revolutionary tooling that prevents agent phantom work:
@@ -64,12 +65,34 @@ npm run agent:list
 ```bash
 # Clone and install
 git clone [repository-url]
-cd robot-brain-ui
+cd ai-voice-agent-template
 npm install
 
 # Setup environment
 cp .env.example .env.local
 # Add your API keys to .env.local
+
+# Initialize database (automatic setup)
+npm run setup:database
+```
+
+### Database Setup
+The template includes automated database setup that:
+- Creates all required tables automatically
+- Sets up proper indexes for performance
+- Configures UUID and optional pgvector extensions
+- Validates schema integrity
+- Works with any Neon PostgreSQL database
+
+```bash
+# Run automated setup
+npm run setup:database
+
+# Check database health
+npm run db:health
+
+# Migrate from old schema (if needed)
+node scripts/migrate-database.js
 ```
 
 ### Development

@@ -112,7 +112,7 @@ async function testSchemaValidation() {
   try {
     const result = await fetchHealthCheck('database', 'schema');
     
-    const tables = ['conversations', 'sessions', 'embeddings', 'robot_interactions', 'tool_usage'];
+    const tables = ['conversations', 'sessions', 'embeddings', 'agent_interactions', 'tool_usage'];
     
     for (const table of tables) {
       if (result.schemas?.[table]?.exists) {

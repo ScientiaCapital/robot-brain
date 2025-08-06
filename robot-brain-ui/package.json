@@ -14,13 +14,20 @@
     "test:ci": "jest --ci --coverage --watchAll=false",
     "db:setup": "node scripts/setup-database.js",
     "db:health": "node scripts/test-database-health.js",
+    "db:test": "node scripts/test-database-setup.js",
+    "db:migrate": "node scripts/migrate-database.js",
+    "db:migrate:list": "node scripts/migrate-database.js list",
     "setup": "npm run db:setup",
+    "setup:database": "node scripts/setup-database.js",
     "pre-deploy": "node scripts/pre-deploy-check.js",
     "deploy": "node scripts/deploy.js",
     "agent:checkpoint": "node ../.claude/guardrails/agent-handoff-validator.js checkpoint",
     "agent:validate": "node ../.claude/guardrails/agent-handoff-validator.js validate",
     "agent:verify": "node ../.claude/guardrails/verify-agent.js verify",
-    "agent:list": "node ../.claude/guardrails/verify-agent.js list"
+    "agent:list": "node ../.claude/guardrails/verify-agent.js list",
+    "db:test:quick": "node scripts/quick-database-test.js",
+    "db:validate": "node scripts/validate-database-setup.js",
+    "db:test:integration": "node scripts/test-database-integration.js"
   },
   "dependencies": {
     "@ai-sdk/react": "^2.0.0",
