@@ -7,10 +7,9 @@ import { Mic, MicOff, Volume2, VolumeX, MessageSquare } from "lucide-react"
 
 import { Chat } from "@/components/ui/chat"
 import { Button } from "@/components/ui/button"
-import { getConfiguredRobot } from "@/lib/robot-config"
-import { getAgentConfig } from "@/lib/config"
+import { ROBOT_PERSONALITIES, type RobotId } from "@/lib/robot-config"
 import { streamTTSAudio, type StreamTTSCallbacks } from "@/lib/audio-streaming"
-import { logAudioError } from "@/lib/audio-error-logging"
+import { logAudioError, createAudioError } from "@/lib/audio-error-logging"
 
 interface Message {
   id: string
@@ -23,8 +22,7 @@ interface Message {
 }
 
 export const VoiceFirstChat = memo(function VoiceFirstChat() {
-  const configuredRobot = getConfiguredRobot()
-  const agentConfig = getAgentConfig()
+  const selectedRobot: RobotId = "robot-friend" // Single robot for MVP
   const [isListening, setIsListening] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
@@ -39,6 +37,8 @@ export const VoiceFirstChat = memo(function VoiceFirstChat() {
     
     setIsSpeaking(true)
     try {
+      const startTime = Date.now();
+      
       // Use streaming TTS for better performance with proper callbacks
       const callbacks: StreamTTSCallbacks = {
         onStart: () => {
@@ -60,23 +60,25 @@ export const VoiceFirstChat = memo(function VoiceFirstChat() {
           
           // Log error to Neon database
           try {
-            logAudioError(
-              'NETWORK_ERROR',
+            const audioError = createAudioError(
+              'tts_streaming',
               error.message,
-              'high'
+              Date.now() - startTime,
+              0 // chunk count not available here
             );
+            await logAudioError(sessionId, audioError);
           } catch (logError) {
             console.error('Failed to log audio error:', logError);
           }
         }
       };
       
-      await streamTTSAudio(text, agentConfig.voiceId, callbacks);
+      await streamTTSAudio(text, selectedRobot, callbacks);
     } catch (error) {
       console.error("TTS streaming failed:", error)
       setIsSpeaking(false)
     }
-  }, [isSpeaking, agentConfig.voiceId])
+  }, [isSpeaking, selectedRobot, sessionId])
 
   // Send message function
   const sendMessage = useCallback(async (text: string) => {
@@ -99,7 +101,7 @@ export const VoiceFirstChat = memo(function VoiceFirstChat() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: text,
-          personality: configuredRobot.id,
+          personality: selectedRobot,
           sessionId: sessionId
         })
       })
@@ -126,7 +128,7 @@ export const VoiceFirstChat = memo(function VoiceFirstChat() {
     } finally {
       setIsGenerating(false)
     }
-  }, [configuredRobot.id, sessionId, speakResponse])
+  }, [selectedRobot, sessionId, speakResponse])
 
   // Simple speech recognition for voice input
   const startVoiceInput = useCallback(async () => {
@@ -182,15 +184,15 @@ export const VoiceFirstChat = memo(function VoiceFirstChat() {
     ? [{
         id: "welcome",
         role: "assistant" as const,
-        content: configuredRobot.welcomeMessage,
+        content: ROBOT_PERSONALITIES[selectedRobot].welcomeMessage,
         parts: [{
           type: "text" as const,
-          text: configuredRobot.welcomeMessage
+          text: ROBOT_PERSONALITIES[selectedRobot].welcomeMessage
         }]
       }]
     : messages
 
-  const currentRobot = configuredRobot
+  const currentRobot = ROBOT_PERSONALITIES[selectedRobot]
 
   // Placeholder for transcribeAudio - this would be implemented with a real transcription service
   const transcribeAudio = async (audioBlob: Blob): Promise<string> => {

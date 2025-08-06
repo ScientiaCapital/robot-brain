@@ -18,13 +18,11 @@ import { Button } from "@/components/ui/button"
 import { ROBOT_PERSONALITIES, type RobotId } from "@/lib/robot-config"
 
 // Try to import useConversation, but handle gracefully if not available
-let useConversationFunc: ((config?: any) => any) | undefined
+let useConversation: any
 try {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const elevenLabsReact = require("@elevenlabs/react")
-  useConversationFunc = elevenLabsReact.useConversation
+  ({ useConversation } = require("@elevenlabs/react"))
 } catch {
-  // If the module isn't available, useConversationFunc will remain undefined
+  // If the module isn't available, useConversation will remain undefined
 }
 
 interface Message {
@@ -63,8 +61,7 @@ export function ConversationalAIChat() {
   const audioChunksRef = useRef<Blob[]>([])
   
   // ElevenLabs Conversational AI hook - use if available
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const conversation = useConversationFunc ? useConversationFunc() : null
+  const conversation = useConversation ? useConversation() : null
 
   // Helper to add system messages
   const addSystemMessage = useCallback((text: string) => {

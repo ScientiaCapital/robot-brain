@@ -1,8 +1,5 @@
 // Import React first for mocks
 const React = require('react')
-
-// Load environment variables for tests
-require('dotenv').config({ path: '.env.local' })
 const { 
   mockElevenLabsWidget, 
   mockElevenLabsWidgetInstance,
@@ -48,24 +45,18 @@ import { setupDomMocks } from './__tests__/test-utils'
 global.TextDecoder = TextDecoder
 global.TextEncoder = TextEncoder
 
-// Mock environment variables for tests (only if not already set from .env.local)
-if (!process.env.ANTHROPIC_API_KEY) {
-  process.env.ANTHROPIC_API_KEY = 'sk-ant-test-key'
-}
-if (!process.env.NEON_DATABASE_URL) {
-  process.env.NEON_DATABASE_URL = 'postgresql://test:test@ep-test.neon.tech/testdb?sslmode=require'
-}
-if (!process.env.ELEVENLABS_API_KEY) {
-  process.env.ELEVENLABS_API_KEY = 'sk_test_elevenlabs_key'
-}
+// Mock environment variables for tests
+process.env.ANTHROPIC_API_KEY = 'sk-ant-test-key'
+process.env.NEON_DATABASE_URL = 'postgresql://test:test@ep-test.neon.tech/testdb?sslmode=require'
+process.env.ELEVENLABS_API_KEY = 'sk_test_elevenlabs_key'
 process.env.NODE_ENV = 'test'
 
 // ==================== MODULE MOCKS ====================
 
-// Mock Neon database for tests - DISABLED for real database testing
-// jest.mock('@neondatabase/serverless', () => ({
-//   neon: jest.fn(() => mockNeonQuery)
-// }))
+// Mock Neon database for tests
+jest.mock('@neondatabase/serverless', () => ({
+  neon: jest.fn(() => mockNeonQuery)
+}))
 
 // Mock ElevenLabs packages
 jest.mock('@elevenlabs/convai-widget-core', () => ({

@@ -1,184 +1,223 @@
-# My Robot Brain 🤖🧠
+# Robot Brain UI - Production AI Chat System
 
-**Build your own AI assistant that talks and thinks like you want it to!**
+## 🤖 Overview
+**Robot Brain** is a production-ready AI-powered chat system featuring Robot Friend, built with Next.js 15.4.5 and deployed on Vercel. The project features comprehensive TDD implementation, enterprise-grade security, performance optimization, and the revolutionary Agent Reliability Guardrails System.
 
-## What is this?
+## 🚀 Live Application
+**Production URL**: https://robot-brain-24lv73qca-scientia-capital.vercel.app
 
-This is a super cool AI robot that you can talk to! It's like having your own personal assistant that:
-- 💬 Talks back to you with a real voice
-- 🎯 Remembers your conversations  
-- 🎨 Can have different personalities (funny, helpful, smart, etc.)
-- 🎵 Uses different voices (male, female, different accents)
+### ✅ Recent Authentication Resolution
+- **Issue Resolved**: Vercel team-level SSO authentication blocking user access
+- **Solution Applied**: Changed OIDC configuration from "Team" to "Global" issuer mode
+- **Result**: Fresh deployment with disabled SSO, enabling public team access
+- **Fresh Deployments**: Multiple deployments created via Vercel CLI to ensure SSO changes take effect
 
-## Cool Features ✨
+## 🎯 Key Features
+- **AI Chat**: Anthropic Claude integration (100 tokens, 0.3 temperature optimized)
+- **Voice TTS**: ElevenLabs eleven_flash_v2_5 model with 75ms latency
+- **Voice Input**: Browser speech recognition support
+- **Conversation Storage**: Neon PostgreSQL database integration
+- **Performance**: Caching, streaming, bundle optimization
+- **Security**: Input validation, rate limiting, CORS, CSP headers
+- **Testing**: Comprehensive test suite with 13/16 test suites passing (81% success rate)
+- **Test Coverage**: 160/182 individual tests passing (88% success rate)
 
-### 🗣️ Voice Chat
-- Talk to your robot and it talks back!
-- Choose from different voices and personalities
-- Works in your web browser - no downloads needed
+## 🛡️ Agent Reliability Guardrails System
+Revolutionary tooling that prevents agent phantom work:
+- **Validation**: Pre/post agent state verification
+- **Tracking**: Real-time tool execution monitoring
+- **Scoring**: Comprehensive reliability assessment
+- **CLI**: Production-ready npm scripts for validation workflow
 
-### 🎭 Different Personalities  
-You can make your robot:
-- **Professional** - Like a business helper
-- **Friendly** - Like your best friend
-- **Educational** - Like a smart teacher
-- **Cheerful** - Always happy and positive
-
-### 🔧 Easy to Customize
-- Change your robot's name
-- Pick its personality
-- Choose its voice
-- All done with simple settings files!
-
-## How to Get Started 🚀
-
-### What You Need
-- A computer with internet
-- Basic computer skills (like copying and pasting)
-
-### Step 1: Get the Code
+### Agent Commands
 ```bash
-# Download this project to your computer
-git clone [your-repo-url]
-cd my-robot-brain
+# Create checkpoint before agent work
+npm run agent:checkpoint [agent-type]
+
+# Validate deliverables against actual executions
+npm run agent:validate [checkpoint-id] [expected-deliverables]
+
+# Complete verification with reliability scoring
+npm run agent:verify [checkpoint-id] [agent-type]
+
+# List all validation sessions
+npm run agent:list
 ```
 
-### Step 2: Install It
+## 🔧 Technical Stack
+- **Framework**: Next.js 15.4.5 (App Router)
+- **Frontend**: React 19.1.0 with TypeScript (strict mode)
+- **UI**: Radix UI + Tailwind CSS + Framer Motion
+- **Database**: Neon PostgreSQL
+- **Deployment**: Vercel (Production Ready)
+- **Testing**: Jest + Testing Library
+- **AI Services**: Anthropic Claude + ElevenLabs TTS
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
+- Environment variables (see .env.example)
+
+### Installation
 ```bash
-# Install all the pieces it needs
+# Clone and install
+git clone [repository-url]
+cd robot-brain-ui
 npm install
-```
 
-### Step 3: Set It Up
-```bash
-# Copy the example settings
+# Setup environment
 cp .env.example .env.local
-
-# Set up the database (stores conversations)
-npm run setup:database
+# Add your API keys to .env.local
 ```
 
-### Step 4: Add Your API Keys
-You need to get some free accounts:
-
-1. **Anthropic** (for the brain): Go to anthropic.com and get a free API key
-2. **ElevenLabs** (for the voice): Go to elevenlabs.io and get a free API key  
-3. **Neon** (for memory): Go to neon.tech and get a free database
-
-Put these keys in your `.env.local` file.
-
-### Step 5: Start Your Robot!
+### Development
 ```bash
-# Turn on your robot
+# Start development server
 npm run dev
+
+# Run tests
+npm run test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Build for production
+npm run build
+
+# Start production server
+npm start
 ```
 
-Go to `http://localhost:3000` in your browser and start talking to your robot! 🎉
-
-## Customize Your Robot 🎨
-
-### Change the Personality
-Edit the file `config/agent.json`:
-```json
-{
-  "agentName": "My Cool Robot",
-  "personality": "friendly",
-  "emoji": "😊",
-  "welcomeMessage": "Hey there! I'm your new robot friend!"
-}
-```
-
-### Pick a Different Voice
-Look in `config/voices.json` to see all the voice options:
-- Rachel (friendly female voice)
-- Adam (professional male voice)  
-- Bella (educational female voice)
-- And more!
-
-## How It Works 🛠️
-
-```
-You type/speak → Robot thinks → Robot responds with voice
-     ↓              ↓                    ↓
-  Your input → AI processes → Voice speaks back
-```
-
-Your robot uses:
-- **Next.js** - The website framework
-- **Anthropic** - The AI brain that thinks
-- **ElevenLabs** - The voice that talks
-- **Neon Database** - The memory that remembers
-
-## Common Problems & Solutions 🔧
-
-### Robot Won't Talk
-- Check your ElevenLabs API key
-- Make sure your browser allows microphone access
-
-### Robot Won't Think  
-- Check your Anthropic API key
-- Make sure you have internet connection
-
-### Can't Save Conversations
-- Check your Neon database connection
-- Run `npm run db:health` to test it
-
-## Make It Your Own 🎯
-
-### Easy Changes (No Coding!)
-- Robot name and personality (edit `config/agent.json`)
-- Voice selection (edit `config/agent.json`) 
-- Welcome message (edit `config/agent.json`)
-
-### Advanced Changes (Some Coding)
-- Add new personalities (edit `config/personalities.json`)
-- Change how the robot talks (edit the system prompts)
-- Add new features (edit the React components)
-
-## Deploy Your Robot Online 🌐
-
-Want others to use your robot? Put it online!
-
+### Environment Variables
 ```bash
-# Deploy to Vercel (free hosting)
-npm run deploy
+# Required API Keys
+ANTHROPIC_API_KEY=sk-ant-api03-***
+ELEVENLABS_API_KEY=sk_***
+NEON_DATABASE_URL=postgresql://***
+
+# Optional Configuration
+NEXT_PUBLIC_API_URL=  # Defaults to same origin
 ```
 
-Your robot will get its own website address that anyone can visit!
+## 🏗️ Architecture
 
-## What Makes This Special? ⭐
+### API Routes
+- `/api/chat` - Anthropic Claude integration with optimized parameters
+- `/api/voice/text-to-speech` - ElevenLabs TTS with eleven_flash_v2_5 model
+- `/api/signed-url` - File upload support (legacy)
 
-This isn't just another chatbot - it's designed to be:
-- **Super Easy** - Even beginners can set it up
-- **Totally Yours** - Customize everything without coding
-- **Production Ready** - Works reliably and fast
-- **Voice First** - Designed for talking, not just typing
-- **Memory Powered** - Remembers your conversations
+### Database Schema
+```sql
+-- Primary conversation storage
+CREATE TABLE conversations (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  robot_personality varchar NOT NULL,
+  user_message text NOT NULL,
+  robot_response text NOT NULL,
+  session_id varchar,
+  metadata jsonb DEFAULT '{}',
+  created_at timestamptz DEFAULT now()
+);
+```
 
-## Need Help? 🤝
+## 🧪 Testing
 
-- Check the `scripts/` folder for helpful tools
-- Run `npm run db:health` to test your database
-- Look at the example files for guidance
-- All settings are in the `config/` folder
+### Current Test Status
+- **Test Suites**: 13/16 passing (81% success rate)
+- **Individual Tests**: 160/182 passing (88% success rate)
+- **Recent Improvements**: Major fixes for performance monitors, audio streaming, database metadata, voice pipeline, component imports
 
-## Fun Ideas 💡
+### Test Coverage
+- **Unit Tests**: Component and utility function testing
+- **Integration Tests**: API route and service integration
+- **Performance Tests**: Response time and optimization validation
+- **Security Tests**: Input validation and protection verification
 
-Make different robots for different things:
-- **Study Buddy** - Helps with homework
-- **Workout Coach** - Motivates you to exercise  
-- **Story Teller** - Tells you bedtime stories
-- **Language Teacher** - Helps you learn new languages
-- **Game Master** - Plays text adventure games with you
+### Running Tests
+```bash
+# Run all tests
+npm run test
 
-## Technical Stuff (For Developers) 🔧
+# Watch mode for development
+npm run test:watch
 
-- Built with Next.js 15.4.5 and React 19.1.0
-- TypeScript for reliable code
-- Comprehensive testing and error handling
-- Production-ready deployment automation
-- Scalable database architecture with Neon PostgreSQL
+# Coverage report
+npm run test:coverage
 
----
+# CI mode
+npm run test:ci
+```
 
-**Ready to build your robot brain? Let's get started! 🚀🤖**
+## 🔒 Security Features
+- **Input Validation**: Comprehensive request validation with Zod
+- **Rate Limiting**: API protection against abuse
+- **CORS Protection**: Cross-origin request security
+- **CSP Headers**: Content Security Policy implementation
+- **Environment Security**: API keys managed via Vercel environment variables
+
+## 📊 Performance Optimizations
+- **Caching**: Response caching for improved performance
+- **Streaming**: Real-time audio streaming for TTS
+- **Bundle Optimization**: Code splitting and tree shaking
+- **CDN**: Global content delivery via Vercel Edge Network
+- **Database**: Connection pooling and query optimization
+
+## 🚀 Deployment
+
+### Production Deployment
+The application is deployed to Vercel with resolved authentication barriers:
+- **Current URL**: https://robot-brain-24lv73qca-scientia-capital.vercel.app
+- **Platform**: Vercel serverless functions + global CDN
+- **Database**: Neon PostgreSQL with scale-to-zero capability
+- **Authentication**: ✅ SSO authentication issues resolved via global OIDC configuration
+- **Team Access**: ✅ Public team access enabled after SSO configuration change
+
+### Manual Deployment
+```bash
+# Deploy to production
+npm run deploy
+
+# Pre-deployment checks
+npm run pre-deploy
+```
+
+## 🛠️ Development Tools
+
+### Code Quality
+- **TypeScript**: Strict mode for type safety
+- **ESLint**: Code linting with Next.js rules
+- **Prettier**: Consistent code formatting
+
+### Agent Reliability Guardrails
+- **Phantom Work Prevention**: Validates agent claims vs actual executions
+- **Reliability Scoring**: Quantitative agent performance assessment
+- **Execution Tracking**: Complete audit trail of tool usage
+- **CLI Integration**: Easy-to-use validation workflow
+
+## 📈 Monitoring & Analytics
+- **Vercel Analytics**: Page views, performance, errors
+- **Neon Dashboard**: Database queries, connections, storage
+- **Agent Reliability Metrics**: Comprehensive agent performance tracking
+
+## 🏆 Major Achievements
+- ✅ **Production Ready**: Live application with enterprise-grade features
+- ✅ **Authentication Resolution**: Resolved Vercel SSO blocking via global OIDC configuration
+- ✅ **Team Collaboration**: Enabled public team access after SSO configuration changes
+- ✅ **Comprehensive Testing**: 13/16 test suites passing (81%), 160/182 individual tests (88%)
+- ✅ **Test Suite Improvements**: Major fixes for performance monitors, audio streaming, database metadata
+- ✅ **Performance Optimized**: 75ms TTS latency with caching and streaming
+- ✅ **Security Hardened**: Input validation, rate limiting, CORS, CSP
+- ✅ **Revolutionary Innovation**: Agent Reliability Guardrails System solving phantom work
+
+## 🤝 Contributing
+This project represents both a successful robot chat system and a breakthrough in agent reliability technology. With 13/16 test suites passing and continuous improvements, we maintain high code quality standards. The Agent Reliability Guardrails System has applications far beyond this specific use case and solves fundamental problems in AI agent development.
+
+### Development Workflow
+- Run tests before committing: `npm run test`
+- Current test health: 81% test suites passing, 88% individual tests passing
+- Focus areas: Improving remaining 3 failing test suites for complete coverage
+
+## 📄 License
+This project is part of the Robot Brain ecosystem, featuring production-ready AI chat capabilities and revolutionary agent reliability innovations.

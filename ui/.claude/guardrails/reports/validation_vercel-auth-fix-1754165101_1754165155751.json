@@ -1,0 +1,88 @@
+{
+  "checkpointId": "vercel-auth-fix-1754165101",
+  "agentType": "vercel-deployment-specialist",
+  "timestamp": "2025-08-02T20:05:55.751Z",
+  "claimedDeliverables": [
+    {
+      "type": "plan_created",
+      "description": "Created systematic Vercel CLI diagnostic plan"
+    },
+    {
+      "type": "commands_specified",
+      "description": "Specified vercel whoami, ls, projects ls commands"
+    },
+    {
+      "type": "api_test_planned",
+      "description": "Planned curl test of API endpoint"
+    },
+    {
+      "type": "deployment_strategy",
+      "description": "Planned fresh deployment with --prod --force"
+    }
+  ],
+  "actualDeliverables": [
+    {
+      "type": "file_created",
+      "path": ".claude/guardrails/checkpoints/vercel-auth-fix-1754165101.json",
+      "evidence": "New file detected"
+    }
+  ],
+  "validationResults": [
+    {
+      "claim": {
+        "type": "plan_created",
+        "description": "Created systematic Vercel CLI diagnostic plan"
+      },
+      "status": "unknown",
+      "evidence": [],
+      "issues": [
+        "Unknown deliverable type: plan_created"
+      ]
+    },
+    {
+      "claim": {
+        "type": "commands_specified",
+        "description": "Specified vercel whoami, ls, projects ls commands"
+      },
+      "status": "unknown",
+      "evidence": [],
+      "issues": [
+        "Unknown deliverable type: commands_specified"
+      ]
+    },
+    {
+      "claim": {
+        "type": "api_test_planned",
+        "description": "Planned curl test of API endpoint"
+      },
+      "status": "unknown",
+      "evidence": [],
+      "issues": [
+        "Unknown deliverable type: api_test_planned"
+      ]
+    },
+    {
+      "claim": {
+        "type": "deployment_strategy",
+        "description": "Planned fresh deployment with --prod --force"
+      },
+      "status": "unknown",
+      "evidence": [],
+      "issues": [
+        "Unknown deliverable type: deployment_strategy"
+      ]
+    }
+  ],
+  "reliability": {
+    "claimedVsActual": 0,
+    "phantomClaims": [],
+    "missedChanges": [
+      {
+        "type": "file_created",
+        "path": ".claude/guardrails/checkpoints/vercel-auth-fix-1754165101.json",
+        "evidence": "New file detected"
+      }
+    ],
+    "verified": []
+  }
+}

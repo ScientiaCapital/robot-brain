@@ -1,0 +1,96 @@
+{
+  "checkpointId": "git-commit-1754162987",
+  "agentType": "general-purpose",
+  "timestamp": "2025-08-02T19:31:27.274Z",
+  "claimedDeliverables": [
+    {
+      "type": "command_executed",
+      "command": "git status",
+      "description": "Checked repository status"
+    },
+    {
+      "type": "command_executed",
+      "command": "git add",
+      "description": "Staged all changes"
+    },
+    {
+      "type": "command_executed",
+      "command": "git commit",
+      "description": "Created comprehensive commit"
+    },
+    {
+      "type": "command_executed",
+      "command": "git push",
+      "description": "Pushed to GitHub origin/master"
+    }
+  ],
+  "actualDeliverables": [
+    {
+      "type": "file_created",
+      "path": ".claude/guardrails/checkpoints/git-commit-1754162987.json",
+      "evidence": "New file detected"
+    }
+  ],
+  "validationResults": [
+    {
+      "claim": {
+        "type": "command_executed",
+        "command": "git status",
+        "description": "Checked repository status"
+      },
+      "status": "partial",
+      "evidence": [
+        "Command execution cannot be directly verified"
+      ],
+      "issues": []
+    },
+    {
+      "claim": {
+        "type": "command_executed",
+        "command": "git add",
+        "description": "Staged all changes"
+      },
+      "status": "partial",
+      "evidence": [
+        "Command execution cannot be directly verified"
+      ],
+      "issues": []
+    },
+    {
+      "claim": {
+        "type": "command_executed",
+        "command": "git commit",
+        "description": "Created comprehensive commit"
+      },
+      "status": "partial",
+      "evidence": [
+        "Command execution cannot be directly verified"
+      ],
+      "issues": []
+    },
+    {
+      "claim": {
+        "type": "command_executed",
+        "command": "git push",
+        "description": "Pushed to GitHub origin/master"
+      },
+      "status": "partial",
+      "evidence": [
+        "Command execution cannot be directly verified"
+      ],
+      "issues": []
+    }
+  ],
+  "reliability": {
+    "claimedVsActual": 0,
+    "phantomClaims": [],
+    "missedChanges": [
+      {
+        "type": "file_created",
+        "path": ".claude/guardrails/checkpoints/git-commit-1754162987.json",
+        "evidence": "New file detected"
+      }
+    ],
+    "verified": []
+  }
+}

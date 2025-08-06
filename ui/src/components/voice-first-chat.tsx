@@ -1,0 +1,299 @@
+"use client"
+
+import { useState, useCallback, useEffect, memo } from "react"
+import "@/types/speech-recognition"
+import { motion } from "framer-motion"
+import { Mic, MicOff, Volume2, VolumeX, MessageSquare } from "lucide-react"
+
+import { Chat } from "@/components/ui/chat"
+import { Button } from "@/components/ui/button"
+import { getConfiguredRobot } from "@/lib/robot-config"
+import { getAgentConfig } from "@/lib/config"
+import { streamTTSAudio, type StreamTTSCallbacks } from "@/lib/audio-streaming"
+import { logAudioError } from "@/lib/audio-error-logging"
+
+interface Message {
+  id: string
+  role: "user" | "assistant"
+  content: string
+  parts: Array<{
+    type: "text"
+    text: string
+  }>
+}
+
+export const VoiceFirstChat = memo(function VoiceFirstChat() {
+  const configuredRobot = getConfiguredRobot()
+  const agentConfig = getAgentConfig()
+  const [isListening, setIsListening] = useState(false)
+  const [isSpeaking, setIsSpeaking] = useState(false)
+  const [messages, setMessages] = useState<Message[]>([])
+  const [input, setInput] = useState("")
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [sessionId] = useState(() => `session-${Date.now()}`)
+  const [conversationMode, setConversationMode] = useState<'text' | 'voice'>('text')
+
+  // Handle TTS playback using streaming audio
+  const speakResponse = useCallback(async (text: string) => {
+    if (isSpeaking) return
+    
+    setIsSpeaking(true)
+    try {
+      // Use streaming TTS for better performance with proper callbacks
+      const callbacks: StreamTTSCallbacks = {
+        onStart: () => {
+          console.log('TTS streaming started');
+        },
+        onProgress: (progress) => {
+          console.log(`TTS Progress: ${Math.round(progress * 100)}%`);
+        },
+        onChunk: () => {
+          // Optional: Add chunk processing logic if needed
+        },
+        onComplete: (totalBytes, duration) => {
+          setIsSpeaking(false);
+          console.log(`TTS completed: ${totalBytes} bytes in ${duration}ms`);
+        },
+        onError: async (error) => {
+          console.error('TTS streaming error:', error);
+          setIsSpeaking(false);
+          
+          // Log error to Neon database
+          try {
+            logAudioError(
+              'NETWORK_ERROR',
+              error.message,
+              'high'
+            );
+          } catch (logError) {
+            console.error('Failed to log audio error:', logError);
+          }
+        }
+      };
+      
+      await streamTTSAudio(text, agentConfig.voiceId, callbacks);
+    } catch (error) {
+      console.error("TTS streaming failed:", error)
+      setIsSpeaking(false)
+    }
+  }, [isSpeaking, agentConfig.voiceId])
+
+  // Send message function
+  const sendMessage = useCallback(async (text: string) => {
+    if (!text.trim()) return
+    
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: "user",
+      content: text,
+      parts: [{ type: "text", text }]
+    }
+    
+    setMessages(prev => [...prev, userMessage])
+    setIsGenerating(true)
+    setInput("")
+    
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: text,
+          personality: configuredRobot.id,
+          sessionId: sessionId
+        })
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        const assistantMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: "assistant",
+          content: data.message,
+          parts: [{ type: "text", text: data.message }]
+        }
+        setMessages(prev => [...prev, assistantMessage])
+        
+        // Always speak the response (both voice and text modes)
+        await speakResponse(data.message)
+      } else {
+        console.error("Chat API error:", await response.text())
+        alert("Sorry, I couldn't process your message. Please try again.")
+      }
+    } catch (error) {
+      console.error("Failed to send message:", error)
+      alert("Sorry, something went wrong. Please try again.")
+    } finally {
+      setIsGenerating(false)
+    }
+  }, [configuredRobot.id, sessionId, speakResponse])
+
+  // Simple speech recognition for voice input
+  const startVoiceInput = useCallback(async () => {
+    try {
+      if (!('webkitSpeechRecognition' in window)) {
+        alert('Speech recognition is not supported in this browser. Please use Chrome.')
+        return
+      }
+
+      const recognition = new window.webkitSpeechRecognition()
+      recognition.continuous = false
+      recognition.interimResults = false
+      recognition.lang = 'en-US'
+
+      recognition.onstart = () => {
+        setIsListening(true)
+      }
+
+      recognition.onresult = (event: SpeechRecognitionEvent) => {
+        const transcript = event.results[0][0].transcript
+        setInput(transcript)
+        sendMessage(transcript)
+      }
+
+      recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+        console.error('Speech recognition error:', event.error)
+        setIsListening(false)
+      }
+
+      recognition.onend = () => {
+        setIsListening(false)
+      }
+
+      recognition.start()
+    } catch (error) {
+      console.error('Error starting voice input:', error)
+      alert('Could not start voice input. Please check your microphone permissions.')
+    }
+  }, [sendMessage])
+
+  // Auto-restart voice input after speaking in voice mode
+  useEffect(() => {
+    if (conversationMode === 'voice' && !isSpeaking && !isListening && !isGenerating) {
+      const timer = setTimeout(() => {
+        startVoiceInput()
+      }, 500)
+      return () => clearTimeout(timer)
+    }
+  }, [conversationMode, isSpeaking, isListening, isGenerating, startVoiceInput])
+  
+  // Show welcome message when no messages exist
+  const displayMessages = messages.length === 0 
+    ? [{
+        id: "welcome",
+        role: "assistant" as const,
+        content: configuredRobot.welcomeMessage,
+        parts: [{
+          type: "text" as const,
+          text: configuredRobot.welcomeMessage
+        }]
+      }]
+    : messages
+
+  const currentRobot = configuredRobot
+
+  // Placeholder for transcribeAudio - this would be implemented with a real transcription service
+  const transcribeAudio = async (audioBlob: Blob): Promise<string> => {
+    console.log("Audio transcription not yet implemented", audioBlob)
+    return "Audio transcription coming soon!"
+  }
+
+  // Always render Standard Chat for MVP
+  // ConversationalAI is coming in future updates
+
+  return (
+    <div className="flex h-screen bg-gradient-to-br from-purple-50 to-pink-50">
+      <div className="flex-1 flex flex-col max-w-6xl mx-auto w-full">
+        {/* Header with Robot Selector */}
+        <header className="p-4 bg-white/80 backdrop-blur border-b">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                className="text-4xl"
+              >
+                {currentRobot.emoji}
+              </motion.div>
+              <div>
+                <h1 className="text-2xl font-bold">{currentRobot.name}</h1>
+                <p className="text-sm text-muted-foreground">
+                  {conversationMode === 'voice' && isListening && "🎤 Listening..."}
+                  {conversationMode === 'voice' && isSpeaking && "🔊 Speaking..."}
+                  {conversationMode === 'voice' && isGenerating && "🤔 Thinking..."}
+                  {conversationMode === 'voice' && !isListening && !isSpeaking && !isGenerating && "👂 Ready to listen"}
+                  {conversationMode === 'text' && "💬 Type your message"}
+                </p>
+              </div>
+            </div>
+
+            {/* Voice Controls */}
+            <div className="flex items-center gap-2">
+              
+              <Button
+                variant={conversationMode === 'voice' ? "default" : "outline"}
+                size="sm"
+                onClick={() => setConversationMode(conversationMode === 'voice' ? 'text' : 'voice')}
+                className="flex items-center gap-2"
+              >
+                {conversationMode === 'voice' ? <Mic className="h-4 w-4" /> : <MessageSquare className="h-4 w-4" />}
+                {conversationMode === 'voice' ? 'Voice Mode' : 'Text Mode'}
+              </Button>
+              
+              {conversationMode === 'voice' && (
+                <>
+                  <Button
+                    variant={isListening ? "destructive" : "default"}
+                    size="icon"
+                    onClick={startVoiceInput}
+                    disabled={isListening || isGenerating}
+                    className="h-12 w-12"
+                  >
+                    {isListening ? <MicOff /> : <Mic />}
+                  </Button>
+                  
+                  <Button
+                    variant={isSpeaking ? "destructive" : "outline"}
+                    size="icon"
+                    onClick={() => setIsSpeaking(!isSpeaking)}
+                    className="h-12 w-12"
+                  >
+                    {isSpeaking ? <VolumeX /> : <Volume2 />}
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+        </header>
+
+        {/* Main Chat Area */}
+        <div className="flex-1 overflow-hidden p-4">
+          <Chat
+            messages={displayMessages}
+            input={input}
+            handleInputChange={(e) => setInput(e.target.value)}
+            handleSubmit={(e) => {
+              if (e && e.preventDefault) {
+                e.preventDefault()
+              }
+              if (input.trim()) {
+                sendMessage(input)
+                setInput("")
+              }
+            }}
+            isGenerating={isGenerating}
+            stop={() => setIsGenerating(false)}
+            append={(message) => sendMessage(message.content)}
+            transcribeAudio={transcribeAudio}
+            suggestions={[
+              "Tell me about yourself",
+              "What can you help me with?",
+              "Let's play a game!",
+              "Teach me something new"
+            ]}
+          />
+        </div>
+
+      </div>
+    </div>
+  )
+});

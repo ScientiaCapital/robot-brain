@@ -1,0 +1,38 @@
+{
+  "project-docs-curator": {
+    "totalSessions": 1,
+    "averageReliability": 100,
+    "phantomClaimsCount": 0,
+    "verifiedDeliverables": 4,
+    "totalClaims": 4
+  },
+  "lastUpdated": "2025-08-02T20:05:55.752Z",
+  "general-purpose": {
+    "totalSessions": 1,
+    "averageReliability": 0,
+    "phantomClaimsCount": 0,
+    "verifiedDeliverables": 0,
+    "totalClaims": 0
+  },
+  "bug-hunter-specialist": {
+    "totalSessions": 1,
+    "averageReliability": 50,
+    "phantomClaimsCount": 1,
+    "verifiedDeliverables": 1,
+    "totalClaims": 2
+  },
+  "security-auditor-expert": {
+    "totalSessions": 1,
+    "averageReliability": 0,
+    "phantomClaimsCount": 0,
+    "verifiedDeliverables": 0,
+    "totalClaims": 0
+  },
+  "vercel-deployment-specialist": {
+    "totalSessions": 1,
+    "averageReliability": 0,
+    "phantomClaimsCount": 0,
+    "verifiedDeliverables": 0,
+    "totalClaims": 0
+  }
+}
