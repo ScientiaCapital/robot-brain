@@ -9,7 +9,7 @@ import { Chat } from "@/components/ui/chat"
 import { Button } from "@/components/ui/button"
 import { ROBOT_PERSONALITIES, type RobotId } from "@/lib/robot-config"
 import { streamTTSAudio, type StreamTTSCallbacks } from "@/lib/audio-streaming"
-import { logAudioError, createAudioError } from "@/lib/audio-error-logging"
+import { logAudioError } from "@/lib/audio-error-logging"
 
 interface Message {
   id: string
@@ -37,8 +37,6 @@ export const VoiceFirstChat = memo(function VoiceFirstChat() {
     
     setIsSpeaking(true)
     try {
-      const startTime = Date.now();
-      
       // Use streaming TTS for better performance with proper callbacks
       const callbacks: StreamTTSCallbacks = {
         onStart: () => {
@@ -60,13 +58,11 @@ export const VoiceFirstChat = memo(function VoiceFirstChat() {
           
           // Log error to Neon database
           try {
-            const audioError = createAudioError(
-              'tts_streaming',
+            logAudioError(
+              'NETWORK_ERROR',
               error.message,
-              Date.now() - startTime,
-              0 // chunk count not available here
+              'high'
             );
-            await logAudioError(sessionId, audioError);
           } catch (logError) {
             console.error('Failed to log audio error:', logError);
           }
