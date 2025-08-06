@@ -26,6 +26,7 @@ export async function POST(request: NextRequest) {
           user_id: userId,
           agent_id: agentId,
           session_token: sessionId,
+          status: 'active',
           voice_provider: 'elevenlabs',
           language_code: 'en-US',
           audio_format: 'pcm_44100',

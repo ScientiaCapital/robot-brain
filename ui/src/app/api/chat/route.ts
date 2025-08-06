@@ -12,8 +12,19 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 });
 
-// Initialize Neon
-const sql = neon(process.env.NEON_DATABASE_URL!);
+// Lazy database connection - only initialize when actually used
+let sql: ReturnType<typeof neon> | null = null;
+
+function getConnection() {
+  if (!sql) {
+    const connectionString = process.env.NEON_DATABASE_URL;
+    if (!connectionString) {
+      throw new Error('No database connection string found. Please set NEON_DATABASE_URL environment variable.');
+    }
+    sql = neon(connectionString);
+  }
+  return sql;
+}
 
 // For now, we'll use in-memory session storage
 // In production, this would use Neon PostgreSQL
@@ -40,7 +51,11 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const { message, personality, sessionId = 'default', userId, agentId } = validationResult.data;
+    const { message, personality, sessionId = 'default' } = validationResult.data;
+    
+    // Get optional fields from body that might not be in the schema
+    const userId = body.userId;
+    const agentId = body.agentId;
     
     // Sanitize input
     const sanitizedMessage = sanitizeInput(message);
@@ -135,6 +150,7 @@ Keep responses helpful and actionable.`;
 
     // Store in Neon PostgreSQL
     try {
+      const sql = getConnection();
       await sql`
         INSERT INTO conversations (
           session_id,

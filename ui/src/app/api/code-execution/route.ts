@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
           stdout: execution.logs.stdout || [],
           stderr: execution.logs.stderr || []
         },
-        executionCount: execution.execution_count || 0
+        executionCount: execution.executionCount || 0
       },
       metadata: {
         sessionId,

@@ -4,7 +4,7 @@ import { getClientIP, checkRateLimit } from '@/lib/validation';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Rate limiting
@@ -13,7 +13,7 @@ export async function GET(
       return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
     }
 
-    const agentId = params.id;
+    const { id: agentId } = await params;
 
     if (!agentId || agentId.length < 1) {
       return NextResponse.json({ error: 'Invalid agent ID' }, { status: 400 });
@@ -45,7 +45,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Rate limiting
@@ -54,7 +54,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
     }
 
-    const agentId = params.id;
+    const { id: agentId } = await params;
     
     if (!agentId) {
       return NextResponse.json({ error: 'Invalid agent ID' }, { status: 400 });
@@ -88,7 +88,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Rate limiting
@@ -97,7 +97,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
     }
 
-    const agentId = params.id;
+    const { id: agentId } = await params;
     
     if (!agentId) {
       return NextResponse.json({ error: 'Invalid agent ID' }, { status: 400 });
