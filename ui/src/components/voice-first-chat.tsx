@@ -33,7 +33,7 @@ export const VoiceFirstChat = memo(function VoiceFirstChat() {
   const [input, setInput] = useState("")
   const [isGenerating, setIsGenerating] = useState(false)
   const [sessionId] = useState(() => `session-${Date.now()}`)
-  const [conversationMode, setConversationMode] = useState<'text' | 'voice'>('text')
+  const [conversationMode, setConversationMode] = useState<'text' | 'voice'>('voice')
   const [voiceState, setVoiceState] = useState<{
     mode: 'idle' | 'listening' | 'speaking' | 'thinking' | 'error';
     transcript?: string;
