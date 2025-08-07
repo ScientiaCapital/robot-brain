@@ -7,9 +7,11 @@ import { Mic, MicOff, Volume2, VolumeX, MessageSquare } from "lucide-react"
 
 import { Chat } from "@/components/ui/chat"
 import { Button } from "@/components/ui/button"
+import { EnhancedVoiceInterface } from "@/components/ui/enhanced-voice-interface"
 import { getConfiguredRobot } from "@/lib/robot-config"
 import { getAgentConfig } from "@/lib/config"
 import { streamTTSAudio, type StreamTTSCallbacks } from "@/lib/audio-streaming"
+import { getSimpleAudioPlayer } from "@/lib/simple-audio-player"
 import { logAudioError } from "@/lib/audio-error-logging"
 
 interface Message {
@@ -32,36 +34,39 @@ export const VoiceFirstChat = memo(function VoiceFirstChat() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [sessionId] = useState(() => `session-${Date.now()}`)
   const [conversationMode, setConversationMode] = useState<'text' | 'voice'>('text')
+  const [voiceState, setVoiceState] = useState<{
+    mode: 'idle' | 'listening' | 'speaking' | 'thinking' | 'error';
+    transcript?: string;
+    error?: string;
+  }>({ mode: 'idle' })
 
-  // Handle TTS playback using streaming audio
+  // Handle TTS playback using simple audio player
   const speakResponse = useCallback(async (text: string) => {
     if (isSpeaking) return
     
     setIsSpeaking(true)
+    setVoiceState({ mode: 'speaking' })
+    
     try {
-      // Use streaming TTS for better performance with proper callbacks
+      // Use updated streaming TTS with simple audio playback
       const callbacks: StreamTTSCallbacks = {
         onStart: () => {
-          console.log('TTS streaming started');
-        },
-        onProgress: (progress) => {
-          console.log(`TTS Progress: ${Math.round(progress * 100)}%`);
-        },
-        onChunk: () => {
-          // Optional: Add chunk processing logic if needed
+          console.log('TTS playback started');
         },
         onComplete: (totalBytes, duration) => {
           setIsSpeaking(false);
+          setVoiceState({ mode: 'idle' });
           console.log(`TTS completed: ${totalBytes} bytes in ${duration}ms`);
         },
         onError: async (error) => {
-          console.error('TTS streaming error:', error);
+          console.error('TTS playback error:', error);
           setIsSpeaking(false);
+          setVoiceState({ mode: 'error', error: error.message });
           
           // Log error to Neon database
           try {
-            logAudioError(
-              'NETWORK_ERROR',
+            await logAudioError(
+              'AUDIO_PLAYBACK_ERROR',
               error.message,
               'high'
             );
@@ -73,8 +78,9 @@ export const VoiceFirstChat = memo(function VoiceFirstChat() {
       
       await streamTTSAudio(text, agentConfig.voiceId, callbacks);
     } catch (error) {
-      console.error("TTS streaming failed:", error)
+      console.error("TTS failed:", error)
       setIsSpeaking(false)
+      setVoiceState({ mode: 'error', error: 'Audio playback failed' })
     }
   }, [isSpeaking, agentConfig.voiceId])
 
@@ -91,6 +97,7 @@ export const VoiceFirstChat = memo(function VoiceFirstChat() {
     
     setMessages(prev => [...prev, userMessage])
     setIsGenerating(true)
+    setVoiceState({ mode: 'thinking' })
     setInput("")
     
     try {
@@ -125,6 +132,9 @@ export const VoiceFirstChat = memo(function VoiceFirstChat() {
       alert("Sorry, something went wrong. Please try again.")
     } finally {
       setIsGenerating(false)
+      if (voiceState.mode === 'thinking') {
+        setVoiceState({ mode: 'idle' })
+      }
     }
   }, [configuredRobot.id, sessionId, speakResponse])
 
@@ -132,50 +142,76 @@ export const VoiceFirstChat = memo(function VoiceFirstChat() {
   const startVoiceInput = useCallback(async () => {
     try {
       if (!('webkitSpeechRecognition' in window)) {
-        alert('Speech recognition is not supported in this browser. Please use Chrome.')
+        setVoiceState({ mode: 'error', error: 'Speech recognition not supported in this browser' })
         return
       }
 
       const recognition = new window.webkitSpeechRecognition()
       recognition.continuous = false
-      recognition.interimResults = false
+      recognition.interimResults = true
       recognition.lang = 'en-US'
 
       recognition.onstart = () => {
         setIsListening(true)
+        setVoiceState({ mode: 'listening' })
       }
 
       recognition.onresult = (event: SpeechRecognitionEvent) => {
         const transcript = event.results[0][0].transcript
-        setInput(transcript)
-        sendMessage(transcript)
+        
+        // Show interim results
+        if (event.results[0].isFinal) {
+          setInput(transcript)
+          sendMessage(transcript)
+          setVoiceState({ mode: 'idle' })
+        } else {
+          setVoiceState({ mode: 'listening', transcript })
+        }
       }
 
       recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
         console.error('Speech recognition error:', event.error)
         setIsListening(false)
+        setVoiceState({ mode: 'error', error: `Speech recognition error: ${event.error}` })
       }
 
       recognition.onend = () => {
         setIsListening(false)
+        if (voiceState.mode === 'listening') {
+          setVoiceState({ mode: 'idle' })
+        }
       }
 
       recognition.start()
     } catch (error) {
       console.error('Error starting voice input:', error)
-      alert('Could not start voice input. Please check your microphone permissions.')
+      setVoiceState({ mode: 'error', error: 'Could not start voice input. Check microphone permissions.' })
     }
-  }, [sendMessage])
+  }, [sendMessage, voiceState.mode])
+
+  // Stop voice input
+  const stopVoiceInput = useCallback(() => {
+    setIsListening(false)
+    setVoiceState({ mode: 'idle' })
+  }, [])
+
+  // Stop speaking
+  const stopSpeaking = useCallback(() => {
+    const audioPlayer = getSimpleAudioPlayer()
+    audioPlayer.stop()
+    setIsSpeaking(false)
+    setVoiceState({ mode: 'idle' })
+  }, [])
 
   // Auto-restart voice input after speaking in voice mode
   useEffect(() => {
-    if (conversationMode === 'voice' && !isSpeaking && !isListening && !isGenerating) {
+    if (conversationMode === 'voice' && !isSpeaking && !isListening && !isGenerating && voiceState.mode === 'idle') {
       const timer = setTimeout(() => {
         startVoiceInput()
-      }, 500)
+      }, 1000) // Longer delay for better UX
       return () => clearTimeout(timer)
     }
-  }, [conversationMode, isSpeaking, isListening, isGenerating, startVoiceInput])
+  }, [conversationMode, isSpeaking, isListening, isGenerating, voiceState.mode, startVoiceInput])
   
   // Show welcome message when no messages exist
   const displayMessages = messages.length === 0 
@@ -204,66 +240,42 @@ export const VoiceFirstChat = memo(function VoiceFirstChat() {
   return (
     <div className="flex h-screen bg-gradient-to-br from-purple-50 to-pink-50">
       <div className="flex-1 flex flex-col max-w-6xl mx-auto w-full">
-        {/* Header with Robot Selector */}
+        {/* Header */}
         <header className="p-4 bg-white/80 backdrop-blur border-b">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                className="text-4xl"
-              >
-                {currentRobot.emoji}
-              </motion.div>
-              <div>
-                <h1 className="text-2xl font-bold">{currentRobot.name}</h1>
-                <p className="text-sm text-muted-foreground">
-                  {conversationMode === 'voice' && isListening && "🎤 Listening..."}
-                  {conversationMode === 'voice' && isSpeaking && "🔊 Speaking..."}
-                  {conversationMode === 'voice' && isGenerating && "🤔 Thinking..."}
-                  {conversationMode === 'voice' && !isListening && !isSpeaking && !isGenerating && "👂 Ready to listen"}
-                  {conversationMode === 'text' && "💬 Type your message"}
-                </p>
-              </div>
+              <h1 className="text-2xl font-bold">{currentRobot.name}</h1>
             </div>
 
-            {/* Voice Controls */}
-            <div className="flex items-center gap-2">
-              
-              <Button
-                variant={conversationMode === 'voice' ? "default" : "outline"}
-                size="sm"
-                onClick={() => setConversationMode(conversationMode === 'voice' ? 'text' : 'voice')}
-                className="flex items-center gap-2"
-              >
-                {conversationMode === 'voice' ? <Mic className="h-4 w-4" /> : <MessageSquare className="h-4 w-4" />}
-                {conversationMode === 'voice' ? 'Voice Mode' : 'Text Mode'}
-              </Button>
-              
-              {conversationMode === 'voice' && (
-                <>
-                  <Button
-                    variant={isListening ? "destructive" : "default"}
-                    size="icon"
-                    onClick={startVoiceInput}
-                    disabled={isListening || isGenerating}
-                    className="h-12 w-12"
-                  >
-                    {isListening ? <MicOff /> : <Mic />}
-                  </Button>
-                  
-                  <Button
-                    variant={isSpeaking ? "destructive" : "outline"}
-                    size="icon"
-                    onClick={() => setIsSpeaking(!isSpeaking)}
-                    className="h-12 w-12"
-                  >
-                    {isSpeaking ? <VolumeX /> : <Volume2 />}
-                  </Button>
-                </>
-              )}
-            </div>
+            {/* Mode Toggle */}
+            <Button
+              variant={conversationMode === 'voice' ? "default" : "outline"}
+              size="sm"
+              onClick={() => setConversationMode(conversationMode === 'voice' ? 'text' : 'voice')}
+              className="flex items-center gap-2"
+            >
+              {conversationMode === 'voice' ? <Mic className="h-4 w-4" /> : <MessageSquare className="h-4 w-4" />}
+              {conversationMode === 'voice' ? 'Voice Mode' : 'Text Mode'}
+            </Button>
           </div>
         </header>
+
+        {/* Enhanced Voice Interface - only show in voice mode */}
+        {conversationMode === 'voice' && (
+          <div className="p-4">
+            <EnhancedVoiceInterface
+              isVoiceEnabled={true}
+              onVoiceToggle={() => setConversationMode('text')}
+              voiceState={voiceState}
+              onStartListening={startVoiceInput}
+              onStopListening={stopVoiceInput}
+              onStopSpeaking={stopSpeaking}
+              robotName={currentRobot.name}
+              robotEmoji={currentRobot.emoji}
+              className="max-w-md mx-auto"
+            />
+          </div>
+        )}
 
         {/* Main Chat Area */}
         <div className="flex-1 overflow-hidden p-4">

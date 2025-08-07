@@ -79,6 +79,8 @@ export async function GET() {
       const responseTime = Date.now() - startTime;
       
       return NextResponse.json({
+        status: 'healthy',
+        configured: true,
         valid: true,
         connected: true,
         apiKeyConfigured: true,
@@ -89,7 +91,7 @@ export async function GET() {
         },
         responseTime,
         timestamp: new Date().toISOString()
-      } as ElevenLabsValidationResponse);
+      } as ElevenLabsValidationResponse & { status: string; configured: boolean });
       
     } catch (apiError: any) {
       const responseTime = Date.now() - startTime;

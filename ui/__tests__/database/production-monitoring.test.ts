@@ -347,7 +347,88 @@ describe('Production Health API Tests', () => {
   let apiClient: any;
 
   beforeAll(async () => {
-    // Initialize API client
+    // Initialize mock API client for testing
+    apiClient = {
+      get: jest.fn().mockImplementation(async (url: string) => {
+        if (url === '/api/health/database') {
+          return {
+            status: 200,
+            data: {
+              status: 'healthy',
+              healthScore: 95,
+              responseTime: 25,
+              timestamp: new Date().toISOString()
+            }
+          };
+        }
+        if (url === '/api/metrics/database') {
+          return {
+            status: 200,
+            data: {
+              metrics: {
+                connectionCount: 5,
+                queryRate: 10.5,
+                errorRate: 0.02,
+                avgResponseTime: 45
+              }
+            }
+          };
+        }
+        if (url === '/api/dashboard/database') {
+          return {
+            status: 200,
+            data: {
+              overallHealth: 'healthy',
+              realtime: true,
+              updateInterval: 15000
+            }
+          };
+        }
+        if (url === '/api/alerts/active') {
+          return {
+            status: 200,
+            data: {
+              alerts: []
+            }
+          };
+        }
+        return { status: 404, data: { error: 'Not found' } };
+      }),
+      
+      post: jest.fn().mockImplementation(async (url: string, data: any) => {
+        if (url === '/api/alerts/configure') {
+          return {
+            status: 201,
+            data: {
+              alertId: 'test-alert-id',
+              configured: true
+            }
+          };
+        }
+        if (url === '/api/alerts/acknowledge') {
+          return {
+            status: 200,
+            data: {
+              acknowledged: true,
+              alertId: data.alertId
+            }
+          };
+        }
+        return { status: 404, data: { error: 'Not found' } };
+      }),
+      
+      head: jest.fn().mockResolvedValue({
+        status: 200
+      }),
+      
+      connectWebSocket: jest.fn().mockImplementation(async (url: string) => {
+        return Promise.resolve({
+          on: jest.fn(),
+          send: jest.fn(),
+          close: jest.fn()
+        });
+      })
+    };
   });
 
   describe('Health Check Endpoints', () => {

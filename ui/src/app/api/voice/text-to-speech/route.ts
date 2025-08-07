@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       contentType: 'audio/mpeg',
       model: config.voiceSettings.model,
       latency: `${processingTime}ms`,
-      chunkSize: text.length,
+      chunkSize: audioBuffer.byteLength,
     });
 
   } catch (error) {

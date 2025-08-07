@@ -122,7 +122,7 @@ describe('Voice Pipeline Integration', () => {
       await waitFor(() => {
         expect(mockStreamTTSAudio).toHaveBeenCalledWith(
           'Hello! I am Robot Friend!',
-          'robot-friend',
+          '21m00Tcm4TlvDq8ikWAM',
           expect.any(Object) // callbacks
         );
       });
@@ -161,7 +161,7 @@ describe('Voice Pipeline Integration', () => {
       await waitFor(() => {
         expect(mockStreamTTSAudio).toHaveBeenCalledWith(
           'Hi there!',
-          'robot-friend',
+          '21m00Tcm4TlvDq8ikWAM',
           expect.objectContaining({
             onStart: expect.any(Function),
             onComplete: expect.any(Function),
@@ -351,7 +351,7 @@ describe('Voice Pipeline Integration', () => {
         // 3. TTS streaming was called
         expect(mockStreamTTSAudio).toHaveBeenCalledWith(
           'Nice to meet you!',
-          'robot-friend',
+          '21m00Tcm4TlvDq8ikWAM',
           expect.any(Object)
         );
       }, { timeout: 5000 });

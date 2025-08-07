@@ -57,6 +57,7 @@ describe('ElevenLabs TTS Integration Health Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockFetch.mockClear();
+    jest.useFakeTimers();
     
     // Default mock for successful TTS response
     const mockAudioBuffer = new ArrayBuffer(1024);
@@ -575,5 +576,10 @@ describe('ElevenLabs TTS Integration Health Tests', () => {
         expect(d).toHaveProperty('model', ELEVENLABS_MODEL);
       });
     });
+  });
+  
+  afterEach(() => {
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
   });
 });
