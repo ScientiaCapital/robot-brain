@@ -66,7 +66,7 @@ export const VoiceFirstChat = memo(function VoiceFirstChat() {
           // Log error to Neon database
           try {
             await logAudioError(
-              'AUDIO_PLAYBACK_ERROR',
+              'PLAYBACK_ERROR',
               error.message,
               'high'
             );

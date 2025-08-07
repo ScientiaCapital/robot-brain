@@ -162,4 +162,109 @@ export const EnhancedVoiceInterface: React.FC<EnhancedVoiceInterfaceProps> = ({
                     delay: i * 0.1,
                   }}
                 />
-              ))}\n            </motion.div>\n          )}\n        </AnimatePresence>\n\n        {/* Central state indicator */}\n        <motion.div\n          className={`w-16 h-16 rounded-full ${currentState.color} flex items-center justify-center text-2xl relative z-10 cursor-pointer transition-all duration-200 shadow-lg`}\n          whileHover={{ scale: 1.1 }}\n          whileTap={{ scale: 0.95 }}\n          onClick={handleMainButtonClick}\n          animate={{\n            rotate: currentState.animation === 'spin' ? 360 : 0,\n          }}\n          transition={{\n            rotate: {\n              duration: 2,\n              repeat: currentState.animation === 'spin' ? Infinity : 0,\n              ease: 'linear'\n            }\n          }}\n        >\n          {currentState.icon}\n        </motion.div>\n      </div>\n\n      {/* Status Display */}\n      <div className=\"text-center space-y-3\">\n        <Badge \n          variant={voiceState.mode === 'error' ? 'destructive' : 'secondary'} \n          className=\"text-sm px-3 py-1\"\n        >\n          {currentState.text}\n        </Badge>\n        \n        {voiceState.transcript && (\n          <motion.p \n            initial={{ opacity: 0, y: 10 }}\n            animate={{ opacity: 1, y: 0 }}\n            className=\"text-sm text-muted-foreground italic bg-muted p-2 rounded border-l-4 border-primary\"\n          >\n            \"{voiceState.transcript}\"\n          </motion.p>\n        )}\n        \n        {voiceState.error && (\n          <motion.p \n            initial={{ opacity: 0, y: 10 }}\n            animate={{ opacity: 1, y: 0 }}\n            className=\"text-sm text-destructive bg-destructive/10 p-2 rounded\"\n          >\n            {voiceState.error}\n          </motion.p>\n        )}\n      </div>\n\n      {/* Voice Controls */}\n      <div className=\"flex items-center justify-center gap-3\">\n        {/* Main Voice Button */}\n        <Button\n          variant={getMainButtonVariant()}\n          size=\"icon\"\n          onClick={handleMainButtonClick}\n          className=\"h-12 w-12 rounded-full shadow-lg\"\n          disabled={voiceState.mode === 'thinking'}\n        >\n          {getMainButtonIcon()}\n        </Button>\n        \n        {/* Voice Mode Toggle */}\n        <Button\n          variant={isVoiceEnabled ? \"default\" : \"outline\"}\n          size=\"icon\"\n          onClick={onVoiceToggle}\n          className=\"h-12 w-12 rounded-full\"\n        >\n          {isVoiceEnabled ? <Volume2 className=\"h-5 w-5\" /> : <VolumeX className=\"h-5 w-5\" />}\n        </Button>\n        \n        {/* Settings Button */}\n        <Button\n          variant=\"outline\"\n          size=\"icon\"\n          className=\"h-12 w-12 rounded-full\"\n        >\n          <Settings className=\"h-5 w-5\" />\n        </Button>\n      </div>\n\n      {/* Quick Actions */}\n      <div className=\"flex flex-wrap justify-center gap-2\">\n        <Button variant=\"ghost\" size=\"sm\" className=\"text-xs\">\n          Push to Talk\n        </Button>\n        <Button variant=\"ghost\" size=\"sm\" className=\"text-xs\">\n          Continuous\n        </Button>\n        <Button variant=\"ghost\" size=\"sm\" className=\"text-xs\">\n          Voice Settings\n        </Button>\n      </div>\n    </Card>\n  );\n};\n\nexport default EnhancedVoiceInterface;
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Central state indicator */}
+        <motion.div
+          className={`w-16 h-16 rounded-full ${currentState.color} flex items-center justify-center text-2xl relative z-10 cursor-pointer transition-all duration-200 shadow-lg`}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={handleMainButtonClick}
+          animate={{
+            rotate: currentState.animation === 'spin' ? 360 : 0,
+          }}
+          transition={{
+            rotate: {
+              duration: 2,
+              repeat: currentState.animation === 'spin' ? Infinity : 0,
+              ease: 'linear'
+            }
+          }}
+        >
+          {currentState.icon}
+        </motion.div>
+      </div>
+
+      {/* Status Display */}
+      <div className="text-center space-y-3">
+        <Badge 
+          variant={voiceState.mode === 'error' ? 'destructive' : 'secondary'} 
+          className="text-sm px-3 py-1"
+        >
+          {currentState.text}
+        </Badge>
+        
+        {voiceState.transcript && (
+          <motion.p 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-sm text-muted-foreground italic bg-muted p-2 rounded border-l-4 border-primary"
+          >
+            &ldquo;{voiceState.transcript}&rdquo;
+          </motion.p>
+        )}
+        
+        {voiceState.error && (
+          <motion.p 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-sm text-destructive bg-destructive/10 p-2 rounded"
+          >
+            {voiceState.error}
+          </motion.p>
+        )}
+      </div>
+
+      {/* Voice Controls */}
+      <div className="flex items-center justify-center gap-3">
+        {/* Main Voice Button */}
+        <Button
+          variant={getMainButtonVariant()}
+          size="icon"
+          onClick={handleMainButtonClick}
+          className="h-12 w-12 rounded-full shadow-lg"
+          disabled={voiceState.mode === 'thinking'}
+        >
+          {getMainButtonIcon()}
+        </Button>
+        
+        {/* Voice Mode Toggle */}
+        <Button
+          variant={isVoiceEnabled ? "default" : "outline"}
+          size="icon"
+          onClick={onVoiceToggle}
+          className="h-12 w-12 rounded-full"
+        >
+          {isVoiceEnabled ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
+        </Button>
+        
+        {/* Settings Button */}
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-12 w-12 rounded-full"
+        >
+          <Settings className="h-5 w-5" />
+        </Button>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="flex flex-wrap justify-center gap-2">
+        <Button variant="ghost" size="sm" className="text-xs">
+          Push to Talk
+        </Button>
+        <Button variant="ghost" size="sm" className="text-xs">
+          Continuous
+        </Button>
+        <Button variant="ghost" size="sm" className="text-xs">
+          Voice Settings
+        </Button>
+      </div>
+    </Card>
+  );
+};
+
+export default EnhancedVoiceInterface;
