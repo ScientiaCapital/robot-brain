@@ -26,9 +26,34 @@ function getConnection() {
   return sql;
 }
 
-// For now, we'll use in-memory session storage
-// In production, this would use Neon PostgreSQL
+// In-memory cache for session history (backup)
 const conversationHistory = new Map<string, Array<{role: string, content: string}>>();
+
+// Load conversation history from database
+async function loadConversationHistory(sessionId: string, limit: number = 10): Promise<Array<{role: string, content: string}>> {
+  try {
+    const sql = getConnection();
+    const result = await sql`
+      SELECT user_message, robot_response, created_at
+      FROM conversations
+      WHERE session_id = ${sessionId}
+      ORDER BY created_at DESC
+      LIMIT ${limit}
+    `;
+
+    // Convert to message format and reverse to get chronological order
+    const messages: Array<{role: string, content: string}> = [];
+    for (const row of result.reverse()) {
+      messages.push({ role: 'user', content: row.user_message });
+      messages.push({ role: 'assistant', content: row.robot_response });
+    }
+
+    return messages;
+  } catch (error) {
+    console.error('Failed to load conversation history:', error);
+    return [];
+  }
+}
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -100,8 +125,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Get or create conversation history
-    const history = conversationHistory.get(sessionId) || [];
-    
+    // Try to load from database first, then fall back to in-memory cache
+    let history = conversationHistory.get(sessionId);
+    if (!history || history.length === 0) {
+      history = await loadConversationHistory(validatedSessionId, 10);
+      if (history.length > 0) {
+        conversationHistory.set(sessionId, history);
+      }
+    }
+    if (!history) {
+      history = [];
+    }
+
     // Add user message to history (using sanitized message)
     history.push({ role: 'user', content: sanitizedMessage });
 

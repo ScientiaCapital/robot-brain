@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { Providers } from "@/components/providers";
 
 // Optimized font loading with display swap for better performance
 const geistSans = Geist({
@@ -23,6 +24,15 @@ export const metadata: Metadata = {
   keywords: "AI, chatbot, robot, voice assistant, Claude, ElevenLabs",
   authors: [{ name: "Robot Brain Team" }],
   metadataBase: new URL(process.env.NEXT_PUBLIC_API_URL || 'https://robot-brain-rb7xfb8h2-scientia-capital.vercel.app'),
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Robot Brain",
+  },
+  formatDetection: {
+    telephone: false,
+  },
   openGraph: {
     title: "Robot Brain - AI Chat Assistant",
     description: "Chat with Robot Friend, your intelligent AI companion",
@@ -38,7 +48,9 @@ export const metadata: Metadata = {
 export const viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: "#8B5CF6",
 };
 
 export default function RootLayout({
@@ -49,6 +61,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* PWA - Apple Touch Icons */}
+        <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192x192.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-96x96.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-72x72.png" />
+
         {/* Preconnect to external domains for faster loading */}
         <link rel="preconnect" href="https://api.elevenlabs.io" />
         <link rel="preconnect" href="https://api.anthropic.com" />
@@ -75,7 +92,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

@@ -39,6 +39,7 @@ export const VoiceFirstChat = memo(function VoiceFirstChat() {
     transcript?: string;
     error?: string;
   }>({ mode: 'idle' })
+  const [useStreaming] = useState(true) // Enable streaming by default
 
   // Handle TTS playback using simple audio player
   const speakResponse = useCallback(async (text: string) => {
@@ -84,48 +85,116 @@ export const VoiceFirstChat = memo(function VoiceFirstChat() {
     }
   }, [isSpeaking, agentConfig.voiceId])
 
-  // Send message function
+  // Send message function with streaming support
   const sendMessage = useCallback(async (text: string) => {
     if (!text.trim()) return
-    
+
     const userMessage: Message = {
       id: Date.now().toString(),
       role: "user",
       content: text,
       parts: [{ type: "text", text }]
     }
-    
+
     setMessages(prev => [...prev, userMessage])
     setIsGenerating(true)
     setVoiceState({ mode: 'thinking' })
     setInput("")
-    
+
     try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: text,
-          personality: configuredRobot.id,
-          sessionId: sessionId
+      if (useStreaming) {
+        // Streaming mode
+        const response = await fetch("/api/chat/stream", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: text,
+            personality: configuredRobot.id,
+            sessionId: sessionId
+          })
         })
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        const assistantMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          role: "assistant",
-          content: data.message,
-          parts: [{ type: "text", text: data.message }]
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
         }
-        setMessages(prev => [...prev, assistantMessage])
-        
-        // Always speak the response (both voice and text modes)
-        await speakResponse(data.message)
+
+        const reader = response.body?.getReader()
+        if (!reader) throw new Error('No reader available')
+
+        const decoder = new TextDecoder()
+        let streamedContent = ''
+        const assistantMessageId = (Date.now() + 1).toString()
+
+        // Add empty assistant message that we'll update
+        setMessages(prev => [...prev, {
+          id: assistantMessageId,
+          role: "assistant",
+          content: '',
+          parts: [{ type: "text", text: '' }]
+        }])
+
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+
+          const chunk = decoder.decode(value)
+          const lines = chunk.split('\n')
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.slice(6))
+
+                if (data.type === 'text') {
+                  streamedContent += data.content
+                  // Update the message in real-time
+                  setMessages(prev => prev.map(msg =>
+                    msg.id === assistantMessageId
+                      ? {
+                          ...msg,
+                          content: streamedContent,
+                          parts: [{ type: "text", text: streamedContent }]
+                        }
+                      : msg
+                  ))
+                } else if (data.type === 'done') {
+                  // Speak the complete response
+                  await speakResponse(streamedContent)
+                }
+              } catch {
+                // Ignore JSON parse errors for incomplete chunks
+              }
+            }
+          }
+        }
       } else {
-        console.error("Chat API error:", await response.text())
-        alert("Sorry, I couldn't process your message. Please try again.")
+        // Non-streaming mode (original)
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: text,
+            personality: configuredRobot.id,
+            sessionId: sessionId
+          })
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          const assistantMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            role: "assistant",
+            content: data.message,
+            parts: [{ type: "text", text: data.message }]
+          }
+          setMessages(prev => [...prev, assistantMessage])
+
+          // Always speak the response
+          await speakResponse(data.message)
+        } else {
+          console.error("Chat API error:", await response.text())
+          alert("Sorry, I couldn't process your message. Please try again.")
+        }
       }
     } catch (error) {
       console.error("Failed to send message:", error)
@@ -136,7 +205,7 @@ export const VoiceFirstChat = memo(function VoiceFirstChat() {
         setVoiceState({ mode: 'idle' })
       }
     }
-  }, [configuredRobot.id, sessionId, speakResponse])
+  }, [configuredRobot.id, sessionId, speakResponse, useStreaming])
 
   // Simple speech recognition for voice input
   const startVoiceInput = useCallback(async () => {
