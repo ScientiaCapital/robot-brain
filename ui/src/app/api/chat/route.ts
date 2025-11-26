@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
-import { neon } from '@neondatabase/serverless';
 import { getConfiguredRobot } from '@/lib/robot-config';
 import { getAgentConfig } from '@/lib/config';
 import { schemas, sanitizeInput, validateSessionId, checkRateLimit, getClientIP } from '@/lib/validation';
@@ -12,27 +11,13 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 });
 
-// Lazy database connection - only initialize when actually used
-let sql: ReturnType<typeof neon> | null = null;
-
-function getConnection() {
-  if (!sql) {
-    const connectionString = process.env.NEON_DATABASE_URL;
-    if (!connectionString) {
-      throw new Error('No database connection string found. Please set NEON_DATABASE_URL environment variable.');
-    }
-    sql = neon(connectionString);
-  }
-  return sql;
-}
-
 // For now, we'll use in-memory session storage
-// In production, this would use Neon PostgreSQL
+// This is backed up by Supabase for persistence
 const conversationHistory = new Map<string, Array<{role: string, content: string}>>();
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
-  
+
   try {
     // Rate limiting
     const ip = getClientIP(request);
@@ -43,20 +28,20 @@ export async function POST(request: NextRequest) {
     // Parse and validate input
     const body = await request.json();
     const validationResult = schemas.chatRequest.safeParse(body);
-    
+
     if (!validationResult.success) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: 'Invalid input',
         details: validationResult.error.issues.map(i => i.message)
       }, { status: 400 });
     }
 
     const { message, personality, sessionId = 'default' } = validationResult.data;
-    
+
     // Get optional fields from body that might not be in the schema
     const userId = body.userId;
     const agentId = body.agentId;
-    
+
     // Sanitize input
     const sanitizedMessage = sanitizeInput(message);
     const validatedSessionId = validateSessionId(sessionId);
@@ -86,7 +71,7 @@ export async function POST(request: NextRequest) {
     if (cachedResponse) {
       const responseTime = Date.now() - startTime;
       console.log(`[Cache Hit] Response time: ${responseTime}ms`);
-      
+
       return NextResponse.json({
         message: cachedResponse,
         personality: personality,
@@ -101,7 +86,7 @@ export async function POST(request: NextRequest) {
 
     // Get or create conversation history
     const history = conversationHistory.get(sessionId) || [];
-    
+
     // Add user message to history (using sanitized message)
     history.push({ role: 'user', content: sanitizedMessage });
 
@@ -113,14 +98,14 @@ export async function POST(request: NextRequest) {
 
     // Enhance system prompt with capabilities
     let enhancedSystemPrompt = systemPrompt + "\n\nIMPORTANT: Keep responses under 2 sentences. Be concise and clear.";
-    
+
     // Add API integration capabilities to system prompt
     enhancedSystemPrompt += `
-    
+
 You have access to the following capabilities:
 - Code execution via E2B sandbox (for Python, JavaScript, TypeScript)
 - Real-time documentation lookup via Context7
-- Voice conversation capabilities via ElevenLabs Conversational AI
+- Voice conversation capabilities via Cartesia TTS
 
 When users ask about coding or need code examples, you can execute code safely.
 When users ask about API documentation or library usage, you can look up current documentation.
@@ -135,8 +120,8 @@ Keep responses helpful and actionable.`;
       messages: messages
     });
 
-    const responseText = response.content[0].type === 'text' 
-      ? response.content[0].text 
+    const responseText = response.content[0].type === 'text'
+      ? response.content[0].text
       : '';
 
     // Cache the response
@@ -144,36 +129,28 @@ Keep responses helpful and actionable.`;
 
     // Add assistant response to history
     history.push({ role: 'assistant', content: responseText });
-    
+
     // Store updated history
     conversationHistory.set(sessionId, history);
 
-    // Store in Neon PostgreSQL
-    try {
-      const sql = getConnection();
-      await sql`
-        INSERT INTO conversations (
-          session_id,
-          robot_personality,
-          user_message,
-          robot_response,
-          created_at
-        ) VALUES (
-          ${validatedSessionId},
-          ${personality},
-          ${sanitizedMessage},
-          ${responseText},
-          NOW()
-        )
-      `;
-    } catch (dbError) {
-      console.error('Database error:', dbError);
-      // Continue even if DB fails
-    }
+    // Store in Supabase (non-blocking)
+    databaseServices.conversations.create({
+      session_id: validatedSessionId,
+      robot_personality: personality,
+      user_message: sanitizedMessage,
+      robot_response: responseText,
+      metadata: {
+        agentId: selectedAgent?.id,
+        userId: userId,
+        model: agentConfig.modelSettings.model
+      }
+    }).catch(dbError => {
+      console.error('Database error (non-blocking):', dbError);
+    });
 
     const responseTime = Date.now() - startTime;
     console.log(`[API Response] Time: ${responseTime}ms`);
-    
+
     // Log cache performance every 10 requests
     if (Math.random() < 0.1) {
       logCachePerformance();

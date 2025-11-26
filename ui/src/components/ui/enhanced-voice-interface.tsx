@@ -2,13 +2,11 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Mic, 
-  MicOff, 
-  Volume2, 
-  VolumeX, 
-  Settings, 
-  Play, 
+import {
+  Mic,
+  Volume2,
+  VolumeX,
+  Settings,
   Pause,
   Square
 } from 'lucide-react';

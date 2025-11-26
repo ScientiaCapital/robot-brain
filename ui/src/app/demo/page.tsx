@@ -2,31 +2,24 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { ConversationalAIChat } from "@/components/conversational-ai-chat"
 import { VoiceFirstChat } from "@/components/voice-first-chat"
 import { BubbleChatWidget } from "@/components/bubble-chat-widget"
 
 export default function DemoPage() {
-  const [mode, setMode] = useState<'voice-first' | 'conv-ai' | 'bubble-widget'>('voice-first')
+  const [mode, setMode] = useState<'voice-first' | 'bubble-widget'>('voice-first')
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Mode Selector */}
       <div className="p-4 bg-white border-b">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-2xl font-bold mb-4">ElevenLabs Conversational AI Demo</h1>
+          <h1 className="text-2xl font-bold mb-4">Robot Brain Demo</h1>
           <div className="flex gap-2">
             <Button
               variant={mode === 'voice-first' ? 'default' : 'outline'}
               onClick={() => setMode('voice-first')}
             >
               Voice First Chat
-            </Button>
-            <Button
-              variant={mode === 'conv-ai' ? 'default' : 'outline'}
-              onClick={() => setMode('conv-ai')}
-            >
-              Conversational AI
             </Button>
             <Button
               variant={mode === 'bubble-widget' ? 'default' : 'outline'}
@@ -41,7 +34,6 @@ export default function DemoPage() {
       {/* Demo Content */}
       <div className="relative">
         {mode === 'voice-first' && <VoiceFirstChat />}
-        {mode === 'conv-ai' && <ConversationalAIChat />}
         {mode === 'bubble-widget' && (
           <div className="h-screen flex items-center justify-center">
             <div className="text-center p-8">

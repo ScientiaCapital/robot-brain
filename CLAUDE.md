@@ -1,238 +1,209 @@
-# CLAUDE.md - Robot Brain Project Context
+# Robot Brain - Project Instructions
 
-## 🤖 Project Overview
-**Robot Brain** is a production-ready AI-powered chat system featuring Robot Friend, built with Next.js 15.4.5 and deployed on Vercel with Neon PostgreSQL backend. The project features comprehensive TDD implementation, advanced performance optimizations, enterprise-grade security, and the revolutionary Agent Reliability Guardrails System that solves agent reliability issues.
+## Critical Rules
 
-## 🎯 Project Status: ✅ PRODUCTION COMPLETE + AGENT GUARDRAILS INNOVATION
-1. **✅ COMPLETED**: Robot Brain MVP deployed to Vercel production
-2. **✅ COMPLETED**: Full TDD implementation with 53+ comprehensive tests (334+ test cases)
-3. **✅ COMPLETED**: ElevenLabs TTS integration with eleven_flash_v2_5 model (75ms latency)
-4. **✅ COMPLETED**: Anthropic Claude API integration with optimized responses (100 tokens, 0.3 temperature)
-5. **✅ COMPLETED**: Neon PostgreSQL database with conversation storage
-6. **✅ COMPLETED**: Security hardening (input validation, rate limiting, CORS, CSP headers)
-7. **✅ COMPLETED**: Performance optimization (caching, streaming, bundle optimization)
-8. **🚀 NEW**: Agent Reliability Guardrails System - Revolutionary tooling preventing agent phantom work
-9. **🚀 LIVE**: https://robot-brain-owaxqerjd-scientia-capital.vercel.app
+- **NO OpenAI** - Do not use OpenAI or any OpenAI models in this project
+- **API keys ONLY in .env files** - Never hardcode credentials
+- Use **Anthropic Claude**, **Google Gemini**, or **OpenRouter** for AI features
 
-## 🚀 Current Deployment
+## Project Overview
 
-### 🌐 Live Application
-- **URL**: https://robot-brain-owaxqerjd-scientia-capital.vercel.app
-- **Platform**: Vercel (Next.js 15.4.5)
-- **Database**: Neon PostgreSQL
-- **Status**: ✅ Production Ready & Live
-- **Performance**: 75ms TTS latency, optimized caching & streaming
-- **Security**: Enterprise-grade with input validation, rate limiting, CORS, CSP
-- **Testing**: 53+ comprehensive tests with 334+ test cases, full TDD coverage
+**Robot Brain** is an AI-powered chat system featuring Robot Friend, a cheerful and supportive companion for kids. Built with Next.js and deployed on Vercel.
 
-### 🤖 Robot Friend Configuration
-**A cheerful, supportive, and enthusiastic companion for kids:**
+### Current Status
+- **Phase**: MVP Development
+- **Focus**: One robot working perfectly before expansion
+- **Stack Migration**: Neon → Supabase (in progress)
+
+## Technology Stack
+
+| Component | Technology |
+|-----------|------------|
+| Framework | Next.js 15.4.5 |
+| Frontend | React + TypeScript |
+| Database | Supabase (PostgreSQL) |
+| AI - Primary | Anthropic Claude |
+| AI - Secondary | Google Gemini |
+| AI - Chinese LLMs | OpenRouter (DeepSeek, Qwen, Yi) |
+| Voice TTS | Cartesia |
+| Deployment | Vercel |
+
+## Project Structure
+
+```
+robot-brain/
+├── ui/                      # Next.js application
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── api/        # API routes
+│   │   │   │   ├── chat/   # Anthropic Claude integration
+│   │   │   │   └── voice/  # Cartesia TTS
+│   │   │   └── page.tsx    # Main chat interface
+│   │   └── components/     # React components
+│   └── package.json
+├── .claude/                 # Claude Code configuration
+│   ├── context.md          # Current sprint context
+│   └── agents/             # Agent configurations
+├── .env.example            # Environment template
+├── .mcp.json               # MCP server config (Context7)
+└── README.md               # Quick start guide
+```
+
+## Environment Setup
+
+### Required Environment Variables
+
+Copy `.env.example` to `.env` and fill in your values:
+
+```bash
+# Database (Supabase)
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_KEY=your-service-key
+
+# AI Services
+ANTHROPIC_API_KEY=sk-ant-api03-xxx    # Primary AI
+GOOGLE_API_KEY=your-key               # Google Gemini
+OPENROUTER_API_KEY=sk-or-v1-xxx       # Chinese LLMs
+
+# Voice
+CARTESIA_API_KEY=your-key
+
+# App
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+## Development Commands
+
+```bash
+# Navigate to UI directory
+cd ui
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Run tests
+npm test
+
+# Build for production
+npm run build
+
+# Deploy to Vercel
+vercel --prod
+```
+
+## AI Provider Configuration
+
+### Anthropic Claude (Primary)
+- Model: `claude-3-haiku-20240307`
+- Use for: General chat interactions
+- Config: 100 max tokens, 0.3 temperature
+
+### Google Gemini
+- Model: `gemini-1.5-flash`
+- Use for: Alternative responses, specialized tasks
+
+### OpenRouter (Chinese LLMs)
+Available models:
+- `deepseek/deepseek-chat` - General purpose
+- `deepseek/deepseek-coder` - Code tasks
+- `qwen/qwen-2.5-72b-instruct` - Alibaba's flagship
+- `01-ai/yi-large` - Yi large model
+
+## Robot Friend Configuration
 
 ```typescript
 {
   id: "robot-friend",
-  name: "Robot Friend", 
+  name: "Robot Friend",
   emoji: "😊",
   traits: ["cheerful", "supportive", "enthusiastic"],
-  voice_id: "21m00Tcm4TlvDq8ikWAM", // Rachel - warm, friendly ElevenLabs voice
-  systemPrompt: "You are Robot Friend, a cheerful and supportive robot assistant for kids...",
-  welcomeMessage: "Hi there! I'm Robot Friend! 😊..."
+  voice_id: "a0e99841-438c-4a64-b679-ae501e7d6091", // Barbershop Man - Cartesia
+  systemPrompt: "You are Robot Friend, a cheerful companion for kids..."
 }
 ```
 
-### 🎙️ Interaction Modes
-1. **Text Mode**: Type → Anthropic Claude responds → ElevenLabs speaks
-2. **Voice Mode**: Browser speech recognition → Claude responds → ElevenLabs speaks
-3. **Conversation Storage**: All interactions saved to Neon PostgreSQL
+## Database Schema (Supabase)
 
-## 🏗️ Enhanced Architecture with Agent System
-
-**Next.js 15.4.5 App on Vercel with Sophisticated Agent Development Framework:**
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                    Next.js App (Vercel)                  │
-│  ┌──────────────┐  ┌─────────────┐  ┌──────────────┐   │
-│  │  Frontend    │  │  API Routes │  │   Database   │   │
-│  │  (React)     │  │ (/api/*)    │  │    (Neon)    │   │
-│  └──────────────┘  └─────────────┘  └──────────────┘   │
-└─────────────────────────────────────────────────────────┘
-                     │               │
-┌────────────────────▼───────────────▼────────────────────┐
-│                  External APIs                           │
-│  ┌────────────────┐  ┌─────────────┐                    │
-│  │   Anthropic    │  │ ElevenLabs  │                    │
-│  │    Claude      │  │  Voice TTS  │                    │
-│  │   (Chat AI)    │  │             │                    │
-│  └────────────────┘  └─────────────┘                    │
-```
-
-**Components:**
-- **Frontend**: React components for chat interface
-- **API Routes**: Next.js serverless functions
-  - `/api/chat` - Anthropic Claude integration
-  - `/api/voice/text-to-speech` - ElevenLabs TTS
-- **Database**: Neon PostgreSQL for conversation storage
-- **Deployment**: Single Vercel deployment
-
-
-## 🔧 Technical Stack
-
-### 🌐 Frontend & Backend
-- **Framework**: Next.js 15.4.5 (App Router + API Routes)
-- **Frontend**: React 19.1.0 with TypeScript (strict mode)
-- **UI**: Radix UI components + Tailwind CSS + Framer Motion
-- **Deployment**: Vercel (serverless functions + global CDN)
-- **Build**: ✅ Successful production build
-
-### 🗄️ Database
-- **Provider**: Neon (Serverless PostgreSQL)
-- **Connection**: `postgresql://neondb_owner:***@ep-plain-pond-afedblyp-pooler.c-2.us-west-2.aws.neon.tech/neondb`
-- **Tables**: `conversations`, `sessions`, `embeddings`, `robot_interactions`, `tool_usage`
-- **Status**: ✅ Connected and operational
-
-### 🤖 AI & Voice Services
-- **Chat AI**: Anthropic Claude (claude-3-haiku-20240307) - 100 tokens, 0.3 temperature optimized
-- **Voice TTS**: ElevenLabs eleven_flash_v2_5 model (Rachel voice - 21m00Tcm4TlvDq8ikWAM) - 75ms latency
-- **Speech Recognition**: Browser Web Speech API
-- **Status**: ✅ All integrations working with production-grade performance
-
-### 🎯 Enhanced Agent System
-- **Agent Framework**: Claude Code with 9 specialized agents
-- **Hook System**: Sophisticated context preservation in `.claude/` directory
-- **Knowledge Base**: Agent-specific context and architectural patterns
-- **Specializations**: Full-stack development, database architecture, deployment, security, performance
-
-### 🛡️ Agent Reliability Guardrails System - MAJOR INNOVATION
-**Revolutionary tooling that solves agent reliability issues and prevents phantom work:**
-
-- **Location**: `.claude/guardrails/` directory with complete validation framework
-- **Components**: 
-  - `agent-handoff-validator.js` - Pre/post agent state validation
-  - `execution-tracker.js` - Real-time tool execution monitoring  
-  - `verify-agent.js` - Comprehensive verification CLI
-- **CLI Commands**:
-  - `npm run agent:checkpoint` - Create pre-agent state snapshots
-  - `npm run agent:validate` - Verify claimed deliverables against actual executions
-  - `npm run agent:verify` - Complete reliability assessment with scoring
-  - `npm run agent:list` - List all validation sessions
-- **Purpose**: Prevents agents claiming work they didn't execute (phantom work problem)
-- **Reliability Scoring**: 90-100% excellent, 80-89% good, 70-79% acceptable, <70% intervention required
-- **Detection Capabilities**: 
-  - Files claimed created but don't exist
-  - Modifications claimed but file unchanged
-  - Commands claimed but no execution recorded
-- **Status**: ✅ Production ready and solving real agent reliability issues
-
-## 🔐 Environment Configuration
-
-### 🔑 Required Environment Variables
-```bash
-# Database
-NEON_DATABASE_URL=postgresql://neondb_owner:***@ep-plain-pond-afedblyp-pooler.c-2.us-west-2.aws.neon.tech/neondb?channel_binding=require&sslmode=require
-
-# AI Services  
-ANTHROPIC_API_KEY=sk-ant-api03-***
-ELEVENLABS_API_KEY=sk_***
-
-# Frontend (optional - defaults to same origin)
-NEXT_PUBLIC_API_URL=
-```
-
-### 🛣️ API Routes
-```
-/api/chat                    - Anthropic Claude integration
-  POST: { message, personality, sessionId }
-  
-/api/voice/text-to-speech   - ElevenLabs TTS
-  POST: { text, personality }
-  
-/api/signed-url             - File upload (legacy)
-```
-
-## 📋 Current Project Status
-
-### ✅ Production Complete with Major Innovations
-- **Frontend**: Next.js 15.4.5 app with React 19.1.0 components, optimized performance
-- **Backend**: Next.js API routes with enterprise-grade security and performance optimization
-- **Database**: Neon PostgreSQL with conversation storage and optimized queries
-- **Deployment**: Vercel serverless platform with successful production deployment
-- **Testing**: Comprehensive TDD implementation - 53+ test files with 334+ test cases
-- **Security**: Input validation, rate limiting, CORS protection, CSP headers
-- **Performance**: Caching, streaming, bundle optimization, 75ms TTS latency
-- **Innovation**: Agent Reliability Guardrails System solving phantom work issues
-- **Status**: ✅ Production live with all major achievements complete
-
-### 🗂️ Database Schema (Neon PostgreSQL)
 ```sql
--- Conversations table (primary storage)
+-- Conversations table
 CREATE TABLE conversations (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id varchar,
   robot_personality varchar NOT NULL,
   user_message text NOT NULL,
   robot_response text NOT NULL,
-  session_id varchar,
   metadata jsonb DEFAULT '{}',
   created_at timestamptz DEFAULT now()
 );
 
--- Additional tables for future features
-CREATE TABLE sessions (...);
-CREATE TABLE embeddings (...);
-CREATE TABLE robot_interactions (...);
-CREATE TABLE tool_usage (...);
+-- Sessions table
+CREATE TABLE sessions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id varchar,
+  started_at timestamptz DEFAULT now(),
+  last_active timestamptz DEFAULT now()
+);
 ```
 
-## 🎯 Enhanced Agent Development System
+## MCP Configuration
 
-### 🤖 Specialized Agent Team (9 Agents)
-1. **general-purpose** - Versatile development tasks and coordination
-2. **project-docs-curator** - Documentation excellence and maintenance
-3. **fullstack-tdd-architect** - Test-driven development and architecture
-4. **bug-hunter-specialist** - Issue identification and resolution
-5. **vercel-deployment-specialist** - Deployment optimization and monitoring
-6. **neon-database-architect** - Database design and performance
-7. **nextjs-performance-optimizer** - Frontend performance and optimization
-8. **api-integration-specialist** - External API integration and management
-9. **security-auditor-expert** - Security analysis and compliance
+Currently using **Context7** only for documentation lookups:
 
-### 🔗 Sophisticated Hook System
-
-**Directory Structure: `.claude/knowledge/`**
-```
-.claude/knowledge/
-├── agents/                    # Agent-specific knowledge
-│   ├── project-docs-curator/
-│   ├── fullstack-tdd-architect/
-│   ├── vercel-deployment-specialist/
-│   └── [7 other specialized agents]
-├── shared/                    # Cross-agent knowledge
-│   ├── architecture/          # Current system architecture
-│   ├── patterns/             # Successful implementation patterns
-│   └── deprecated/           # Outdated approaches to avoid
-└── successful_pattern/        # Proven solutions and approaches
+```json
+{
+  "mcpServers": {
+    "context7": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"]
+    }
+  }
+}
 ```
 
-**Hook Features:**
-- **Context Preservation**: Maintains project knowledge across sessions
-- **Agent Specialization**: Each agent has domain-specific context
-- **Pattern Recognition**: Tracks successful vs. deprecated approaches
-- **Knowledge Sharing**: Cross-agent collaboration and learning
-- **Architecture Awareness**: Deep understanding of NEON + Vercel stack
+## Development Philosophy
 
-### 🎯 Major Achievements Summary
-1. **✅ PRODUCTION READY**: Live application deployed and fully functional
-2. **✅ COMPREHENSIVE TESTING**: 53+ test files with 334+ test cases, full TDD coverage
-3. **✅ PERFORMANCE OPTIMIZED**: 75ms TTS latency, caching, streaming, bundle optimization
-4. **✅ ENTERPRISE SECURITY**: Input validation, rate limiting, CORS, CSP headers
-5. **✅ AGENT INNOVATION**: Revolutionary Agent Reliability Guardrails System solving phantom work
-6. **✅ TECHNICAL EXCELLENCE**: TypeScript strict mode, Next.js 15.4.5, React 19.1.0
+1. **ONE thing working perfectly** before adding more
+2. **Test-Driven Development** for quality
+3. **Clean architecture** without over-engineering
+4. **User-focused** design for kids
 
-### 🚀 Revolutionary Innovation: Agent Reliability Guardrails
-**This project has solved a fundamental problem in AI agent development** - the issue of agents claiming work they didn't actually execute. The Agent Reliability Guardrails System provides:
-- Real-time validation of agent deliverables vs actual tool executions
-- Comprehensive reliability scoring and phantom work detection
-- CLI tooling for checkpoint creation, validation, and verification
-- Production-ready framework preventing agent reliability issues
+## API Routes
 
-**Robot Brain is now a production-ready system with comprehensive testing, enterprise-grade security, performance optimization, and groundbreaking agent reliability innovations! 🚀**
+| Route | Method | Purpose |
+|-------|--------|---------|
+| `/api/chat` | POST | Chat with Anthropic Claude |
+| `/api/voice/text-to-speech` | POST | Cartesia TTS |
+| `/api/openrouter` | POST | Chinese LLM access |
+
+## Troubleshooting
+
+### Common Issues
+
+**AI responses failing?**
+- Check API key in `.env`
+- Verify API key format (sk-ant-... for Anthropic)
+- Check rate limits
+
+**Database connection issues?**
+- Verify Supabase project is active
+- Check `SUPABASE_URL` and keys
+- Test connection in Supabase dashboard
+
+**Voice not working?**
+- Check browser microphone permissions
+- Verify Cartesia API key
+- Test in different browser
+
+## Status (2025-11-25)
+
+### Completed
+- ✅ Supabase migration complete
+- ✅ Cartesia TTS integration working
+- ✅ OpenRouter Chinese LLMs available
+- ✅ Build passes successfully
+- ✅ Dead code cleanup (reduced from 21 to 4 API routes)

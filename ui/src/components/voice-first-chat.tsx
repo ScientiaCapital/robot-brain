@@ -2,8 +2,7 @@
 
 import { useState, useCallback, useEffect, memo } from "react"
 import "@/types/speech-recognition"
-import { motion } from "framer-motion"
-import { Mic, MicOff, Volume2, VolumeX, MessageSquare } from "lucide-react"
+import { Mic, MessageSquare } from "lucide-react"
 
 import { Chat } from "@/components/ui/chat"
 import { Button } from "@/components/ui/button"
@@ -63,12 +62,12 @@ export const VoiceFirstChat = memo(function VoiceFirstChat() {
           setIsSpeaking(false);
           setVoiceState({ mode: 'error', error: error.message });
           
-          // Log error to Neon database
+          // Log error
           try {
-            await logAudioError(
+            logAudioError(
               'PLAYBACK_ERROR',
               error.message,
-              'high'
+              { severity: 'high' }
             );
           } catch (logError) {
             console.error('Failed to log audio error:', logError);

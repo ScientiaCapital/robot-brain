@@ -1,4 +1,4 @@
-// Audio streaming utilities for ElevenLabs TTS
+// Audio streaming utilities for Cartesia TTS
 import { getAgentConfig } from './config';
 import { getSimpleAudioPlayer } from './simple-audio-player';
 
@@ -37,7 +37,7 @@ export class AudioStreamManager {
     try {
       const audioBuffer = await this.audioContext.decodeAudioData(audioData);
       this.audioQueue.push(audioBuffer);
-      
+
       if (!this.isPlaying) {
         this.playNextInQueue();
       }
@@ -59,7 +59,7 @@ export class AudioStreamManager {
     this.currentSource = this.audioContext.createBufferSource();
     this.currentSource.buffer = audioBuffer;
     this.currentSource.connect(this.audioContext.destination);
-    
+
     this.currentSource.onended = () => {
       this.playNextInQueue();
     };
@@ -73,7 +73,7 @@ export class AudioStreamManager {
       this.currentSource.stop();
       this.currentSource = null;
     }
-    
+
     this.audioQueue = [];
     this.isPlaying = false;
   }
@@ -103,18 +103,17 @@ export function getAudioStreamManager(): AudioStreamManager {
   return audioStreamManager;
 }
 
-// Get ElevenLabs streaming configuration from agent config
-export function getElevenLabsStreamConfig() {
+// Get Cartesia streaming configuration from agent config
+export function getCartesiaStreamConfig() {
   const config = getAgentConfig();
   return {
-    optimizeStreamingLatency: 1, // 0-4, lower = faster
-    outputFormat: 'mp3_44100_128',
-    voiceSettings: {
-      stability: config.voiceSettings.stability,
-      similarityBoost: config.voiceSettings.similarityBoost,
-      style: config.voiceSettings.style,
-      useSpeakerBoost: config.voiceSettings.useSpeakerBoost
-    }
+    model: config.voiceSettings.model || 'sonic-2',
+    outputFormat: {
+      container: 'mp3',
+      sampleRate: config.voiceSettings.sampleRate || 44100,
+      bitRate: 128000
+    },
+    language: config.voiceSettings.language || 'en'
   };
 }
 
@@ -139,16 +138,16 @@ class AudioStreamingMetricsImpl {
     firstByteTime?: number;
     chunks?: number;
   }> = [];
-  
+
   private errors: Array<{
     timestamp: number;
     error: string;
   }> = [];
 
   recordRequest(
-    startTime: number, 
-    endTime: number, 
-    firstByteTime?: number, 
+    startTime: number,
+    endTime: number,
+    firstByteTime?: number,
     chunks?: number
   ): void {
     this.requests.push({
@@ -169,7 +168,7 @@ class AudioStreamingMetricsImpl {
   getStats(): AudioStreamingMetricsStats {
     const totalRequests = this.requests.length;
     const totalErrors = this.errors.length;
-    
+
     if (totalRequests === 0 && totalErrors === 0) {
       return {
         totalRequests: 0,
@@ -186,24 +185,24 @@ class AudioStreamingMetricsImpl {
     }
 
     const totalLatency = this.requests.reduce(
-      (sum, req) => sum + (req.endTime - req.startTime), 
+      (sum, req) => sum + (req.endTime - req.startTime),
       0
     );
-    
+
     const firstByteLatencies = this.requests
       .filter(req => req.firstByteTime)
       .map(req => req.firstByteTime! - req.startTime);
-    
+
     const totalFirstByteLatency = firstByteLatencies.reduce((sum, lat) => sum + lat, 0);
-    
+
     const chunksData = this.requests.filter(req => req.chunks !== undefined);
     const totalChunks = chunksData.reduce((sum, req) => sum + (req.chunks || 0), 0);
-    
+
     const errorTypes: Record<string, number> = {};
     this.errors.forEach(error => {
       errorTypes[error.error] = (errorTypes[error.error] || 0) + 1;
     });
-    
+
     const totalOperations = totalRequests + totalErrors;
     const errorRate = totalOperations > 0 ? (totalErrors / totalOperations) * 100 : 0;
 
@@ -238,11 +237,10 @@ export interface StreamTTSCallbacks {
   onChunk?: (chunk: Uint8Array, loaded: number, total: number) => void;
   onComplete?: (totalBytes: number, duration: number) => void;
   onError?: (error: Error) => void;
-  onProgress?: (progress: number) => void; // Backward compatibility
+  onProgress?: (progress: number) => void;
 }
 
-// Stream TTS audio function with proper callback support
-// Updated TTS function using simple HTML5 audio for base64 data
+// Stream TTS audio function using Cartesia API
 export async function streamTTSAudio(
   text: string,
   voiceId: string,
@@ -250,19 +248,19 @@ export async function streamTTSAudio(
 ): Promise<void> {
   const startTime = Date.now();
   let firstByteTime: number | undefined;
-  
+
   try {
     // Call onStart callback
     callbacks?.onStart?.();
-    
+
     const response = await fetch('/api/voice/text-to-speech', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ 
-        text, 
-        voiceId, 
+      body: JSON.stringify({
+        text,
+        voiceId,
         personality: 'cheerful' // Required by validation schema
       }),
     });
@@ -277,7 +275,7 @@ export async function streamTTSAudio(
 
     // Parse JSON response containing base64 audio
     const data = await response.json();
-    
+
     if (!data.audio) {
       const error = new Error('No audio data received from TTS API');
       callbacks?.onError?.(error);
@@ -287,10 +285,10 @@ export async function streamTTSAudio(
 
     // Record first byte time
     firstByteTime = Date.now();
-    
+
     // Use simple audio player for base64 data
     const audioPlayer = getSimpleAudioPlayer();
-    
+
     await audioPlayer.playBase64Audio(data.audio, data.contentType || 'audio/mpeg', {
       onStart: () => {
         console.log('TTS audio playback started');
@@ -308,7 +306,7 @@ export async function streamTTSAudio(
         console.error('TTS audio playback error:', error);
       }
     });
-    
+
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error));
     callbacks?.onError?.(err);

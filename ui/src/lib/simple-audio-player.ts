@@ -33,7 +33,7 @@ export class SimpleAudioPlayer {
         callbacks?.onEnd?.();
       };
       
-      this.audioElement.onerror = (e) => {
+      this.audioElement.onerror = () => {
         const error = new Error(`Audio playback failed: ${this.audioElement?.error?.message || 'Unknown error'}`);
         callbacks?.onError?.(error);
         this.isPlaying = false;

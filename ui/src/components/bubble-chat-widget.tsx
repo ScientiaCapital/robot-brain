@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { MessageSquare, X, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { ConversationalAIChat } from "@/components/conversational-ai-chat"
+import { VoiceFirstChat } from "@/components/voice-first-chat"
 
 interface WidgetConfig {
   position: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'
@@ -231,7 +231,7 @@ export function BubbleChatWidget() {
               `}
               onClick={(e) => e.stopPropagation()}
             >
-              <ConversationalAIChat />
+              <VoiceFirstChat />
             </motion.div>
           </motion.div>
         )}

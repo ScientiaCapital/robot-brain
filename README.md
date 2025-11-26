@@ -1,113 +1,146 @@
-# 🤖 Robot Brain MVP - One Robot Working Perfectly
+# 🤖 Robot Brain - One Robot Working Perfectly
 
-**Status: ✅ LIVE & DEPLOYED** - Simple Next.js app with ONE robot assistant.
+**Status**: 🔄 In Development | **Focus**: MVP with one robot assistant
 
-**🚀 Try it now**: https://robot-brain-rb7xfb8h2-scientia-capital.vercel.app
+An AI-powered chat system featuring Robot Friend, a cheerful and supportive companion for kids.
 
-Welcome to Robot Brain - an AI-powered chat system featuring Robot Friend, a cheerful and supportive companion for kids.
+## 🎯 MVP Philosophy
 
-## 🎯 MVP Focus
+> **ONE thing working perfectly** before adding more
 
-- **🤖 ONE Robot Friend**: Cheerful, supportive, enthusiastic personality
-- **🎙️ Voice Interaction**: Text mode and voice mode with ElevenLabs TTS
-- **⚡ Real AI**: Anthropic Claude for intelligent responses
-- **🗄️ Neon PostgreSQL**: Conversation storage
-- **🚀 Vercel Deployment**: Simple one-app deployment
+- One robot (Robot Friend) fully functional
+- Voice and text interaction modes
+- Real AI responses
+- Production-ready deployment
 
-## 🚀 Live Demo
+## ⚡ Quick Start
 
-**Try Robot Friend now**: https://robot-brain-rb7xfb8h2-scientia-capital.vercel.app
+```bash
+# Clone the repository
+git clone https://github.com/your-username/robot-brain.git
+cd robot-brain
 
-No setup required - just visit the link and start chatting with Robot Friend! 🤖😊
+# Setup environment
+cp .env.example .env
+# Fill in your API keys in .env
 
-## 🎮 How to Use
+# Install and run
+cd ui
+npm install
+npm run dev
+```
+
+Visit `http://localhost:3000` to chat with Robot Friend! 🤖
+
+## 🏗️ Tech Stack
+
+| Component | Technology |
+|-----------|------------|
+| Framework | Next.js 15.4.5 + React + TypeScript |
+| Database | Supabase (PostgreSQL) |
+| AI - Primary | Anthropic Claude |
+| AI - Secondary | Google Gemini |
+| AI - Chinese LLMs | OpenRouter (DeepSeek, Qwen, Yi) |
+| Voice | Cartesia TTS |
+| Deployment | Vercel |
+
+## 🎮 Features
 
 ### Text Mode
-1. Type your message in the chat input
+1. Type your message
 2. Robot Friend responds with AI-generated text
-3. Response is spoken using text-to-speech
+3. Response is spoken via text-to-speech
 
 ### Voice Mode
 1. Click the microphone button
 2. Speak your message
 3. Robot Friend responds with voice
 
-## 🧪 Testing
+## 🔑 Environment Variables
+
+Create a `.env` file from `.env.example`:
 
 ```bash
-# Run all tests
+# Required
+ANTHROPIC_API_KEY=sk-ant-api03-...
+CARTESIA_API_KEY=...
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=...
+
+# Optional (for additional AI providers)
+GOOGLE_API_KEY=...
+OPENROUTER_API_KEY=sk-or-v1-...
+```
+
+## 📁 Project Structure
+
+```
+robot-brain/
+├── ui/                  # Next.js application
+│   ├── src/app/
+│   │   ├── api/        # API routes
+│   │   │   ├── chat/   # Anthropic Claude
+│   │   │   └── voice/  # Cartesia TTS
+│   │   └── page.tsx    # Main chat UI
+├── .env.example        # Environment template
+├── CLAUDE.md           # Full project docs
+└── README.md           # This file
+```
+
+## 🧪 Development
+
+```bash
+cd ui
+
+# Development server
+npm run dev
+
+# Run tests
 npm test
 
-# Run build checks
+# Build for production
 npm run build
 
-# Run linting
+# Lint check
 npm run lint
 ```
 
-## 🏗️ Architecture
-
-```
-Robot Brain MVP (Next.js App)
-├── Frontend (React Components)
-├── API Routes (/api/*)
-│   ├── /api/chat (Anthropic Claude)
-│   └── /api/voice/text-to-speech (ElevenLabs)
-├── Database (Neon PostgreSQL) 
-└── Deployment (Vercel)
-```
-
-## 🎯 MVP Features
-
-- **Robot Friend**: Cheerful, supportive companion
-- **Voice Modes**: Toggle between text and voice
-- **Real AI**: Powered by Google Gemini
-- **Clean Code**: Following TDD principles
-- **Production Ready**: All tests passing
-
-## 📝 Development Philosophy
-
-1. **ONE thing working perfectly** before adding more
-2. **Test-Driven Development** for quality
-3. **Clean architecture** without over-engineering
-4. **User-focused** design for kids
-
-## 🚀 Vision
-
-Once this MVP is perfect with ONE robot:
-1. Add more robots one at a time
-2. Each robot fully tested before next
-3. Scale to original 16 robots
-4. Maintain clean TDD principles
-
-But for now: **ONE ROBOT, WORKING PERFECTLY!** 🤖✨
-
 ## 🚀 Deployment
 
-### 🌐 Current Deployment
-- **Platform**: Vercel (Next.js serverless)
-- **Database**: Neon PostgreSQL (serverless)
-- **Domain**: https://robot-brain-rb7xfb8h2-scientia-capital.vercel.app
-- **Status**: ✅ Production ready
+### Vercel (Recommended)
 
-### 📊 Tech Stack
-- **Frontend**: Next.js 15.4.5 + React + TypeScript
-- **API**: Next.js API routes (serverless functions)
-- **Database**: Neon PostgreSQL (5 tables, auto-scaling)
-- **AI**: Anthropic Claude (claude-3-haiku-20240307)
-- **Voice**: ElevenLabs TTS (Rachel voice)
-- **Hosting**: Vercel (global CDN + serverless)
+1. Create new Vercel project
+2. Import from GitHub
+3. Set root directory to `ui/`
+4. Add environment variables in Vercel dashboard
+5. Deploy!
 
-### 🔄 Deployment Process
 ```bash
-# Deploy to Vercel
+# Or deploy via CLI
 vercel --prod
-
-# Environment variables managed via:
-vercel env add VARIABLE_NAME production
 ```
 
-**Simple, fast, scalable! 🚀**
+## 🤖 Robot Friend
+
+```
+Name: Robot Friend
+Personality: Cheerful, supportive, enthusiastic
+Voice: Cartesia TTS
+Target: Kids
+```
+
+## 📖 Documentation
+
+- **[CLAUDE.md](./CLAUDE.md)** - Full project documentation
+- **[.claude/context.md](./.claude/context.md)** - Current sprint context
+
+## 🛠️ AI Providers
+
+| Provider | Use Case | Models |
+|----------|----------|--------|
+| Anthropic | Primary chat | claude-3-haiku |
+| Google Gemini | Alternative | gemini-1.5-flash |
+| OpenRouter | Chinese LLMs | DeepSeek, Qwen, Yi |
 
 ## 📄 License
 

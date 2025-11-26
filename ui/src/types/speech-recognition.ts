@@ -1,27 +1,14 @@
 // Speech Recognition API types for WebKit
+// Note: webkitSpeechRecognition is already declared as 'any' in lib.dom.d.ts
+// We only need to declare the event interfaces that aren't in the default types
+
 declare global {
-  interface Window {
-    webkitSpeechRecognition: new () => SpeechRecognition
-  }
-
-  interface SpeechRecognition extends EventTarget {
-    continuous: boolean
-    interimResults: boolean
-    lang: string
-    start(): void
-    stop(): void
-    onstart: ((this: SpeechRecognition, ev: Event) => void) | null
-    onresult: ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => void) | null
-    onerror: ((this: SpeechRecognition, ev: SpeechRecognitionErrorEvent) => void) | null
-    onend: ((this: SpeechRecognition, ev: Event) => void) | null
-  }
-
   interface SpeechRecognitionEvent extends Event {
-    results: SpeechRecognitionResultList
+    readonly results: SpeechRecognitionResultList
   }
 
   interface SpeechRecognitionErrorEvent extends Event {
-    error: string
+    readonly error: string
   }
 
   interface SpeechRecognitionResultList {
@@ -32,6 +19,7 @@ declare global {
 
   interface SpeechRecognitionResult {
     readonly length: number
+    readonly isFinal: boolean
     item(index: number): SpeechRecognitionAlternative
     [index: number]: SpeechRecognitionAlternative
   }
