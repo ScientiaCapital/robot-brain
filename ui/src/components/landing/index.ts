@@ -1,0 +1,5 @@
+export { HeroSection } from './HeroSection'
+export { FeaturesGrid } from './FeaturesGrid'
+export { DemoWidget } from './DemoWidget'
+export { CTASection } from './CTASection'
+export { LandingFooter } from './LandingFooter'

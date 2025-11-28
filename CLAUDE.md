@@ -11,9 +11,9 @@
 **Robot Brain** is an AI-powered chat system featuring Robot Friend, a cheerful and supportive companion for kids. Built with Next.js and deployed on Vercel.
 
 ### Current Status
-- **Phase**: MVP Development
-- **Focus**: One robot working perfectly before expansion
-- **Stack Migration**: Neon → Supabase (in progress)
+- **Phase**: Landing Page Complete
+- **Focus**: One robot working perfectly + marketing page
+- **Stack**: Supabase + Cartesia + Anthropic Claude
 
 ## Technology Stack
 
@@ -38,8 +38,16 @@ robot-brain/
 │   │   │   ├── api/        # API routes
 │   │   │   │   ├── chat/   # Anthropic Claude integration
 │   │   │   │   └── voice/  # Cartesia TTS
-│   │   │   └── page.tsx    # Main chat interface
-│   │   └── components/     # React components
+│   │   │   ├── chat/       # /chat route (VoiceFirstChat)
+│   │   │   └── page.tsx    # Landing page
+│   │   └── components/
+│   │       ├── landing/    # Landing page components
+│   │       │   ├── HeroSection.tsx
+│   │       │   ├── FeaturesGrid.tsx
+│   │       │   ├── DemoWidget.tsx
+│   │       │   ├── CTASection.tsx
+│   │       │   └── LandingFooter.tsx
+│   │       └── voice-first-chat.tsx
 │   └── package.json
 ├── .claude/                 # Claude Code configuration
 │   ├── context.md          # Current sprint context
@@ -199,7 +207,7 @@ Currently using **Context7** only for documentation lookups:
 - Verify Cartesia API key
 - Test in different browser
 
-## Status (2025-11-25)
+## Status (2025-11-27)
 
 ### Completed
 - ✅ Supabase migration complete
@@ -207,3 +215,11 @@ Currently using **Context7** only for documentation lookups:
 - ✅ OpenRouter Chinese LLMs available
 - ✅ Build passes successfully
 - ✅ Dead code cleanup (reduced from 21 to 4 API routes)
+- ✅ **Landing page with interactive demo** (Onyx-inspired)
+- ✅ **Playful Tailwind theme** (animations, colors)
+
+### Tomorrow
+- Deploy landing page to Vercel production
+- Test demo widget in production
+- Mobile responsive testing
+- Optional: Add testimonials section

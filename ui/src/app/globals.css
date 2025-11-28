@@ -1,26 +1,27 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: #ffffff;
-  --color-foreground: #171717;
+  /* Kid-friendly bright color scheme */
+  --color-background: #fef3c7;
+  --color-foreground: #1e293b;
   --color-card: #ffffff;
-  --color-card-foreground: #171717;
+  --color-card-foreground: #1e293b;
   --color-popover: #ffffff;
-  --color-popover-foreground: #171717;
+  --color-popover-foreground: #1e293b;
   --color-primary: #3b82f6;
   --color-primary-foreground: #ffffff;
-  --color-secondary: #f3f4f6;
-  --color-secondary-foreground: #171717;
-  --color-muted: #f3f4f6;
-  --color-muted-foreground: #737373;
-  --color-accent: #f3f4f6;
-  --color-accent-foreground: #171717;
-  --color-destructive: #dc2626;
-  --color-destructive-foreground: #fafafa;
-  --color-border: #e5e7eb;
-  --color-input: #e5e7eb;
+  --color-secondary: #a78bfa;
+  --color-secondary-foreground: #ffffff;
+  --color-muted: #fef3c7;
+  --color-muted-foreground: #64748b;
+  --color-accent: #fbbf24;
+  --color-accent-foreground: #1e293b;
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #ffffff;
+  --color-border: #fde68a;
+  --color-input: #fef3c7;
   --color-ring: #3b82f6;
-  --radius: 0.5rem;
+  --radius: 1rem;
   --shiki-light: #24292e;
   --shiki-light-bg: #ffffff;
   --shiki-dark: #e1e4e8;
@@ -32,7 +33,152 @@
 }
 
 body {
-  @apply bg-background text-foreground;
+  @apply bg-gradient-to-br from-yellow-100 via-blue-100 to-purple-100 text-foreground;
   font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
   min-height: 100vh;
+}
+
+/* Kid-friendly playful animations */
+@keyframes bounce-fun {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-5deg); }
+  75% { transform: rotate(5deg); }
+}
+
+@keyframes pulse-grow {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.animate-bounce-fun {
+  animation: bounce-fun 1s ease-in-out infinite;
+}
+
+.animate-wiggle {
+  animation: wiggle 0.5s ease-in-out;
+}
+
+.animate-pulse-grow {
+  animation: pulse-grow 1.5s ease-in-out infinite;
+}
+
+/* ===== LANDING PAGE STYLES ===== */
+
+/* Playful gradient backgrounds */
+.bg-landing-gradient {
+  background: linear-gradient(135deg, #E8F4FD 0%, #FFF5E6 30%, #F0E6FF 70%, #E8F4FD 100%);
+}
+
+.bg-hero-gradient {
+  background: linear-gradient(180deg, #E8F4FD 0%, #F0F7FF 50%, #FFFFFF 100%);
+}
+
+/* Float animations for mascot */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(2deg); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-float-slow {
+  animation: float-slow 4s ease-in-out infinite;
+}
+
+/* Glow effect for CTAs */
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(79, 127, 255, 0.4); }
+  50% { box-shadow: 0 0 40px rgba(79, 127, 255, 0.8); }
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+/* Sparkle animation */
+@keyframes sparkle {
+  0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1) rotate(180deg); }
+}
+
+.animate-sparkle {
+  animation: sparkle 1.5s ease-in-out infinite;
+}
+
+/* Wave animation for emoji */
+@keyframes wave {
+  0% { transform: rotate(0deg); }
+  10% { transform: rotate(14deg); }
+  20% { transform: rotate(-8deg); }
+  30% { transform: rotate(14deg); }
+  40% { transform: rotate(-4deg); }
+  50% { transform: rotate(10deg); }
+  60% { transform: rotate(0deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.animate-wave {
+  animation: wave 2.5s ease-in-out infinite;
+  transform-origin: 70% 70%;
+  display: inline-block;
+}
+
+/* Feature card styles */
+.feature-card {
+  @apply bg-white rounded-3xl p-6 shadow-lg transition-all duration-300;
+  border: 2px solid transparent;
+}
+
+.feature-card:hover {
+  @apply shadow-xl;
+  transform: translateY(-8px);
+  border-color: rgba(79, 127, 255, 0.3);
+}
+
+.feature-card .emoji {
+  @apply text-5xl mb-4 inline-block;
+  transition: transform 0.3s ease;
+}
+
+.feature-card:hover .emoji {
+  transform: scale(1.2) rotate(5deg);
+}
+
+/* CTA button styles */
+.cta-button {
+  @apply px-8 py-4 rounded-full font-bold text-lg text-white transition-all duration-300;
+  background: linear-gradient(135deg, #4F7FFF 0%, #7BA3FF 100%);
+  box-shadow: 0 4px 20px rgba(79, 127, 255, 0.4);
+}
+
+.cta-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 30px rgba(79, 127, 255, 0.6);
+}
+
+.cta-button:active {
+  transform: scale(0.98);
+}
+
+/* Demo widget container */
+.demo-widget {
+  @apply bg-white rounded-3xl shadow-2xl overflow-hidden;
+  border: 3px solid rgba(79, 127, 255, 0.2);
+}
+
+/* Smooth scroll for landing page */
+html {
+  scroll-behavior: smooth;
 }

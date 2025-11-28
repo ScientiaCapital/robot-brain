@@ -1,10 +1,10 @@
 # Robot Brain - Project Context
 
-**Last Updated**: 2025-11-25
+**Last Updated**: 2025-11-27
 
-## Current Status: CLEANUP COMPLETE
+## Current Status: LANDING PAGE COMPLETE ✨
 
-### Stack (Current)
+### Stack
 | Service | Provider | Status |
 |---------|----------|--------|
 | Database | **Supabase** | ✅ Configured |
@@ -13,67 +13,53 @@
 | Chinese LLMs | **OpenRouter** | ✅ Available |
 | Framework | **Next.js 15.4.5** | ✅ Building |
 
-### API Routes (4 total - cleaned from 21)
+### Routes
+- `/` - NEW playful landing page
+- `/chat` - VoiceFirstChat interface
 - `/api/chat` - Anthropic Claude conversations
 - `/api/health` - System health monitoring
-- `/api/openrouter` - DeepSeek, Qwen, Yi Chinese LLMs
+- `/api/openrouter` - Chinese LLMs
 - `/api/voice/text-to-speech` - Cartesia TTS
 
-## Recent Major Cleanup (2025-11-25)
+## Completed Today (2025-11-27)
 
-### Fixed
-- Supabase type interface (added Relationships, Views, Functions, Enums, CompositeTypes)
-- All type assertions for Supabase query returns
-- Speech Recognition type declarations
-- Component imports (removed deleted ConversationalAIChat)
+### Landing Page (Onyx-inspired)
+Created 5 new components in `ui/src/components/landing/`:
+- `HeroSection.tsx` - Animated hero with floating emoji
+- `FeaturesGrid.tsx` - 6 emoji feature cards
+- `DemoWidget.tsx` - Interactive 5-message demo
+- `CTASection.tsx` - Final call-to-action
+- `LandingFooter.tsx` - Dark footer with trust badges
 
-### Deleted (Dead Code)
-- 8 unused API routes (agents, teams, conversational-ai, deployment, docs, health/database, signed-url, code-execution)
-- 1 unused component (conversational-ai-chat.tsx)
-- 4 old documentation files
+### Styling Updates
+- `tailwind.config.ts` - Playful color palette + animations
+- `globals.css` - Landing gradients, feature cards, CTA buttons
+- Custom animations: float, sparkle, glow-pulse, wave
 
-### Migrated
-- TTS: ElevenLabs → Cartesia
-- Database: Neon → Supabase
+### Route Changes
+- `/` now shows landing page (was VoiceFirstChat)
+- `/chat` new route for VoiceFirstChat
 
-## Environment Variables Required
+## Tomorrow's Tasks
 
-```bash
-# Database (Supabase)
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_KEY=your-service-key
+1. **Deploy to Vercel** - Push landing page live
+2. **Test Demo Widget** - Verify API calls work in production
+3. **Mobile Testing** - Check responsive design on real devices
+4. **Voice Mode** - Test Cartesia TTS on `/chat` page
+5. **Optional** - Add social proof / testimonials section
 
-# AI Services
-ANTHROPIC_API_KEY=sk-ant-xxx
-CARTESIA_API_KEY=your-cartesia-key
-OPENROUTER_API_KEY=sk-or-v1-xxx  # Optional - for Chinese LLMs
+## Key Files Changed
 
-# Optional
-GOOGLE_API_KEY=your-google-key
-```
-
-## Key Files
-
-| File | Purpose |
-|------|---------|
-| `ui/src/app/api/chat/route.ts` | Anthropic Claude chat |
-| `ui/src/app/api/voice/text-to-speech/route.ts` | Cartesia TTS |
-| `ui/src/app/api/openrouter/route.ts` | Chinese LLM models |
-| `ui/src/lib/database/supabase-client.ts` | Supabase connection |
-| `ui/src/lib/database/enhanced-schema-service.ts` | CRUD operations |
-
-## Development Commands
-
-```bash
-cd ui
-npm run dev     # Development server
-npm run build   # Production build (passes!)
-npm test        # Run tests
-```
+| File | Change |
+|------|--------|
+| `ui/src/app/page.tsx` | Landing page composition |
+| `ui/src/app/chat/page.tsx` | NEW - Chat route |
+| `ui/src/components/landing/*` | NEW - 5 components |
+| `ui/tailwind.config.ts` | Playful theme |
+| `ui/src/app/globals.css` | Landing styles |
 
 ## Notes
 
-- **NO OpenAI** - Project policy prohibits OpenAI usage
-- **MVP Focus** - Robot Friend for kids
-- **Build Status** - ✅ Passing with minor warnings only
+- **NO OpenAI** - Project policy
+- **Build Status** - ✅ Passing
+- Demo widget connects to `/api/chat` successfully
